@@ -1,0 +1,26 @@
+[project]
+name = "llm-trabalho"
+version = "0.1.0"
+description = "Agente de agendamentos para avaliações neuropsicológicas"
+authors = [
+    {name = "thiagopls1",email = "thiagopls1@hotmail.com"}
+]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.14,<4.0"
+dependencies = [
+    "openai (>=3.16.2,<4.0.0)"
+]
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "taskipy (>=1.14.1,<2.0.0)",
+    "isort (>=9.0.1,<10.0.0)",
+    "black (>=26.5.1,<27.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
