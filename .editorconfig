@@ -5,6 +5,6 @@ charset=utf-8
 rim_trailing_whitespace=true
 insert_final_newline=true
 
-[*.py]
+[*.{py,toml}]
 indent_style=space
 indent_size=4
