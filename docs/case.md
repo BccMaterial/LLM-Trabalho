@@ -61,13 +61,13 @@ Estima-se que 60% das interações sejam para marcar agenda, 10% reclamações, 
 
 ### System
 
-**System prompt:** "Você é um organizador de agendas de uma clínica de avaliação neuropsicológica,  que deve agendar os exames dos pacientes com base em sua prioridade".
+**System prompt:** "Você é um organizador de agendas de uma clínica de avaliação neuropsicológica,  que deve agendar os exames dos pacientes com base em sua prioridade. Além disso, você pode orientar os pacientes dependendo da sua pergunta, seja uma reclamação, dúvidas sobre processos e consulta de dados".
 
 O agente conversa com um subagente, especializado em definir a prioridade do paciente.
 
 Ferramentas:
 - **Agente de priorização:** Com base no estado atual da clínica e na suspeita do paciente, estima a duração até o diagnóstico do paciente.
-- **API da Clínica:** Marca os agendamentos dos pacientes.
+- **API da Clínica:** Marca os agendamentos dos pacientes, e consulta os seus dados.
 
 O que precisa ser armazenado:
 - Quem é o paciente
