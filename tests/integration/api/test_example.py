@@ -1,4 +1,4 @@
-from src.drivers.api.app import app
+from api.app import app
 
 
 def test_when_name_is_passed():
