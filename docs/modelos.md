@@ -1,4 +1,3 @@
 # Escolha de modelos
 
-Pensamos nos seguintes modelos:
-- **ministral-3b-latest:** Modelo leve que pode ser utilizado de forma gratuita na mistral;
+Por conta de ser acessível de forma gratuita, e ter uma performance boa, pensamos em utilizar o modelo **ministral-3b-latest**.
