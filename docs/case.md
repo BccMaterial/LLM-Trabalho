@@ -26,6 +26,10 @@ Como regras de domínio temos:
 - **Agendamentos:** O agendamento é feito de acordo com a preferência do paciente. Caso haja disponibilidade no horário escolhido, o paciente é agendado. Caso não haja disponibilidade, o paciente é informado e pode escolher outro horário.
 - **Encaminhamentos:** Para realizar os exames, o paciente precisa de um encaminhamento médico. Seja ele vindo de um médico de outra clínica ou da própria clínica.
 
+## Justificativa
+
+A escolha do uso de agentes de IA para esse problema se dá por conta da complexidade do problema, que envolve a priorização de pacientes com base em diversos fatores, como histórico médico, suspeita do paciente e preferências de horário. Além disso, a utilização de agentes permite uma maior agilidade no atendimento, reduzindo o tempo de espera dos pacientes e aumentando a satisfação dos mesmos, juntamente com a redução do gasto se comparar com a nova contratação de funcionários para suprir essa demanda.
+
 ## Usuários
 
 | Perfil   | O que ele quer                        | O que ele sabe                                      | O que ele pode saber |
