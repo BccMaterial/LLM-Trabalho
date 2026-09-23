@@ -23,7 +23,8 @@ dev = [
 ]
 
 [tool.taskipy.tasks]
-dev = "python -m src.drivers.api.app"
+"dev:api" = "python -m src.api.app"
+"dev:agent" = "python -m src.agent.app"
 test = "python -m pytest"
 "lint:fix" = "isort . && black ."
 "lint:check" = "isort --check-only . && black --check ."
