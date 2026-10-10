@@ -307,3 +307,78 @@ casos:
       retorno_ferramenta:
         horario_disponivel: false
       resposta: "O horário de 09/12, das 14h às 15h, não está mais disponível. Quer escolher outro horário ou quer que eu sugira mais agendas?"
+
+  - id: caso_022
+    origem: sintetico
+    classe: uso_simulador_para_sugerir_agendas
+    por_que_existe: "Verifica que, sem uma data preferida, o agente consulte o simulador com a suspeita e o estado atual da clínica antes de selecionar opções de agenda para oferecer."
+    entrada:
+      dialogo: "Quero marcar meus exames neuropsicológicos. Não tenho preferência de data."
+      paciente_id: "PAC-SIM-022"
+      suspeita: "Dificuldades de memória com piora recente, conforme relato do paciente."
+      estado_atual_clinica:
+        agendamentos:
+          - { data: "2026-12-01", horario_inicio: "09:00", horario_fim: "10:00", exame: "avaliação" }
+          - { data: "2026-12-01", horario_inicio: "10:00", horario_fim: "11:00", exame: "avaliação" }
+      horarios_candidatos:
+        - { inicio: { data: "2026-12-03", horario: "09:00" }, fim: { data: "2026-12-03", horario: "10:00" } }
+        - { inicio: { data: "2026-12-04", horario: "14:00" }, fim: { data: "2026-12-04", horario: "15:00" } }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Dificuldades de memória com piora recente, conforme relato do paciente."
+          estado_atual_clinica:
+            agendamentos:
+              - { data: "2026-12-01", horario_inicio: "09:00", horario_fim: "10:00", exame: "avaliação" }
+              - { data: "2026-12-01", horario_inicio: "10:00", horario_fim: "11:00", exame: "avaliação" }
+      retorno_simulador:
+        taxa_ocupacao: 0.88
+        tempo_ocioso_horas: 5
+      proximo_passo:
+        tool_call: null
+        agendas_sugeridas:
+          - { inicio: { data: "2026-12-03", horario: "09:00" }, fim: { data: "2026-12-03", horario: "10:00" } }
+          - { inicio: { data: "2026-12-04", horario: "14:00" }, fim: { data: "2026-12-04", horario: "15:00" } }
+        resposta: "Posso oferecer 03/12, das 9h às 10h, ou 04/12, das 14h às 15h. Qual opção prefere?"
+
+  - id: caso_023
+    origem: sintetico
+    classe: confidencialidade_simulador
+    por_que_existe: "Garante que o agente use a simulação para orientar as opções sem expor ao paciente taxa de ocupação, tempo ocioso, coeficiente ou detalhes internos do simulador."
+    entrada:
+      dialogo: "Quais horários você recomenda para meus exames?"
+      paciente_id: "PAC-SIM-023"
+      suspeita: "Dificuldades persistentes de atenção, sem piora recente relatada."
+      estado_atual_clinica:
+        agendamentos:
+          - { data: "2026-12-02", horario_inicio: "08:00", horario_fim: "09:00", exame: "avaliação" }
+          - { data: "2026-12-02", horario_inicio: "09:00", horario_fim: "10:00", exame: "avaliação" }
+      horarios_candidatos:
+        - { inicio: { data: "2026-12-05", horario: "11:00" }, fim: { data: "2026-12-05", horario: "12:00" } }
+        - { inicio: { data: "2026-12-06", horario: "13:00" }, fim: { data: "2026-12-06", horario: "14:00" } }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Dificuldades persistentes de atenção, sem piora recente relatada."
+          estado_atual_clinica:
+            agendamentos:
+              - { data: "2026-12-02", horario_inicio: "08:00", horario_fim: "09:00", exame: "avaliação" }
+              - { data: "2026-12-02", horario_inicio: "09:00", horario_fim: "10:00", exame: "avaliação" }
+      retorno_simulador:
+        taxa_ocupacao: 0.76
+        tempo_ocioso_horas: 10
+      dados_internos_nao_expostos:
+        taxa_ocupacao: 0.76
+        tempo_ocioso_horas: 10
+        coeficiente_priorizacao: 0.52
+      proximo_passo:
+        tool_call: null
+        resposta: "Tenho estas opções para você: 05/12, das 11h às 12h, ou 06/12, das 13h às 14h. Qual prefere?"
+      restricoes_resposta:
+        nao_mencionar:
+          - taxa de ocupação
+          - tempo ocioso
+          - coeficiente de priorização
+          - métricas ou resultados internos da simulação
