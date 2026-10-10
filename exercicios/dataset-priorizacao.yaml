@@ -1,0 +1,351 @@
+versao: "1.0"
+ferramenta: simular_estado_clinica
+observacao: "Casos sintéticos para testar o fluxo e o formato. Coeficientes ilustrativos; devem ser calibrados com a regra de priorização validada pela equipe."
+revisor_sinteticos: "Equipe do projeto"
+casos:
+  - id: caso_015
+    origem: sintetico
+    classe: ocupacao_alta
+    por_que_existe: "Verifica que o agente execute a simulação com a suspeita e os agendamentos atuais e retorne um coeficiente estruturado entre 0 e 1."
+    entrada:
+      suspeita: "Piora recente das dificuldades de memória relatadas pelo paciente."
+      estado_atual_clinica:
+        agendamentos:
+          - {
+              data: "2026-11-16",
+              horario_inicio: "09:00",
+              horario_fim: "10:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-16",
+              horario_inicio: "10:00",
+              horario_fim: "11:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-16",
+              horario_inicio: "11:00",
+              horario_fim: "12:00",
+              exame: "avaliação",
+            }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Piora recente das dificuldades de memória relatadas pelo paciente."
+          estado_atual_clinica:
+            agendamentos:
+              - {
+                  data: "2026-11-16",
+                  horario_inicio: "09:00",
+                  horario_fim: "10:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-16",
+                  horario_inicio: "10:00",
+                  horario_fim: "11:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-16",
+                  horario_inicio: "11:00",
+                  horario_fim: "12:00",
+                  exame: "avaliação",
+                }
+      retorno_simulador:
+        taxa_ocupacao: 0.95
+        tempo_ocioso_horas: 2
+      resposta:
+        coeficiente_priorizacao: 0.90
+        justificativa: "Piora recente relatada e alta ocupação com pouco tempo ocioso indicam prioridade elevada."
+
+  - id: caso_016
+    origem: sintetico
+    classe: ocupacao_moderada
+    por_que_existe: "Testa uma situação estável e capacidade ainda disponível, que deve resultar em coeficiente menor que o caso de ocupação alta."
+    entrada:
+      suspeita: "Dificuldades persistentes de atenção, sem piora recente relatada."
+      estado_atual_clinica:
+        agendamentos:
+          - {
+              data: "2026-11-17",
+              horario_inicio: "09:00",
+              horario_fim: "10:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-17",
+              horario_inicio: "13:00",
+              horario_fim: "14:00",
+              exame: "avaliação",
+            }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Dificuldades persistentes de atenção, sem piora recente relatada."
+          estado_atual_clinica:
+            agendamentos:
+              - {
+                  data: "2026-11-17",
+                  horario_inicio: "09:00",
+                  horario_fim: "10:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-17",
+                  horario_inicio: "13:00",
+                  horario_fim: "14:00",
+                  exame: "avaliação",
+                }
+      retorno_simulador:
+        taxa_ocupacao: 0.72
+        tempo_ocioso_horas: 12
+      resposta:
+        coeficiente_priorizacao: 0.48
+        justificativa: "Relato sem piora recente e disponibilidade operacional moderada indicam prioridade intermediária."
+
+  - id: caso_017
+    origem: sintetico
+    classe: ocupacao_alta
+    por_que_existe: "Compara a mesma suspeita sob maior ocupação da clínica e verifica que os dados atuais do simulador influenciem o coeficiente."
+    entrada:
+      suspeita: "Dificuldades persistentes de atenção, sem piora recente relatada."
+      estado_atual_clinica:
+        agendamentos:
+          - {
+              data: "2026-11-18",
+              horario_inicio: "08:00",
+              horario_fim: "09:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-18",
+              horario_inicio: "09:00",
+              horario_fim: "10:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-18",
+              horario_inicio: "10:00",
+              horario_fim: "11:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-18",
+              horario_inicio: "11:00",
+              horario_fim: "12:00",
+              exame: "avaliação",
+            }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Dificuldades persistentes de atenção, sem piora recente relatada."
+          estado_atual_clinica:
+            agendamentos:
+              - {
+                  data: "2026-11-18",
+                  horario_inicio: "08:00",
+                  horario_fim: "09:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-18",
+                  horario_inicio: "09:00",
+                  horario_fim: "10:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-18",
+                  horario_inicio: "10:00",
+                  horario_fim: "11:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-18",
+                  horario_inicio: "11:00",
+                  horario_fim: "12:00",
+                  exame: "avaliação",
+                }
+      retorno_simulador:
+        taxa_ocupacao: 0.90
+        tempo_ocioso_horas: 4
+      resposta:
+        coeficiente_priorizacao: 0.63
+        justificativa: "A suspeita é igual à do caso de ocupação moderada, mas a alta ocupação e o menor tempo ocioso elevam a prioridade relativa."
+
+  - id: caso_018
+    origem: sintetico
+    classe: capacidade_disponivel
+    por_que_existe: "Verifica que baixa ocupação e maior tempo ocioso sejam considerados na definição do coeficiente, sem omitir a simulação."
+    entrada:
+      suspeita: "Dificuldades escolares persistentes, sem mudança recente relatada."
+      estado_atual_clinica:
+        agendamentos:
+          - {
+              data: "2026-11-19",
+              horario_inicio: "10:00",
+              horario_fim: "11:00",
+              exame: "avaliação",
+            }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Dificuldades escolares persistentes, sem mudança recente relatada."
+          estado_atual_clinica:
+            agendamentos:
+              - {
+                  data: "2026-11-19",
+                  horario_inicio: "10:00",
+                  horario_fim: "11:00",
+                  exame: "avaliação",
+                }
+      retorno_simulador:
+        taxa_ocupacao: 0.40
+        tempo_ocioso_horas: 30
+      resposta:
+        coeficiente_priorizacao: 0.30
+        justificativa: "O relato não indica piora recente e a simulação mostra baixa ocupação e tempo ocioso elevado."
+
+  - id: caso_019
+    origem: sintetico
+    classe: historico_relevante
+    por_que_existe: "Confere que informação de histórico fornecida junto à suspeita seja considerada sem substituir a simulação operacional."
+    entrada:
+      suspeita: "Dificuldades de memória com piora nas últimas semanas."
+      historico: "Há registro de avaliação anterior na clínica, sem diagnóstico informado neste caso."
+      estado_atual_clinica:
+        agendamentos:
+          - {
+              data: "2026-11-20",
+              horario_inicio: "09:00",
+              horario_fim: "10:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-20",
+              horario_inicio: "14:00",
+              horario_fim: "15:00",
+              exame: "avaliação",
+            }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Dificuldades de memória com piora nas últimas semanas."
+          estado_atual_clinica:
+            agendamentos:
+              - {
+                  data: "2026-11-20",
+                  horario_inicio: "09:00",
+                  horario_fim: "10:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-20",
+                  horario_inicio: "14:00",
+                  horario_fim: "15:00",
+                  exame: "avaliação",
+                }
+      retorno_simulador:
+        taxa_ocupacao: 0.65
+        tempo_ocioso_horas: 16
+      resposta:
+        coeficiente_priorizacao: 0.75
+        justificativa: "A piora recente relatada e o histórico de avaliação anterior elevam a prioridade, considerando também as métricas simuladas."
+
+  - id: caso_020
+    origem: sintetico
+    classe: validacao_limites
+    por_que_existe: "Garante que o agente represente o coeficiente no intervalo permitido de 0 a 1 e use os valores retornados pelo simulador."
+    entrada:
+      suspeita: "Suspeita informada, sem detalhes adicionais disponíveis."
+      estado_atual_clinica:
+        agendamentos: []
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Suspeita informada, sem detalhes adicionais disponíveis."
+          estado_atual_clinica:
+            agendamentos: []
+      retorno_simulador:
+        taxa_ocupacao: 0.00
+        tempo_ocioso_horas: 40
+      resposta:
+        coeficiente_priorizacao: 0.00
+        justificativa: "Sem informação adicional que aumente a prioridade e com capacidade disponível, o coeficiente permanece no limite inferior."
+
+  - id: caso_021
+    origem: sintetico
+    classe: validacao_limites
+    por_que_existe: "Testa o limite superior do coeficiente diante de relato de piora recente e capacidade operacional restrita, sem afirmar diagnóstico."
+    entrada:
+      suspeita: "Relato de piora rápida das dificuldades que motivaram a avaliação."
+      estado_atual_clinica:
+        agendamentos:
+          - {
+              data: "2026-11-21",
+              horario_inicio: "08:00",
+              horario_fim: "09:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-21",
+              horario_inicio: "09:00",
+              horario_fim: "10:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-21",
+              horario_inicio: "10:00",
+              horario_fim: "11:00",
+              exame: "avaliação",
+            }
+          - {
+              data: "2026-11-21",
+              horario_inicio: "11:00",
+              horario_fim: "12:00",
+              exame: "avaliação",
+            }
+    esperado:
+      tool_call:
+        nome: simular_estado_clinica
+        argumentos:
+          suspeita: "Relato de piora rápida das dificuldades que motivaram a avaliação."
+          estado_atual_clinica:
+            agendamentos:
+              - {
+                  data: "2026-11-21",
+                  horario_inicio: "08:00",
+                  horario_fim: "09:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-21",
+                  horario_inicio: "09:00",
+                  horario_fim: "10:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-21",
+                  horario_inicio: "10:00",
+                  horario_fim: "11:00",
+                  exame: "avaliação",
+                }
+              - {
+                  data: "2026-11-21",
+                  horario_inicio: "11:00",
+                  horario_fim: "12:00",
+                  exame: "avaliação",
+                }
+      retorno_simulador:
+        taxa_ocupacao: 1.00
+        tempo_ocioso_horas: 0
+      resposta:
+        coeficiente_priorizacao: 1.00
+        justificativa: "A piora rápida relatada e a capacidade operacional sem tempo ocioso justificam o maior coeficiente ilustrativo, sem inferir diagnóstico."

@@ -1,0 +1,309 @@
+versao: "1.0"
+ferramenta: agendar_exames
+revisor_sinteticos: "Equipe do projeto"
+casos:
+  - id: caso_001
+    origem: sintetico
+    classe: agendamento_confirmado
+    por_que_existe: "Verifica que a ferramenta só é chamada após confirmação e que cada exame leva os campos obrigatórios."
+    entrada:
+      dialogo: "Quero marcar meus exames. Confirmo as quatro opções que vocês propuseram."
+      paciente_id: "PAC-SIM-001"
+      suspeita: "Suspeita informada pelo paciente: TEA"
+      agendas_propostas:
+        - inicio: { data: "2026-11-16", horario: "09:00" }
+          fim: { data: "2026-11-16", horario: "10:00" }
+        - inicio: { data: "2026-11-17", horario: "10:30" }
+          fim: { data: "2026-11-17", horario: "11:30" }
+        - inicio: { data: "2026-11-18", horario: "14:00" }
+          fim: { data: "2026-11-18", horario: "15:00" }
+        - inicio: { data: "2026-11-19", horario: "08:30" }
+          fim: { data: "2026-11-19", horario: "09:30" }
+    esperado:
+      tool_call:
+        nome: agendar_exames
+        argumentos:
+          agendas:
+            - {
+                inicio: { data: "2026-11-16", horario: "09:00" },
+                fim: { data: "2026-11-16", horario: "10:00" },
+                paciente_id: "PAC-SIM-001",
+                suspeita: "Suspeita informada pelo paciente: TEA",
+              }
+            - {
+                inicio: { data: "2026-11-17", horario: "10:30" },
+                fim: { data: "2026-11-17", horario: "11:30" },
+                paciente_id: "PAC-SIM-001",
+                suspeita: "Suspeita informada pelo paciente: TEA",
+              }
+            - {
+                inicio: { data: "2026-11-18", horario: "14:00" },
+                fim: { data: "2026-11-18", horario: "15:00" },
+                paciente_id: "PAC-SIM-001",
+                suspeita: "Suspeita informada pelo paciente: TEA",
+              }
+            - {
+                inicio: { data: "2026-11-19", horario: "08:30" },
+                fim: { data: "2026-11-19", horario: "09:30" },
+                paciente_id: "PAC-SIM-001",
+                suspeita: "Suspeita informada pelo paciente: TEA",
+              }
+      retorno_ferramenta: { status: sucesso, agendamentos_criados: 4 }
+      resposta: "Os quatro exames foram agendados. Segue a lista com as datas e horários."
+
+  - id: caso_002
+    origem: sintetico
+    classe: agendamento_confirmado
+    por_que_existe: "Verifica que, após marcar um exame confirmado, o agente pergunte se deve seguir com os exames restantes ou buscar outro horário."
+    entrada:
+      dialogo: "Confirmo o horário de 20/11 às 11h."
+      paciente_id: "PAC-SIM-002"
+      suspeita: "Dificuldade de atenção, conforme relato do paciente"
+      exames_pendentes: 3
+      agendas_propostas:
+        - inicio: { data: "2026-11-20", horario: "11:00" }
+          fim: { data: "2026-11-20", horario: "12:00" }
+    esperado:
+      tool_call:
+        nome: agendar_exames
+        argumentos:
+          agendas:
+            - {
+                inicio: { data: "2026-11-20", horario: "11:00" },
+                fim: { data: "2026-11-20", horario: "12:00" },
+                paciente_id: "PAC-SIM-002",
+                suspeita: "Dificuldade de atenção, conforme relato do paciente",
+              }
+      retorno_ferramenta: { status: sucesso, agendamentos_criados: 1 }
+      resposta: "Seu horário de 20/11, das 11h às 12h, foi marcado. Quer que eu siga com o agendamento dos três exames restantes ou prefere escolher outro horário?"
+
+  - id: caso_003
+    origem: sintetico
+    classe: confirmacao_pendente
+    por_que_existe: "Evita criar agendamento quando o paciente ainda está avaliando as opções."
+    entrada:
+      dialogo: "Esses horários podem funcionar. Vou conferir minha agenda e aviso."
+      paciente_id: "PAC-SIM-003"
+      suspeita: "Suspeita relatada pelo paciente: dislexia"
+      agendas_propostas:
+        - inicio: { data: "2026-11-21", horario: "09:00" }
+          fim: { data: "2026-11-21", horario: "10:00" }
+    esperado:
+      tool_call: null
+      resposta: "Tudo bem. As opções ainda não foram agendadas; avise quando quiser confirmar."
+
+  - id: caso_004
+    origem: sintetico
+    classe: autenticacao_necessaria
+    por_que_existe: "Verifica que um usuário não autenticado seja solicitado a entrar na conta antes de consultar cadastro ou agendar exames."
+    entrada:
+      dialogo: "Quero marcar meus exames neuropsicológicos."
+      autenticado: false
+      paciente_id: null
+      suspeita: null
+      agendas_propostas: []
+    esperado:
+      tool_call: null
+      resposta: "Para consultar seu cadastro e seguir com o agendamento, entre na sua conta ou conclua a autenticação. Ainda não consultei nem alterei seus dados."
+
+  - id: caso_005
+    origem: sintetico
+    classe: ausencia_encaminhamento
+    por_que_existe: "Verifica que o agente reconheça um paciente autenticado sem suspeita ou encaminhamento registrado e explique que é necessário obter encaminhamento antes de seguir com os exames."
+    entrada:
+      dialogo: "Quero agendar meus exames neuropsicológicos."
+      autenticado: true
+      paciente_id: "PAC-SIM-005"
+      suspeita: null
+      agendas_propostas: []
+    esperado:
+      tool_call:
+        nome: consultar_dados_paciente
+        argumentos:
+          paciente_id: "PAC-SIM-005"
+      retorno_ferramenta:
+        paciente_encontrado: true
+        suspeita_inicial: null
+        encaminhamento_registrado: false
+      proximo_passo:
+        tool_call: null
+        resposta: "Consultei seu cadastro e não há suspeita nem encaminhamento médico registrado. Para realizar os exames neuropsicológicos, é necessário ter um encaminhamento médico. Quando o tiver, posso ajudar com o agendamento."
+
+  - id: caso_006
+    origem: sintetico
+    classe: recusa_sem_disponibilidade
+    por_que_existe: "Garante que o agente não afirme ter agendado quando não há horários disponíveis."
+    entrada:
+      dialogo: "Quero marcar para amanhã. Pode confirmar qualquer horário."
+      paciente_id: "PAC-SIM-006"
+      suspeita: "Suspeita relatada pelo paciente: dificuldades de memória"
+      agendas_propostas: []
+    esperado:
+      tool_call: null
+      resposta: "Não encontrei horários disponíveis para essa solicitação. Posso buscar outras datas."
+
+  - id: caso_007
+    origem: sintetico
+    classe: recusa_agendamento_existente
+    por_que_existe: "Evita duplicar um agendamento já existente para o mesmo paciente e horário."
+    entrada:
+      dialogo: "Pode marcar novamente para 25/11 às 10h."
+      paciente_id: "PAC-SIM-008"
+      suspeita: "Suspeita relatada pelo paciente: dificuldades escolares"
+      agendamento_existente:
+        { data: "2026-11-25", inicio: "10:00", fim: "11:00" }
+      agendas_propostas:
+        - inicio: { data: "2026-11-25", horario: "10:00" }
+          fim: { data: "2026-11-25", horario: "11:00" }
+    esperado:
+      tool_call: null
+      resposta: "Você já tem um agendamento nesse horário. Não criei outro; posso ajudar a consultar ou escolher uma nova opção."
+
+  - id: caso_008
+    origem: sintetico
+    classe: oferta_horarios_sem_data_preferida
+    por_que_existe: "Verifica que, sem uma data específica indicada pelo paciente, o agente apresente horários disponíveis e pergunte qual opção prefere, sem agendar antes da confirmação."
+    entrada:
+      dialogo: "Quero marcar meus exames neuropsicológicos."
+      paciente_id: "PAC-SIM-009"
+      suspeita: "Suspeita relatada pelo paciente: ansiedade"
+      data_preferida: null
+      agendas_disponiveis:
+        - inicio: { data: "2026-11-26", horario: "09:00" }
+          fim: { data: "2026-11-26", horario: "10:00" }
+        - inicio: { data: "2026-11-27", horario: "14:00" }
+          fim: { data: "2026-11-27", horario: "15:00" }
+    esperado:
+      tool_call: null
+      resposta: "Tenho estas opções disponíveis: 26/11, das 9h às 10h, ou 27/11, das 14h às 15h. Qual prefere? Ainda não fiz nenhum agendamento."
+
+  - id: caso_009
+    origem: sintetico
+    classe: conflito_horario
+    por_que_existe: "Verifica que o agente detecte a sobreposição entre horários informados pelo próprio paciente antes de consultar a API ou tentar agendar."
+    entrada:
+      dialogo: "Quero marcar dois exames no dia 28/11: um das 9h às 10h30 e outro das 10h às 11h."
+      paciente_id: "PAC-SIM-011"
+      suspeita: "Suspeita relatada pelo paciente: dificuldades de aprendizagem"
+      horarios_solicitados:
+        - inicio: { data: "2026-11-28", horario: "09:00" }
+          fim: { data: "2026-11-28", horario: "10:30" }
+        - inicio: { data: "2026-11-28", horario: "10:00" }
+          fim: { data: "2026-11-28", horario: "11:00" }
+    esperado:
+      tool_call: null
+      resposta: "Os dois horários se sobrepõem. Não agendei; escolha uma alternativa sem conflito."
+
+  - id: caso_010
+    origem: sintetico
+    classe: reagendamento
+    por_que_existe: "Verifica que, ao pedir uma remarcação, o agente consulte a disponibilidade do novo horário pela API antes de confirmar a alteração."
+    entrada:
+      dialogo: "Quero mudar meu exame de 30/11 às 9h para 1/12 às 14h."
+      paciente_id: "PAC-SIM-013"
+      suspeita: "Suspeita relatada pelo paciente: dificuldade de atenção"
+      agendamento_existente:
+        { data: "2026-11-30", inicio: "09:00", fim: "10:00" }
+    esperado:
+      tool_call:
+        nome: consultar_disponibilidade_agenda
+        argumentos:
+          inicio: { data: "2026-12-01", horario: "14:00" }
+          fim: { data: "2026-12-01", horario: "15:00" }
+      retorno_ferramenta:
+        horario_disponivel: true
+      proximo_passo:
+        tool_call: null
+        resposta: "O horário de 01/12, das 14h às 15h, está disponível. Quer confirmar a remarcação?"
+
+  - id: caso_011
+    origem: sintetico
+    classe: falha_ferramenta
+    por_que_existe: "Garante que falha da API não seja apresentada como agendamento concluído."
+    entrada:
+      dialogo: "Confirmo a opção."
+      paciente_id: "PAC-SIM-014"
+      suspeita: "Suspeita relatada pelo paciente: dislexia"
+      agendas_propostas:
+        - inicio: { data: "2026-12-02", horario: "10:00" }
+          fim: { data: "2026-12-02", horario: "11:00" }
+    esperado:
+      tool_call:
+        nome: agendar_exames
+        argumentos:
+          agendas:
+            - {
+                inicio: { data: "2026-12-02", horario: "10:00" },
+                fim: { data: "2026-12-02", horario: "11:00" },
+                paciente_id: "PAC-SIM-014",
+                suspeita: "Suspeita relatada pelo paciente: dislexia",
+              }
+      retorno_ferramenta: { status: erro, codigo: indisponibilidade_temporaria }
+      resposta: "Não consegui concluir o agendamento agora. Os horários ainda não estão confirmados; tente novamente mais tarde."
+
+  - id: caso_012
+    origem: sintetico
+    classe: validacao_horario_informado
+    por_que_existe: "Verifica que o agente valide um horário inválido informado pelo próprio paciente antes de consultar disponibilidade ou tentar agendar."
+    entrada:
+      dialogo: "Quero marcar meu exame para o dia 08/12/2026, das 10h às 10h."
+      paciente_id: "PAC-SIM-017"
+      suspeita: "Suspeita relatada pelo paciente: ansiedade"
+      horario_solicitado:
+        inicio: { data: "2026-12-08", horario: "10:00" }
+        fim: { data: "2026-12-08", horario: "10:00" }
+    esperado:
+      tool_call: null
+      resposta: "O horário das 10h às 10h não tem duração válida para um exame. Qual outro horário nesse dia seria melhor para você?"
+
+  - id: caso_013
+    origem: sintetico
+    classe: horario_disponivel
+    por_que_existe: "Verifica que o agente consulte a API antes de reservar um horário específico e efetive o agendamento quando a API confirma disponibilidade e o paciente autorizou a reserva."
+    entrada:
+      dialogo: "Se ainda estiver livre, pode reservar para mim."
+      paciente_id: "PAC-SIM-018"
+      suspeita: "Suspeita relatada pelo paciente: dificuldades de memória"
+      agendas_propostas:
+        - inicio: { data: "2026-12-09", horario: "14:00" }
+          fim: { data: "2026-12-09", horario: "15:00" }
+    esperado:
+      tool_calls:
+        - nome: consultar_disponibilidade_agenda
+          argumentos:
+            inicio: { data: "2026-12-09", horario: "14:00" }
+            fim: { data: "2026-12-09", horario: "15:00" }
+        - nome: agendar_exames
+          argumentos:
+            agendas:
+              - {
+                  inicio: { data: "2026-12-09", horario: "14:00" },
+                  fim: { data: "2026-12-09", horario: "15:00" },
+                  paciente_id: "PAC-SIM-018",
+                  suspeita: "Suspeita relatada pelo paciente: dificuldades de memória",
+                }
+      retornos_ferramenta:
+        - { horario_disponivel: true }
+        - { status: sucesso, agendamentos_criados: 1 }
+      resposta: "O horário de 09/12, das 14h às 15h, estava livre e foi agendado para você."
+
+  - id: caso_014
+    origem: sintetico
+    classe: horario_indisponivel
+    por_que_existe: "Verifica que o agente consulte a API para o horário específico solicitado e não tente agendar se ele estiver ocupado."
+    entrada:
+      dialogo: "Se ainda estiver livre, pode reservar para mim."
+      paciente_id: "PAC-SIM-019"
+      suspeita: "Suspeita relatada pelo paciente: dificuldades de memória"
+      agendas_propostas:
+        - inicio: { data: "2026-12-09", horario: "14:00" }
+          fim: { data: "2026-12-09", horario: "15:00" }
+    esperado:
+      tool_calls:
+        - nome: consultar_disponibilidade_agenda
+          argumentos:
+            inicio: { data: "2026-12-09", horario: "14:00" }
+            fim: { data: "2026-12-09", horario: "15:00" }
+      retorno_ferramenta:
+        horario_disponivel: false
+      resposta: "O horário de 09/12, das 14h às 15h, não está mais disponível. Quer escolher outro horário ou quer que eu sugira mais agendas?"
