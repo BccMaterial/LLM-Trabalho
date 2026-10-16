@@ -22,6 +22,9 @@ dev = [
     "black (>=26.5.1,<27.0.0)"
 ]
 
+[tool.poetry]
+package-mode = false
+
 [tool.taskipy.tasks]
 "dev:api" = "python -m src.api.app"
 "dev:agent" = "python -m src.agent.app"
