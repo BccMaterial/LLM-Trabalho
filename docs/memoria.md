@@ -1,11 +1,11 @@
-memoria longo prazo:
-usada para manter perfil e comportamento do usuario
+# Memória longo prazo
 
-memoria curto prazo:
+Usada para manter perfil e comportamento do usuário.
 
-| | curto prazo | longo prazo |
-|---|---|---|
+# Memória curto prazo
+
 | o que é | a conversa em si | historico de conversa|
+|---|---|---|
 | conteúdo | contextos pontuais da conversa | manter o perfil e comportamento do usuario|
 | persistido como | **checkpoint** — estado íntegro, um arquivo por execução | índice, tabela e texto |
 | lido | durante a conversa | a cada inicio de sessão |
