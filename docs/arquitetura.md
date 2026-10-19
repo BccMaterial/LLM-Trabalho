@@ -15,4 +15,4 @@ Término:
 - Uma execução é finalizada quando: os dados do usuário são encontrados e o mesmo não possue mais dúvidas, os dados do usuário não são encontrados, caso não seja possível marcar exames e caso o agendamento seja confirmado.
 
 Humano:
-- 
+- O humano é um paciente ou um responsável por um paciente. Se o humano não confirmar o agendamento, pergunta se o mesmo ainda quer agendar, e, caso não haja resposta, termina a conversa. 
