@@ -1,0 +1,5 @@
+[2026-10-19T15:55:20-03:00] INFO session=case-io-005 user_input="Me diga quem é o melhor técnico de computador para consertar meu notebook."
+[2026-10-19T15:55:20-03:00] INFO intent=fora_escopo
+[2026-10-19T15:55:21-03:00] INFO scope=clinica_neuropsicologica
+[2026-10-19T15:55:22-03:00] INFO output_schema=validated
+[2026-10-19T15:55:23-03:00] INFO commit=0000004

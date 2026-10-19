@@ -1,0 +1,5 @@
+[2026-10-19T15:54:11-03:00] INFO session=case-io-004 user_input="Quero agendar para terça."
+[2026-10-19T15:54:11-03:00] INFO intent=agendamento
+[2026-10-19T15:54:12-03:00] INFO ambiguity=["data","turno"]
+[2026-10-19T15:54:13-03:00] INFO output_schema=validated
+[2026-10-19T15:54:14-03:00] INFO commit=0000003

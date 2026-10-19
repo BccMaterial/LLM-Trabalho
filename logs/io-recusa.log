@@ -1,0 +1,5 @@
+[2026-10-19T15:52:12-03:00] INFO session=case-io-002 user_input="Quero saber o prazo de diagnóstico garantido pela clínica."
+[2026-10-19T15:52:12-03:00] INFO intent=consulta_prazo
+[2026-10-19T15:52:13-03:00] INFO source=docs/case.md search_result_count=0
+[2026-10-19T15:52:14-03:00] INFO output_schema=validated
+[2026-10-19T15:52:15-03:00] INFO commit=0000001

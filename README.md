@@ -69,3 +69,46 @@ Execução dos testes automatizados:
 ```bash
 poetry run test
 ```
+
+# Contrato de entrada e saída
+
+O sistema recebe texto livre em linguagem natural. O texto do usuário é a entrada principal. Qualquer dado que acompanhe a conversa sem ser digitado pelo paciente — por exemplo `thread_id`, `session_id`, `user_id` ou `case_id` — deve ser tratado como metadado do contexto e não como parte da pergunta em si.
+
+## Entrada
+
+- A entrada do sistema é texto livre, em linguagem natural.
+- O agente deve interpretar a intenção do usuário, identificar lacunas, ambiguidades e limites de escopo.
+- Caso a entrada esteja incompleta ou ambígua, o sistema deve perguntar ou recusar de forma explícita.
+- Arquivos, imagens, planilhas e outros artefatos podem ser usados por ferramenta, mas não substituem a pergunta em texto do usuário.
+
+## Saída
+
+A saída do sistema deve ser um objeto validado, com os campos obrigatórios abaixo:
+
+- `resultado`: a resposta, decisão, documento ou ação a ser executada;
+- `fonte`: a evidência que sustenta a resposta, como trecho do corpus, registro, ferramenta ou contexto consultado;
+- `suficiencia`: indica se a base era suficiente para responder (`"suficiente"` ou `"insuficiente"`).
+
+Schema de referência:
+
+```python
+from typing import Any, Literal
+from pydantic import BaseModel
+
+class SaidaSistema(BaseModel):
+    resultado: Any
+    fonte: Any
+    suficiencia: Literal["suficiente", "insuficiente"]
+```
+
+## Casos que exigem recusa ou clarificação
+
+O sistema deve tratar explicitamente os cenários abaixo:
+
+- entrada incompleta: pedir o que falta ou recusar dizendo o que falta;
+- entrada ambígua: desambiguar perguntando ou escolher e declarar a escolha;
+- entrada fora do escopo: recusar e dizer o que o sistema faz.
+
+Esses casos fazem parte do contrato e não são improvisos.
+
+A documentação completa e os exemplos ficam em `docs/io.md`.

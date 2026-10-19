@@ -1,0 +1,5 @@
+[2026-10-19T15:53:04-03:00] INFO session=case-io-003 user_input="Quero marcar um exame, mas não sei qual horário."
+[2026-10-19T15:53:05-03:00] INFO intent=agendamento
+[2026-10-19T15:53:05-03:00] INFO missing_fields=["tipo_exame","encaminhamento","preferencia_horario"]
+[2026-10-19T15:53:06-03:00] INFO output_schema=validated
+[2026-10-19T15:53:07-03:00] INFO commit=0000002

@@ -1,0 +1,5 @@
+[2026-10-19T15:51:45-03:00] INFO session=case-io-001 user_input="Quero agendar uma avaliação neuropsicológica. Tenho encaminhamento do meu médico. Quero um horário na próxima semana, de manhã."
+[2026-10-19T15:51:45-03:00] INFO intent=agendamento
+[2026-10-19T15:51:46-03:00] INFO source=agenda_proxima_semana_manha
+[2026-10-19T15:51:47-03:00] INFO output_schema=validated
+[2026-10-19T15:51:48-03:00] INFO commit=0000000
