@@ -1,41 +1,51 @@
-- **Identificação** — nome do sistema, versão, data e os responsáveis
-  nomeados: quem responde pelo agente quando algo dá errado.
-  - organizador de fila via chatbot, o responsavel de tecnologia da clinica que responde 
-- **Finalidade** — o que o agente decide ou executa, para quem, e os usos
-  - o agente decide onde sera colocado o usuario no sistema de marcar o horario, executa para o usuario que quer marcar horario
-  **fora de escopo**: o que ele não deve ser usado para fazer.
-  - ele nao deve ser usado para conversas aleatorias fora do tema alem de perguntar coisas desnecessarias   
-- **Autoridade** — o que o agente está autorizado a fazer e os limites dessa
-  autorização: escopo, ações proibidas, credencial, limite de gasto, limiar de
-  aprovação humana, quem pode suspendê-lo. É o campo detalhado no requisito 2.
-  - ele esta autorizado a fazer perguntas sobre as duvidas do usuario perguntar sobre dados como nome data de preferencia e disponibilidade alem da suspeita e somente guardar isso nao perguntar nada sobre isso
-- **Ferramentas e integrações** — cada ferramenta e servidor MCP que o agente
-  usa, com a permissão que cada um concede (leitura, escrita, envio a
-  terceiros).
-  - integração com o banco de dado tera leitura e escrita mas nao tera permissão para apagar somente sobre observação 
-- **Modelo e provedor** — o modelo, com a versão datada e não o *alias*
-  ("-latest"); o provedor; a região onde os dados são processados; e os termos
-  de retenção e de uso dos dados para treino.
-  - mistral small 
-- **Dados** — as fontes de dados, o dado pessoal tratado, a base legal, onde
-  cada dado fica e por quanto tempo. É o campo detalhado no requisito 3.
-  - dados utilizados serao preferencias de horario nome suspeita e qual tratamento, e sera armazenado em um local especifico de historico de conversas
-- **Avaliação** — a suíte que mede o agente, a versão dela, os resultados
-  agregados e por fatia, e a concordância do juiz com a avaliação humana.
-  - avaliação sera feita a partir de um outro agente agindo como juiz a partir das decisões e os resultados dele
-- **Limites conhecidos** — os modos de falha já observados e os casos em que o
-  agente não deve ser usado, mesmo dentro da finalidade.
-  - agente n deve interagir sobre qualquer assunto que nao seja a psicologia da avaliação 
-- **Riscos aceitos** — cada risco que o grupo decidiu aceitar, com a razão e o
-  que o limita; aceitar um risco é uma decisão registrada, e não um
-  esquecimento.
-  - risco de esquece dados sensiveis para n ter q armazenar tais
-- **Supervisão humana** — o que pausa para aprovação, quem aprova, em quanto
-  tempo, e como se interrompe o agente.
-  - a clinica que a prova e tbm pode interromper o agente
-- **Registro e retenção** — o que o sistema registra a cada decisão (entrada,
-  contexto recuperado, versões, ferramentas, saída), por quanto tempo guarda e
-  quem tem acesso ao registro.
-  - ele registra o contexto a decisão e o motivo dela alem de uma marcação de quem é para lembrança futura
-- **Histórico de mudanças** — cada versão do sistema, o que mudou e quem
-  aprovou a mudança.
+# Identificação
+
+Organizador de fila via chatbot, o responsável de tecnologia da clinica que responde.
+
+# Finalidade
+
+O agente decide onde será colocado o usuário no sistema de marcar o horário, executa para o usuário que quer marcar horário.
+
+# Fora de escopo
+
+Ele não deve ser usado para conversas aleatórias ou fora do tema, além de perguntar coisas desnecessárias.
+
+# Autoridade
+
+Ele está autorizado a fazer perguntas sobre as dúvidas do usuário perguntar sobre dados como nome datas de preferencia e disponibilidade, além da suspeita e somente guardar para fins de avaliação do agente, não deve ser usado para outros fins. Além disso, o agente pode marcar as agendas, com a confirmação do usuário.
+
+# Ferramentas e integrações
+
+Integração com o sistema de agendamento da clínica, via API. O agente não terá permissão para apagar dados, apenas ler e escrever informações relacionadas ao agendamento. Além disso, o agente terá acesso ao agente priorizador. Essas ferramentas serão disponibilizadas através de um servidor MCP.
+
+# Modelo e provedor
+
+Referenciado em [modelos.md](./modelos.md)
+
+# Dados
+
+Preferências de horário, nome, suspeita e tratamento. Esses dados serão armazenados em um local específico de histórico de conversas.
+
+# Avaliação
+
+A avaliação será feita a partir de um juiz, que valida os casos de teste. Além dos testes unitários quando possível.
+
+# Limites conhecidos
+
+O agente não deve interagir sobre qualquer assunto que não seja dúvidas, agendamentos e informações relacionadas à ele.
+
+# Riscos aceitos
+
+Teremos o risco do armazenamento de dados sensíveis, mas com a supervisão humana e o registro de decisões, podemos mitigar os riscos. Além disso, o agente não deve armazenar dados sensíveis para evitar riscos de privacidade.
+
+# Supervisão humana
+
+A clínica deve possuir observabilidade do agente, com logs de decisões e histórico de conversas. Além disso, a clínica deve ter a capacidade de interromper o agente caso ele esteja se comportando de forma inadequada.
+
+# Registro e retenção
+
+O agente registra o contexto, a decisão e o motivo dela, além de uma marcação de quem é para lembrança futura. O registro deve ser mantido por um período definido pela clínica, com acesso restrito a pessoal autorizado.
+
+# Histórico de mudanças
+
+Será feita a partir de controles de versão, com registro de alterações e revisões. As mudanças devem ser documentadas e justificadas, com a data e o autor da alteração. Para isso, será utilizado o git, e tags de versão para representar uma versão nova do agente.
