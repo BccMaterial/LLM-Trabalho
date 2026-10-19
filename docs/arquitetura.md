@@ -11,5 +11,8 @@ Estado:
 Orçamento:
 - Não é possível terminar a execução caso dados do usuário não sejam encontrados.
 
-Términmo: 
-- Uma execução é finalizada quando os dados do usuário são encontradas e todas a
+Término: 
+- Uma execução é finalizada quando: os dados do usuário são encontrados e o mesmo não possue mais dúvidas, os dados do usuário não são encontrados, caso não seja possível marcar exames e caso o agendamento seja confirmado.
+
+Humano:
+- 
