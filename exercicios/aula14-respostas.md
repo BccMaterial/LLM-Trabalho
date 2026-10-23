@@ -82,11 +82,11 @@
 
 | Campo | Resposta |
 |---|---|
-| Existe no case? | |
-| Onde | |
-| Cenário de ataque | |
-| Impacto | |
-| Mitigação | |
+| Existe no case? |sim |
+| Onde |conversa |
+| Cenário de ataque |informação incorreta |
+| Impacto |leve |
+| Mitigação |validar as informações passadas |
 
 #### ASI10 — Agentes desgovernados
 
@@ -97,3 +97,20 @@
 | Cenário de ataque |consultar politica errado |
 | Impacto |baixo |
 | Mitigação |garantia das consultas corretas |
+
+
+### risco aceito:
+#### ASI04 — Cadeia de suprimentos agêntica
+
+| Campo | Resposta |
+|---|---|
+| Existe no case? |sim |
+| Onde |dependencias |
+| Cenário de ataque |explorar vunerabilidade |
+| Impacto |baixo |
+| Mitigação |garantir a confiança |
+
+
+aceito dada a baixa chance de acontecer,limita o fato de ter um orgão, se alguma falha for encontrada tal evento mudaria o jeito de lidar com a falha
+
+
