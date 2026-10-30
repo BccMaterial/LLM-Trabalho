@@ -1,6 +1,6 @@
 # Plano de observabilidade — agente de trocas
 
-Grupo: Caio Troiano Thiago Lins · Data: 2026-10-30
+Grupo: Caio Troiano Thiago Lins Vinicius Vianna · Data: 2026-10-30
 
 ---
 
