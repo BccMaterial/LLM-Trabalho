@@ -36,12 +36,12 @@ Por exemplo, uma solicitação de agendamento poderia gerar:
 O modelo deve suportar o volume de informações necessário para as conversas e para os dados apresentados ao agente.
 
 Para este projeto, a necessidade de contexto deverá ser determinada a partir de:
-- histórico da conversa;
-- informações administrativas;
-- dados necessários para a consulta;
-- resultados da simulação;
-- instruções do agente;
-- schemas das ferramentas.
+- Histórico da conversa;
+- Informações administrativas;
+- Dados necessários para a consulta;
+- Lista atual de agendamentos e insumos para priorização derivados da API;
+- Instruções do agente;
+- Schemas das ferramentas.
 
 ### Custo
 
@@ -179,12 +179,11 @@ Será analisado:
 O modelo deverá identificar que é necessário utilizar a ferramenta de agenda.
 
 Será analisado:
-
-- se identificou corretamente a necessidade de tool calling;
-- nome da ferramenta;
-- argumentos gerados;
-- formato da chamada;
-- necessidade de solicitar informações que ainda não foram fornecidas.
+- Se identificou corretamente a necessidade de tool calling;
+- Nome da ferramenta;
+- Argumentos gerados;
+- Formato da chamada;
+- Necessidade de solicitar informações que ainda não foram fornecidas.
 
 ### Caso 3 — Remarcação
 
@@ -195,25 +194,25 @@ Será analisado:
 Será utilizado um schema de ferramenta para verificar se o modelo consegue estruturar corretamente a solicitação.
 
 Serão observados:
-- identificação da ação;
-- identificação das informações faltantes;
-- chamada da ferramenta;
-- validade do JSON;
-- consistência dos argumentos.
+- Identificação da ação;
+- Identificação das informações faltantes;
+- Chamada da ferramenta;
+- Validade do JSON;
+- Consistência dos argumentos.
 
-### Caso 4 — Simulação de aumento da demanda
+### Caso 4 — Consulta de agendamentos
 
 **Entrada:**
 
-> "Simule o que aconteceria com o tempo médio de espera se a quantidade de novos pacientes aumentasse 30%."
+> "Quais exames já estão agendados para mim?"
 
-O modelo deverá interpretar a solicitação e utilizar a ferramenta de simulação.
+O modelo deverá consultar a API usando a identidade autenticada do paciente e responder com base somente nos registros retornados.
 
 Será observado:
-- compreensão dos parâmetros;
-- chamada correta da ferramenta;
-- interpretação dos resultados;
-- explicação do resultado para o usuário.
+- Uso dos filtros autorizados;
+- Correspondência entre a resposta e a lista retornada;
+- Tratamento de lista vazia e falha da API;
+- Ausência de estimativas ou dados inventados.
 
 ### Caso 5 — Análise gerencial
 
@@ -224,11 +223,10 @@ Será observado:
 O modelo deverá produzir uma resposta estruturada e, quando apropriado, utilizar as ferramentas disponíveis.
 
 Serão observados:
-
-* identificação dos indicadores relevantes;
-* utilização correta das ferramentas;
-* coerência da análise;
-* formato da resposta.
+- Identificação dos indicadores relevantes;
+- Utilização correta das ferramentas;
+- Coerência da análise;
+- Formato da resposta.
 
 ## Tabela de resultados do benchmark
 
@@ -314,12 +312,12 @@ O limiar mínimo de qualidade deverá ser definido **antes de analisar os result
 A escolha definitiva será feita após a execução do benchmark.
 
 O critério será selecionar o modelo que:
-1. atenda aos requisitos funcionais dos agentes;
-2. apresente comportamento adequado nas tarefas do benchmark;
-3. suporte tool calling e saída estruturada de maneira confiável;
-4. apresente custo compatível com o volume estimado;
-5. apresente latência aceitável;
-6. seja compatível com a política de dados definida para o projeto.
+1. Atenda aos requisitos funcionais dos agentes;
+2. Apresente comportamento adequado nas tarefas do benchmark;
+3. Suporte tool calling e saída estruturada de maneira confiável;
+4. Apresente custo compatível com o volume estimado;
+5. Apresente latência aceitável;
+6. Seja compatível com a política de dados definida para o projeto.
 
 Neste momento, dentre os 3 modelos, ainda estamos decidindo qual será o modelo escolhido para a arquitetura de agentes.
 
@@ -372,16 +370,16 @@ Essa possibilidade é particularmente relevante para um sistema de agentes, pois
 A escolha do modelo não será permanente.
 
 O modelo poderá ser reconsiderado quando ocorrer uma das seguintes situações:
-- lançamento de uma nova versão relevante;
-- alteração significativa de preço;
-- aumento do custo por execução;
-- aumento da latência;
-- falhas recorrentes no tool calling;
-- falhas na saída estruturada;
-- alteração da política de dados;
-- descontinuação ou depreciação da versão utilizada;
-- aumento da complexidade dos agentes;
-- alteração do volume de usuários;
-- surgimento de um modelo que atenda aos requisitos com menor custo ou menor latência.
+- Lançamento de uma nova versão relevante;
+- Alteração significativa de preço;
+- Aumento do custo por execução;
+- Aumento da latência;
+- Falhas recorrentes no tool calling;
+- Falhas na saída estruturada;
+- Alteração da política de dados;
+- Descontinuação ou depreciação da versão utilizada;
+- Aumento da complexidade dos agentes;
+- Alteração do volume de usuários;
+- Surgimento de um modelo que atenda aos requisitos com menor custo ou menor latência.
 
 Quando houver uma mudança relevante, os mesmos cinco casos do benchmark deverão ser executados novamente para permitir uma comparação reprodutível.

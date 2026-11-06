@@ -2,8 +2,7 @@
 ![Diagrama de fluxo do agente](./assets/fluxo.png)
 
 # Ferramentas
-- **Simulação dos exames:** A partir do estado atual da clínica e na suspeita do paciente, é estimada a duração até a devolução do diagnóstico.
-- **API da Clínica:** Torna possível a avaliação do histórico do cliente a partir de seus dados cadastrados.
+- **API da Clínica:** Consulta os dados autorizados do paciente e a lista atual de agendamentos, além de registrar os agendamentos após a confirmação do paciente. A lista consultada é a fonte dos dados usados para gerar insumos para priorização.
 
 # Laço
 - **Laço dúvida:** Responde o prompt de um usuário, e, caso o mesmo tenha mais dúvidas, permite que o usuário realize outro prompt.
