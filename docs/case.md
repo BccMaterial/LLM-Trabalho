@@ -19,7 +19,7 @@ Em uma clínica especializada em diagnósticos a partir de Avaliações Neuropsi
 
 Além disso, há reclamações e desistências frequentes. A ausência da priorização gera diagnósticos demorados em casos graves, no qual é recomendado o início do tratamento o mais rápido possível.
 
-O agente irá ser executado a partir da interação do paciente, que pode ser feita através de mensagens. A partir do agente que interage com o paciente, será executado um outro agente para decidir qual a priorização daquele paciente, com base em simulações, histórico do paciente e preferência de horário. Após a priorização, o agente que conversa com o paciente para validar as agendas.
+O agente será executado a partir da interação do paciente, que pode ser feita através de mensagens. O agente conversacional aciona o agente de priorização, encaminhando os dados autorizados do paciente e os insumos obtidos da lista atual de agendamentos consultada pela API. O agente de priorização retorna um coeficiente; com esse resultado, a preferência do paciente e a disponibilidade consultada na API, o agente conversacional gera sugestões de agenda.
 
 Como regras de domínio temos:
 - **Quantidade de exames:** A clínica possui uma quantidade máxima de exames, que são realizados por profissionais especializados. A quantidade de exames disponíveis é limitada, e a clínica não possui capacidade de aumentar a quantidade de exames disponíveis. Atualmente um paciente pode realizar entre 4 a 6 exames, dependendo do caso.
@@ -44,7 +44,7 @@ Espera-se que haja uma redução de aproximadamente 10% na fila de espera, de fo
 
 Será desenvolvido dois agentes:
 - **Agente Conversacional:** Responsável por conversar com o paciente, coletar informações e fornecer sugestões de agendamento.
-- **Agente de Priorização:** Responsável por analisar os dados do paciente, simular os exames e definir a prioridade do paciente.
+- **Agente de Priorização:** Responsável por analisar os dados autorizados do paciente conforme os critérios definidos para o projeto e retornar um coeficiente de priorização. Pode receber insumos derivados da lista de agendamentos consultada na API.
 
 ## Agente Conversacional
 
@@ -70,8 +70,8 @@ Estima-se que 60% das interações sejam para marcar agenda, 10% reclamações, 
 O agente conversa com um subagente, especializado em definir a prioridade do paciente.
 
 Ferramentas:
-- **Agente de priorização:** Com base no estado atual da clínica e na suspeita do paciente, estima a duração até o diagnóstico do paciente.
-- **API da Clínica:** Marca os agendamentos dos pacientes, e consulta os seus dados.
+- **Agente de priorização:** Analisa os dados do paciente e retorna um coeficiente estruturado.
+- **API da Clínica:** Consulta os dados do paciente e a lista de agendamentos, valida disponibilidade e registra agendamentos após confirmação do paciente.
 
 O que precisa ser armazenado:
 - Quem é o paciente
@@ -89,7 +89,7 @@ Orçamento:
 Fluxo:
 - **ENTRADA:** Mensagem livre do paciente
 - **TRIAGEM:** Classifica em 4 rotas (Agendamento - Segue pra análise, consulta de dados, reclamação, orientações)
-- **ANÁLISE:** Caso seja um agendamento, com o retorno do agente de priorização, analisa as possíveis agendas
+- **ANÁLISE:** Encaminha os dados do paciente e os insumos da API ao agente de priorização; com o coeficiente retornado, a preferência do paciente e a disponibilidade consultada, gera sugestões de agenda
 - **VALIDAÇÃO:** Verifica a disponibilidade, retorna as agendas para o paciente, e pergunta se ele deseja marcar
 - **REGISTRO:** Marca as agendas para o paciente
 - **RETORNO:** Avisa ao paciente se as agendas foram marcadas ou não.
@@ -101,11 +101,11 @@ Entrada e saída:
 - Sai: Rota que o agente vai seguir
 
 **Priorização:**
-- Entra: Dados do cliente, suspeita e histórico 
-- Sai: Prioridade do paciente
+- Entra: Dados do cliente, suspeita, histórico e insumos derivados da lista de agendamentos consultada pela API
+- Sai: Coeficiente de priorização estruturado
 
 **Análise:**
-- Entra: Prioridade do paciente
+- Entra: Coeficiente retornado pelo agente de priorização, preferência do paciente e disponibilidade consultada pela API
 - Sai: Sugestões de agenda
 
 **Validação:**
@@ -144,15 +144,14 @@ Todas as interações com esse agente será realizada a partir do agente convers
 
 ### System
 
-**System prompt:** "Você é um agente especializado em agendamentos com base em prioridade. Sua responsabilidade é receber dados de um agente conversacional, e com base neles e em simulações, retornar um coeficiente de priorização daquele paciente, juntamente com as sugestões de agenda".
+**System prompt:** "Você é um agente especializado em priorização de pacientes para agendamentos. Sua responsabilidade é receber dados autorizados de um agente conversacional e retornar um coeficiente de priorização estruturado, considerando os critérios definidos para o projeto e os insumos gerados a partir da lista de agendamentos consultada pela API."
 
 Ferramentas:
-- **Simulador de exames:** Com base no estado atual da clínica e na suspeita do paciente, estima a duração até o diagnóstico do paciente.
-- **API da Clínica:** Pode ser utilizado para buscar os agendamentos
+- **API da Clínica:** Consulta os dados do paciente e a lista atual de agendamentos, que são usados para gerar insumos para priorização.
 
 O que precisa ser armazenado:
 - Quem é o paciente
-- Resultado das simulações
+- Coeficiente de priorização
 - Se já possui agendamento ou não
 
 Orçamento:
@@ -164,26 +163,24 @@ Orçamento:
 
 Fluxo:
 - **ENTRADA:** Dados do paciente;
-- **ANÁLISE:** Com base nos dados do paciente e nos agendamentos já existentes, realiza simulações para estimar o tempo até o diagnóstico do paciente e define o coeficiente de priorização;
-- **VALIDAÇÃO:** Verifica se a agenda não conflita com outros agendamentos;
-- **RETORNO:** Retorna para o agente conversacional o coeficiente de priorização, junto com as sugestões de agenda.
+- **CONSULTA:** Obtém pela API a lista atual de agendamentos e prepara insumos para priorização;
+- **ANÁLISE:** Recebe os dados do paciente e os insumos derivados da API, aplica os critérios definidos para o projeto e retorna o coeficiente de priorização;
+- **RETORNO:** Envia o coeficiente ao agente conversacional, que o usa com a preferência do paciente e a disponibilidade da API para gerar sugestões de agenda.
 
 Entrada e saída:
 
 **Análise:**
-- Entra: Dados do paciente e da clínica
+- Entra: Dados do paciente e insumos derivados dos agendamentos consultados pela API
 - Sai: Coeficiente de priorização
 
 **Validação:**
-- Entra: Coeficiente de validação, resultado das simulações e dados do paciente
-- Sai: Sugestões de agenda
+- Entra: Coeficiente calculado
+- Sai: Coeficiente validado conforme o schema de saída
 
 **Retorno:**
-- Entra: Status do agendamento (Retorno da API)
-- Sai: Mensagem com as sugestões para o paciente
+- Entra: Coeficiente de priorização
+- Sai: Coeficiente estruturado para o agente conversacional
 
 #### Justificativa
 
 Escolhemos um fluxo sequencial, pois é um agente que possui um fluxo bem definido, e não depende do contexto da conversa com o paciente. Além disso, escolhemos a criação de um agente especializado em priorização porque a priorização depende de diversos fatores, que não precisam do contexto inteiro da conversa com o agente principal, mas depende dos dados inseridos.
-
-
