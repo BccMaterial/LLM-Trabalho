@@ -60,6 +60,20 @@ Execução da API:
 poetry run task dev:api
 ```
 
+Execução da API e do PostgreSQL com Docker:
+```bash
+docker compose --env-file .env -f infra/compose.yaml up --build
+```
+
+Para encerrar os serviços, pressione `Ctrl+C`.
+
+As migrations podem ser consultadas e aplicadas pela API, usando o token
+`MIGRATIONS_TOKEN` definido no `.env` (exporte-o também no terminal):
+```bash
+curl -H "Authorization: Bearer $MIGRATIONS_TOKEN" http://localhost:5000/api/migrations
+curl -X POST -H "Authorization: Bearer $MIGRATIONS_TOKEN" http://localhost:5000/api/migrations
+```
+
 Execução do agente:
 ```bash
 poetry run task dev:agent
