@@ -1,0 +1,23 @@
+services:
+  database:
+    container_name: "postgres-dev"
+    image: "postgres:16.0-alpine3.18"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-llm_trabalho}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-llm_trabalho}
+      FLASK_HOST: 0.0.0.0
+    depends_on:
+      - database
+    ports:
+      - "5000:5000"
