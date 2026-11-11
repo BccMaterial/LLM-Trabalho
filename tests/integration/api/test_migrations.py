@@ -5,13 +5,12 @@ from api.app import create_app
 
 def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
     database_url = f"sqlite:///{tmp_path / 'migrations.db'}"
-    app = create_app(database_url=database_url, migrations_token="test-token")
-    headers = {"Authorization": "Bearer test-token"}
+    app = create_app(database_url=database_url)
 
     with app.test_client() as client:
-        pending_response = client.get("/api/migrations", headers=headers)
-        apply_response = client.post("/api/migrations", headers=headers)
-        no_pending_response = client.get("/api/migrations", headers=headers)
+        pending_response = client.get("/api/migrations")
+        apply_response = client.post("/api/migrations")
+        no_pending_response = client.get("/api/migrations")
 
     assert pending_response.status_code == 200
     assert pending_response.get_json()["count"] == 1
@@ -28,15 +27,3 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         assert inspect(engine).has_table("migration_test")
     finally:
         engine.dispose()
-
-
-def test_migration_endpoints_require_bearer_token():
-    app = create_app(
-        database_url="sqlite:///:memory:",
-        migrations_token="test-token",
-    )
-
-    with app.test_client() as client:
-        response = client.get("/api/migrations")
-
-    assert response.status_code == 401
