@@ -24,6 +24,6 @@ def test_when_name_is_not_passed():
 
     assert response.status_code == 200
     assert response.get_json() == {
-        "message": "Olá, World!",
+        "message": "Olá, mundo!",
         "success": True,
     }
