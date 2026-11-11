@@ -1,3 +1,7 @@
+from pathlib import Path
+
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import create_engine, inspect
 
 from api.app import create_app
@@ -13,17 +17,64 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         no_pending_response = client.get("/api/migrations")
 
     assert pending_response.status_code == 200
-    assert pending_response.get_json()["count"] == 1
-    assert pending_response.get_json()["pending"][0]["revision"] == "20261106_01"
+    pending = pending_response.get_json()["pending"]
+    assert pending_response.get_json()["count"] == 2
+    assert {migration["revision"] for migration in pending} == {
+        "20261106_01",
+        "20261111_01",
+    }
     assert apply_response.status_code == 200
-    assert apply_response.get_json() == {
-        "applied": ["20261106_01"],
-        "count": 1,
+    assert apply_response.get_json()["count"] == 2
+    assert set(apply_response.get_json()["applied"]) == {
+        "20261106_01",
+        "20261111_01",
     }
     assert no_pending_response.get_json() == {"pending": [], "count": 0}
 
     engine = create_engine(database_url)
     try:
+        inspector = inspect(engine)
+        assert inspector.has_table("migration_test")
+        assert inspector.has_table("professionals")
+        assert {
+            column["name"] for column in inspector.get_columns("professionals")
+        } == {
+            "id",
+            "nome",
+            "status",
+            "created_at",
+            "updated_at",
+        }
+    finally:
+        engine.dispose()
+
+
+def test_professionals_migration_can_be_reversed_and_reapplied(tmp_path):
+    database_url = f"sqlite:///{tmp_path / 'reversible_migration.db'}"
+    app = create_app(database_url=database_url)
+
+    with app.test_client() as client:
+        response = client.post("/api/migrations")
+    assert response.status_code == 200
+
+    config = Config(
+        str(Path(__file__).resolve().parents[3] / "infra" / "alembic" / "alembic.ini")
+    )
+    config.set_main_option("sqlalchemy.url", database_url)
+    command.downgrade(config, "20261106_01")
+
+    engine = create_engine(database_url)
+    try:
+        assert not inspect(engine).has_table("professionals")
         assert inspect(engine).has_table("migration_test")
     finally:
         engine.dispose()
+
+    command.upgrade(config, "heads")
+
+    engine = create_engine(database_url)
+    try:
+        assert inspect(engine).has_table("professionals")
+    finally:
+        engine.dispose()
+        app.extensions["database_connector"].dispose()

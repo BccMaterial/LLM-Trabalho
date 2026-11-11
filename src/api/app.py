@@ -5,6 +5,7 @@ from flask import Flask
 
 from .controllers.example_controller import example_controller
 from .controllers.migration_controller import migration_controller
+from .controllers.professional_controller import professional_controller
 from .database import DatabaseConnector
 from .services import MigrationService
 
@@ -21,6 +22,7 @@ def create_app(database_url: str | None = None):
     app.extensions["migration_service"] = MigrationService(database_url)
     app.register_blueprint(example_controller)
     app.register_blueprint(migration_controller)
+    app.register_blueprint(professional_controller)
     return app
 
 
