@@ -27,6 +27,8 @@ def upgrade() -> None:
             server_default=sa.text("gen_random_uuid()"),
         ),
         sa.Column("nome", sa.String(length=255), nullable=False),
+        sa.Column("email", sa.String(length=254), nullable=False),
+        sa.Column("cpf", sa.String(length=11), nullable=False),
         sa.Column(
             "status",
             sa.Boolean(),
@@ -45,6 +47,8 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.func.now(),
         ),
+        sa.UniqueConstraint("email", name="uq_professionals_email"),
+        sa.UniqueConstraint("cpf", name="uq_professionals_cpf"),
     )
 
 

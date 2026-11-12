@@ -43,10 +43,18 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         assert set(professional_columns) == {
             "id",
             "nome",
+            "email",
+            "cpf",
             "status",
             "created_at",
             "updated_at",
         }
+        unique_columns = {
+            tuple(constraint["column_names"])
+            for constraint in inspector.get_unique_constraints("professionals")
+        }
+        assert ("email",) in unique_columns
+        assert ("cpf",) in unique_columns
         assert "gen_random_uuid()" in professional_columns["id"]["default"]
         assert professional_columns["status"]["default"] == "1"
         assert professional_columns["created_at"]["default"] == "CURRENT_TIMESTAMP"
@@ -55,8 +63,8 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         with engine.begin() as connection:
             row = connection.execute(
                 text(
-                    "INSERT INTO professionals (id, nome) "
-                    "VALUES (:id, 'Database default') "
+                    "INSERT INTO professionals (id, nome, email, cpf) "
+                    "VALUES (:id, 'Database default', 'db@example.test', '12345678901') "
                     "RETURNING id, status, created_at, updated_at"
                 ),
                 {"id": identifier.hex},

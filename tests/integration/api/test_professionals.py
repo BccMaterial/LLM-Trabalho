@@ -24,19 +24,34 @@ def client(application):
     return application.test_client()
 
 
-def create_professional(client, nome="Dra. Ana"):
-    response = client.post("/api/professionals", json={"nome": nome})
+def create_professional(client, nome="Dra. Ana", email=None, cpf=None):
+    unique_id = uuid4()
+    payload = {
+        "nome": nome,
+        "email": email or f"{unique_id.hex}@example.test",
+        "cpf": cpf or f"{unique_id.int % 10**11:011d}",
+    }
+    response = client.post("/api/professionals", json=payload)
     assert response.status_code == 201
     return response.get_json()
 
 
 def test_create_professional_defaults_to_active_with_uuid_and_timestamps(client):
-    response = client.post("/api/professionals", json={"nome": "Dra. Ana"})
+    response = client.post(
+        "/api/professionals",
+        json={
+            "nome": "Dra. Ana",
+            "email": "  ANA@EXAMPLE.TEST ",
+            "cpf": "12345678901",
+        },
+    )
 
     assert response.status_code == 201
     professional = response.get_json()
     assert UUID(professional["id"]).version == 4
     assert professional["nome"] == "Dra. Ana"
+    assert professional["email"] == "ana@example.test"
+    assert professional["cpf"] == "12345678901"
     assert professional["status"] is True
     assert professional["created_at"].endswith("+00:00")
     assert professional["updated_at"].endswith("+00:00")
@@ -46,10 +61,27 @@ def test_create_professional_defaults_to_active_with_uuid_and_timestamps(client)
     "payload",
     [
         {},
-        {"nome": "  "},
-        {"nome": 42},
-        {"nome": "Dra. Ana", "status": False},
-        {"nome": "Dra. Ana", "unknown": "value"},
+        {"nome": "Dra. Ana"},
+        {"nome": "  ", "email": "ana@example.test", "cpf": "12345678901"},
+        {"nome": "Dra. Ana", "email": "invalid", "cpf": "12345678901"},
+        {
+            "nome": "Dra. Ana",
+            "email": "ana@example.test",
+            "cpf": "123.456.789-01",
+        },
+        {"nome": "Dra. Ana", "email": "ana@example.test", "cpf": 12345678901},
+        {
+            "nome": "Dra. Ana",
+            "email": "ana@example.test",
+            "cpf": "12345678901",
+            "status": False,
+        },
+        {
+            "nome": "Dra. Ana",
+            "email": "ana@example.test",
+            "cpf": "12345678901",
+            "unknown": "value",
+        },
     ],
 )
 def test_create_professional_rejects_invalid_data(client, payload):
@@ -59,8 +91,32 @@ def test_create_professional_rejects_invalid_data(client, payload):
     assert response.get_json() == {
         "error": "Invalid professional data",
         "status_code": 400,
-        "action": "Provide a non-empty name of at most 255 characters.",
+        "action": "Provide a name, a valid email address, and an unmasked 11-digit CPF.",
     }
+
+
+def test_create_professional_rejects_duplicate_email_or_cpf(client):
+    existing = create_professional(client)
+    duplicate_email = client.post(
+        "/api/professionals",
+        json={
+            "nome": "Dr. Bruno",
+            "email": existing["email"].upper(),
+            "cpf": "98765432100",
+        },
+    )
+    duplicate_cpf = client.post(
+        "/api/professionals",
+        json={
+            "nome": "Dra. Bia",
+            "email": "bia@example.test",
+            "cpf": existing["cpf"],
+        },
+    )
+
+    assert duplicate_email.status_code == 409
+    assert duplicate_cpf.status_code == 409
+    assert duplicate_email.get_json()["status_code"] == 409
 
 
 def test_get_professional_and_missing_professional(client):
@@ -153,11 +209,18 @@ def test_patch_updates_name_and_deactivation_cancels_appointments(client, applic
 
     response = client.patch(
         f"/api/professionals/{professional['id']}",
-        json={"nome": "Dra. Beatriz", "status": False},
+        json={
+            "nome": "Dra. Beatriz",
+            "email": "BEATRIZ@EXAMPLE.TEST",
+            "cpf": "98765432100",
+            "status": False,
+        },
     )
 
     assert response.status_code == 200
     assert response.get_json()["nome"] == "Dra. Beatriz"
+    assert response.get_json()["email"] == "beatriz@example.test"
+    assert response.get_json()["cpf"] == "98765432100"
     assert response.get_json()["status"] is False
     assert _appointment_statuses(application, appointments) == [
         "cancelado",
@@ -215,6 +278,21 @@ def test_patch_rejects_invalid_data_and_missing_professional(client):
 
     assert invalid_response.status_code == 400
     assert missing_response.status_code == 404
+
+
+@pytest.mark.parametrize("field", ["email", "cpf"])
+def test_patch_rejects_duplicate_professional_identity(client, field):
+    first = create_professional(client)
+    second = create_professional(client)
+
+    response = client.patch(
+        f"/api/professionals/{second['id']}",
+        json={field: first[field]},
+    )
+
+    assert response.status_code == 409
+    persisted = client.get(f"/api/professionals/{second['id']}")
+    assert persisted.get_json()[field] == second[field]
 
 
 def _create_appointments_table(application, professional_id: UUID):

@@ -10,13 +10,20 @@ from .pagination_service import PageResult, PaginationParameters, PaginationServ
 
 class ProfessionalChanges(TypedDict, total=False):
     nome: str
+    email: str
+    cpf: str
     status: bool
 
 
 class ProfessionalService:
     @staticmethod
-    def create(session: Session, nome: str) -> Professional:
-        professional = Professional(nome=nome)
+    def create(
+        session: Session,
+        nome: str,
+        email: str,
+        cpf: str,
+    ) -> Professional:
+        professional = Professional(nome=nome, email=email, cpf=cpf)
         session.add(professional)
         session.flush()
         return professional
@@ -50,6 +57,10 @@ class ProfessionalService:
     ) -> Professional:
         if "nome" in fields:
             professional.nome = fields["nome"]
+        if "email" in fields:
+            professional.email = fields["email"]
+        if "cpf" in fields:
+            professional.cpf = fields["cpf"]
 
         if "status" in fields:
             professional.status = fields["status"]

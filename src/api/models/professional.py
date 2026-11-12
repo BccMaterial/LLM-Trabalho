@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, String, Uuid
+from sqlalchemy import Boolean, DateTime, String, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from . import Base
@@ -13,6 +13,10 @@ def utc_now() -> datetime:
 
 class Professional(Base):
     __tablename__ = "professionals"
+    __table_args__ = (
+        UniqueConstraint("email", name="uq_professionals_email"),
+        UniqueConstraint("cpf", name="uq_professionals_cpf"),
+    )
 
     id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -20,6 +24,8 @@ class Professional(Base):
         default=uuid4,
     )
     nome: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(254), nullable=False)
+    cpf: Mapped[str] = mapped_column(String(11), nullable=False)
     status: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -37,6 +43,8 @@ class Professional(Base):
         return {
             "id": str(self.id),
             "nome": self.nome,
+            "email": self.email,
+            "cpf": self.cpf,
             "status": self.status,
             "created_at": _timestamp(self.created_at),
             "updated_at": _timestamp(self.updated_at),
