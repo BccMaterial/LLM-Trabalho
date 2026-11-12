@@ -1,6 +1,6 @@
 # LLM-Trabalho
 
-Agente de agendamentos para avaliações neuropsicológicas, com priorização de pacientes baseado em simulações de exames e histórico do paciente.
+Protótipo acadêmico para apoiar atendimento, fila e agenda de uma clínica de avaliações neuropsicológicas, com três papéis de agente: Atendente, Gestor e Secretária. O sistema não simula exames nem estima prazo de diagnóstico.
 
 ## Grupo
 
@@ -14,7 +14,7 @@ Para executar o projeto, siga os passos abaixo.
 
 ## Pré-requisitos
 
-- Python 3.14 ou superior
+- Python 3.12 ou superior
 - Poetry
 
 ## Inicialização do projeto
@@ -80,8 +80,12 @@ poetry run task dev:agent
 
 Execução dos testes automatizados:
 ```bash
-poetry run test
+poetry run task test
 ```
+
+## Estado do projeto
+
+A arquitetura e os contratos estão descritos em [`docs/case.md`](docs/case.md), [`docs/arquitetura.md`](docs/arquitetura.md) e [`docs/io.md`](docs/io.md). O código atual ainda é um protótipo: a API Flask tem recursos de profissionais e o agente envia uma mensagem fixa ao modelo. Ainda não há integração de paciente/agenda, laço conversacional, três agentes, ferramentas do domínio, verificador ou benchmark executado. A documentação distingue o desenho-alvo desses recursos ainda pendentes.
 
 # Contrato de entrada e saída
 

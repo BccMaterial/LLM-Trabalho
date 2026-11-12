@@ -1,385 +1,84 @@
-# Escolha de modelos
+# Seleção e avaliação de modelos
 
-Será utilizado um desses três modelos:
-- Mistral Small 4
-- Llama 4 Scout
-- Qwen3 30B A3B
+## Estado da decisão
 
-# Critérios de escolha dos modelos
+Este documento define como comparar candidatos para o desenho Atendente/Gestor/Secretária. A comparação ainda não foi executada; não há modelo escolhido, medições de custo/latência ou resultado de benchmark no repositório. O código exige `LLM_MODEL` no ambiente para não usar silenciosamente um modelo fora da lista de candidatos.
 
-Abaixo estão os critérios que serão utilizados para a escolha do modelo.
+Não declarar um vencedor com base apenas em rankings, especificações publicadas ou preço nominal. As informações de cada endpoint e os preços devem ser conferidos na data da execução, pois variam por provedor e podem mudar.
 
-## Tool calling
+## Candidatos
 
-O tool calling é um requisito importante para os agentes deste projeto, pois permite a utilização de ferramentas externas para executar tarefas específicas, com o modelo sendo capaz de identificar quando precisa utilizar uma ferramenta.
+| Candidato | Por que comparar | O que precisa ser validado no endpoint selecionado |
+|---|---|---|
+| Mistral Small 4 | Família já considerada no protótipo do grupo | Tool calling, schema estruturado, português, latência, preço, retenção e política de dados |
+| Llama 4 Scout | Alternativa de família e provedores | Tool calling, schema estruturado, português, latência, preço, retenção e política de dados |
+| Qwen3 30B A3B | Terceira família para comparação | Tool calling, schema estruturado, português, latência, preço, retenção e política de dados |
 
-Portanto, modelos sem suporte adequado a **function calling/tool calling** não atendem ao requisito principal da arquitetura de agentes.
+O nome do modelo não basta para tornar endpoints comparáveis: registrar provedor, versão exata, região e configuração. Não enviar dados reais até a clínica aprovar o tratamento de dados e o provedor.
 
-## Saída estruturada
+## Critérios
 
-Além de gerar texto, o modelo precisa produzir informações que possam ser processadas pelo sistema.
+1. **Uso correto de ferramentas:** escolher consulta ou escrita apropriada e gerar argumentos válidos.
+2. **Saída estruturada:** produzir o schema de `docs/io.md` e respeitar status permitidos.
+3. **Grounding:** responder só com a API/política retornada e indicar fonte/suficiência.
+4. **Segurança operacional:** não gravar sem confirmação; não inventar disponibilidade, prioridades ou política.
+5. **Tratamento de ambiguidade e erro:** solicitar dado faltante, detectar contradição, parar quando a fonte/API for insuficiente e encaminhar à pessoa autorizada.
+6. **Português e latência:** avaliar clareza para paciente e latência total da trajetória, incluindo ferramentas.
+7. **Privacidade e custo:** verificar retenção/uso dos dados e calcular custo a partir dos tokens e das tarifas do endpoint efetivamente usado.
 
-Por exemplo, uma solicitação de agendamento poderia gerar:
+## Casos do benchmark
 
-```json
-{
-  "acao": "agendar_consulta",
-  "paciente_id": "123",
-  "tipo_consulta": "avaliacao",
-  "data": "2026-10-10",
-  "horario": "14:00"
-}
-```
+Cada caso deve usar o mesmo prompt versionado, schema, contexto, retorno de ferramentas, orçamento e número de repetições para todos os candidatos. A avaliação de agendamento/prioridade precisa de registros autorizados, minimizados e uma referência aprovada; sem isso, o caso não é executado e não recebe nota.
 
-## Janela de contexto
+| Caso | Entrada | Comportamento esperado | Evidência |
+|---|---|---|---|
+| 1. Orientação administrativa | Pergunta sobre encaminhamento ou procedimento | Consultar política vigente, responder em português com fonte, ou dizer que não encontrou regra | Prompt, trecho/política recuperada, resposta e verificador |
+| 2. Agendamento | Pedido de horário com identidade e preferência | Consultar cadastro, encaminhamento e disponibilidade; sugerir somente slots retornados; aguardar confirmação antes da escrita | Tool calls, argumentos, retorno da API, confirmação e resultado |
+| 3. Informação incompleta/contraditória | Pedido sem campo essencial ou com divergência entre mensagem e cadastro | Perguntar ou encaminhar; não assumir valor | Estado, pergunta gerada, fonte da divergência e status |
+| 4. Cancelamento/remarcação | Pedido para cancelar ou alterar horário | Consultar regra vigente; se ausente, registrar pendência sem alterar a agenda | Política consultada, ação pendente e ausência de escrita de cancelamento |
+| 5. Gestor/Secretária | Pedido para revisar conflito ou documento pendente | Usar API/checklist autorizado, retornar alerta/pendência estruturado; não inferir clínica | Fonte, tarefa do agente, resultado do verificador e encaminhamento |
 
-O modelo deve suportar o volume de informações necessário para as conversas e para os dados apresentados ao agente.
+Não há ferramenta de simulação de exames nem estimativa de prazo de diagnóstico. As entradas não devem conter casos ou números inventados como se fossem pacientes reais.
 
-Para este projeto, a necessidade de contexto deverá ser determinada a partir de:
-- Histórico da conversa;
-- Informações administrativas;
-- Dados necessários para a consulta;
-- Lista atual de agendamentos e insumos para priorização derivados da API;
-- Instruções do agente;
-- Schemas das ferramentas.
+## Protocolo de execução
 
-### Custo
+Antes de rodar:
 
-O custo será calculado considerando os tokens de entrada e saída.
+- aprovar a política de prioridade e a referência de avaliação com a clínica;
+- preparar casos autorizados e minimizados; registrar sua origem e versão sem armazenar dados identificáveis no repositório;
+- configurar o endpoint e preços atuais;
+- escolher o mesmo prompt versionado (`prompts/*_v1.txt`), schema e parâmetros para cada candidato;
+- fixar o orçamento e repetir cada caso com quantidade igual de execuções.
 
-A fórmula utilizada será:
-```text
-custo por chamada =
-(tokens de entrada × preço de entrada +
- tokens de saída × preço de saída) / 1.000.000
-```
+Por execução, guardar `run_id`, data, caso, provedor/modelo/versão, versão/hash do prompt, parâmetros, chamadas de ferramenta e argumentos, validações, resultado, fonte, suficiência, tokens de entrada/saída, latência, custo e ocorrência de escalonamento. Remover conteúdo pessoal dos logs; nunca incluir laudos ou segredos.
 
-Como os agentes podem realizar várias chamadas para concluir uma única tarefa, o custo da trajetória completa deverá considerar todas as chamadas:
-```text
-custo por execução =
-custo de uma chamada × número de chamadas
-```
+### Quatro execuções de integração com logs
 
-Essa consideração é especialmente importante neste projeto porque uma única interação pode envolver o usuário, tool callings e as respostas do modelo.
+Para cumprir a entrega de execução, registrar ao menos quatro trajetórias completas em `logs/`, cobrindo: caminho feliz com confirmação, informação incompleta, erro/insuficiência de fonte e encaminhamento para revisão humana. Cada log deve permitir reconstruir etapas e ferramentas sem expor dado sensível. No estado atual, esses logs ainda não existem.
 
-## Política de dados
+## Cálculo de custo
 
-A aplicação trabalha com informações relacionadas a pacientes e, portanto, a política de dados é um requisito de arquitetura.
-
-Antes de utilizar uma API pública com dados reais, será necessário verificar:
-- Política de retenção dos dados;
-- Utilização dos dados para treinamento;
-- Local de processamento;
-- Possibilidade de utilizar informações anonimizadas;
-- Requisitos legais e institucionais;
-- Possibilidade de hospedagem própria.
-
-A escolha do provedor não deverá ser baseada apenas no preço.
-
-## Modelos candidatos
-
-Foram selecionados três candidatos de famílias diferentes para comparação.
-
-### Mistral Small 4
-
-O Mistral Small 4 é um modelo híbrido que reúne capacidades de instrução, raciocínio e programação, além de suporte multimodal.
-
-A documentação atual informa:
-- Contexto de **256k tokens**;
-- Suporte a function calling;
-- Suporte a structured outputs;
-- Suporte a agentes;
-- Preço de **US$ 0,15 por milhão de tokens de entrada**;
-- Preço de **US$ 0,60 por milhão de tokens de saída**;
-- Licença Apache 2.0 para os pesos.
-
-Esse candidato é particularmente relevante porque o projeto já utiliza a família Mistral durante o desenvolvimento e porque a documentação disponibiliza suporte às funcionalidades necessárias para agentes.
-
-### Llama 4 Scout
-
-O Llama 4 Scout é um modelo multimodal da família Llama, baseado em arquitetura Mixture-of-Experts.
-
-Para comparação de API, pode ser utilizado por meio de um serviço que ofereça o modelo, como o Workers AI.
-
-Nesse ambiente, a documentação informa:
-- Contexto de **131.000 tokens**;
-- Function calling;
-- Visão;
-- Preço de aproximadamente **US$ 0,27 por milhão de tokens de entrada**;
-- Preço de aproximadamente **US$ 0,85 por milhão de tokens de saída**.
-
-A Meta também disponibiliza os modelos Llama para utilização direta ou por meio de parceiros e serviços de nuvem.
-
-### Qwen3 30B A3B
-
-Como terceiro candidato, será considerado o Qwen3 30B A3B.
-
-Uma possibilidade de execução para o benchmark é utilizar uma infraestrutura que disponibilize esse modelo por API, como o Workers AI.
-
-Na tabela atual de preços desse serviço, o modelo aparece com aproximadamente:
-- US$ 0,051 por milhão de tokens de entrada;
-- US$ 0,335 por milhão de tokens de saída.
-
-O uso de um modelo Qwen também permite avaliar uma alternativa de arquitetura diferente da Mistral e da Llama, mantendo o foco nos mesmos requisitos de agente.
-
-## Comparação inicial
-
-Os valores abaixo representam as informações disponíveis no momento da elaboração deste documento e deverão ser registrados com a data da consulta, pois preços e versões de modelos podem mudar.
-
-| Eixo              | Mistral Small 4         | Llama 4 Scout                 | Qwen3 30B A3B                         |
-| ----------------- | ----------------------- | ----------------------------- | ------------------------------------- |
-| Contexto          | 256k                    | 131k                          | verificar na infraestrutura escolhida |
-| Tool calling      | Sim                     | Sim                           | validar no endpoint escolhido         |
-| Structured output | Sim                     | validar no endpoint escolhido | validar no endpoint escolhido         |
-| Multimodalidade   | Sim                     | Sim                           | não é requisito principal             |
-| Raciocínio        | Sim                     | disponível na família         | validar no endpoint                   |
-| Execução          | API / pesos disponíveis | API/parceiros / pesos         | API / infraestrutura compatível       |
-| Entrada           | US$ 0,15/M              | US$ 0,27/M*                   | US$ 0,051/M*                          |
-| Saída             | US$ 0,60/M              | US$ 0,85/M*                   | US$ 0,335/M*                          |
-| Benchmark próprio | Necessário              | Necessário                    | Necessário                            |
-
-Valores referentes à infraestrutura utilizada para a comparação, e não necessariamente ao preço de todos os provedores que disponibilizam o modelo.
-
-A tabela não determina o modelo escolhido. Ela apenas estabelece os candidatos que deverão ser submetidos ao mesmo experimento.
-
-A própria aula recomenda não utilizar somente rankings públicos para decidir um modelo. O benchmark deve representar as tarefas reais do projeto.
-
-## Benchmark próprio
-
-Será realizado um benchmark com cinco tarefas representativas do sistema.
-
-Todos os modelos deverão receber:
-- O mesmo prompt;
-- As mesmas instruções;
-- Os mesmos dados;
-- Os mesmos schemas;
-- A mesma configuração sempre que suportada;
-- O mesmo número de execuções.
-
-A comparação não deverá alterar o prompt para favorecer um modelo.
-
-### Caso 1 — Informações sobre avaliação
-
-**Entrada:**
-
-> "Gostaria de saber como funciona o processo de avaliação neuropsicológica para uma pessoa com suspeita de TEA."
-
-Será analisado:
-- clareza da resposta;
-- respeito ao escopo administrativo/informativo;
-- ausência de diagnóstico;
-- capacidade de seguir as instruções.
-
-### Caso 2 — Agendamento
-
-**Entrada:**
-
-> "Gostaria de marcar uma avaliação para a próxima semana."
-
-O modelo deverá identificar que é necessário utilizar a ferramenta de agenda.
-
-Será analisado:
-- Se identificou corretamente a necessidade de tool calling;
-- Nome da ferramenta;
-- Argumentos gerados;
-- Formato da chamada;
-- Necessidade de solicitar informações que ainda não foram fornecidas.
-
-### Caso 3 — Remarcação
-
-**Entrada:**
-
-> "Preciso remarcar minha avaliação."
-
-Será utilizado um schema de ferramenta para verificar se o modelo consegue estruturar corretamente a solicitação.
-
-Serão observados:
-- Identificação da ação;
-- Identificação das informações faltantes;
-- Chamada da ferramenta;
-- Validade do JSON;
-- Consistência dos argumentos.
-
-### Caso 4 — Consulta de agendamentos
-
-**Entrada:**
-
-> "Quais exames já estão agendados para mim?"
-
-O modelo deverá consultar a API usando a identidade autenticada do paciente e responder com base somente nos registros retornados.
-
-Será observado:
-- Uso dos filtros autorizados;
-- Correspondência entre a resposta e a lista retornada;
-- Tratamento de lista vazia e falha da API;
-- Ausência de estimativas ou dados inventados.
-
-### Caso 5 — Análise gerencial
-
-**Entrada:**
-
-> "O tempo médio de espera aumentou. Quais informações devemos analisar para entender o motivo?"
-
-O modelo deverá produzir uma resposta estruturada e, quando apropriado, utilizar as ferramentas disponíveis.
-
-Serão observados:
-- Identificação dos indicadores relevantes;
-- Utilização correta das ferramentas;
-- Coerência da análise;
-- Formato da resposta.
-
-## Tabela de resultados do benchmark
-
-Após executar os cinco casos, os resultados deverão ser registrados em uma tabela como a seguinte:
-
-| Caso | Modelo          | Tool calling | JSON válido | Resposta adequada | Tokens entrada | Tokens saída | Latência mediana |
-| ---- | --------------- | ------------ | ----------- | ----------------- | -------------: | -----------: | ---------------: |
-| 1    | Mistral Small 4 | —            | —           | preencher         |      preencher |    preencher |        preencher |
-| 1    | Llama 4 Scout   | —            | —           | preencher         |      preencher |    preencher |        preencher |
-| 1    | Qwen3 30B A3B   | —            | —           | preencher         |      preencher |    preencher |        preencher |
-| 2    | Mistral Small 4 | preencher    | preencher   | preencher         |      preencher |    preencher |        preencher |
-| 2    | Llama 4 Scout   | preencher    | preencher   | preencher         |      preencher |    preencher |        preencher |
-| 2    | Qwen3 30B A3B   | preencher    | preencher   | preencher         |      preencher |    preencher |        preencher |
-| ...  | ...             | ...          | ...         | ...               |            ... |          ... |              ... |
-
-Os cinco casos não constituem uma avaliação estatística completa. O objetivo inicial é verificar o comportamento dos candidatos nas tarefas específicas do projeto antes da escolha definitiva.
-
-A aula recomenda justamente um benchmark próprio de tarefas reais do domínio para substituir uma decisão baseada apenas em leaderboard.
-
----
-
-## Estimativa de custo
-
-Para cada modelo será registrado o número médio de tokens utilizado por chamada.
-
-A fórmula será:
+Registrar preços oficiais do endpoint na data da execução. Para cada chamada `j`:
 
 ```text
-Custo =
-(Tokens_in × Preço_in +
- Tokens_out × Preço_out) / 1.000.000
+custo_j = (tokens_entrada_j × preço_entrada_por_milhão
+         + tokens_saída_j × preço_saída_por_milhão) / 1.000.000
+custo_execução = soma(custo_j para todas as chamadas de modelo da trajetória)
+custo_100_execuções = 100 × custo_execução_médio
+custo_semestre = custo_execução_médio × interações_por_dia × 182
 ```
 
-Considerando `N` chamadas por execução:
+Se houver cache, ferramentas cobradas ou tarifas distintas por modelo/provedor, registrar essas parcelas separadamente. `interações_por_dia` deve vir de volume observado ou meta explicitamente identificada; não está informado ainda. Não preencher estimativas com números supostos.
 
-```text
-Custo da execução =
-Custo de uma chamada × N
-```
+## Tabela de resultados
 
-Para 100 execuções:
+| Caso | Candidato/endpoint | Execuções | Tool calls válidas | Schema válido | Decisão correta segundo verificador | Tokens entrada/saída | Latência mediana | Custo médio |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | Mistral Small 4 / endpoint a definir | pendente | pendente | pendente | pendente | pendente | pendente | pendente |
+| 1 | Llama 4 Scout / endpoint a definir | pendente | pendente | pendente | pendente | pendente | pendente | pendente |
+| 1 | Qwen3 30B A3B / endpoint a definir | pendente | pendente | pendente | pendente | pendente | pendente | pendente |
+| 2–5 | Todos os candidatos | pendente | pendente | pendente | pendente | pendente | pendente | pendente |
 
-```text
-Custo_100 =
-Custo da execução × 100
-```
+## Regra de decisão
 
-Para uma estimativa mensal:
-
-```text
-Custo_mensal =
-Custo da execução × número de execuções mensais
-```
-
-Como exemplo de estrutura de cálculo:
-
-| Modelo          | Tokens entrada/chamada | Tokens saída/chamada | Chamadas/execução | Custo/execução | Custo/100 execuções |
-| --------------- | ---------------------: | -------------------: | ----------------: | -------------: | ------------------: |
-| Mistral Small 4 |                  medir |                medir |             medir |       calcular |            calcular |
-| Llama 4 Scout   |                  medir |                medir |             medir |       calcular |            calcular |
-| Qwen3 30B A3B   |                  medir |                medir |             medir |       calcular |            calcular |
-
-Os preços devem ser atualizados antes da entrega final do trabalho.
-
-## Matriz de decisão
-
-A decisão será baseada nos sete eixos apresentados na aula:
-
-| Eixo         | Pergunta                                                              |
-| ------------ | --------------------------------------------------------------------- |
-| Qualidade    | O modelo atende às cinco tarefas do benchmark?                        |
-| Custo        | Qual é o custo por execução e por mês?                                |
-| Latência     | O TTFT e o tempo total são aceitáveis?                                |
-| Contexto     | A janela suporta o maior contexto necessário?                         |
-| Formato      | O modelo suporta JSON Schema e ferramentas?                           |
-| Dados        | A política do provedor permite o uso pretendido?                      |
-| Estabilidade | A versão pode ser fixada e possui política de manutenção/depreciação? |
-
-O limiar mínimo de qualidade deverá ser definido **antes de analisar os resultados**, evitando escolher o critério depois de observar qual modelo apresentou melhor resultado.
-
-## Modelo escolhido
-
-A escolha definitiva será feita após a execução do benchmark.
-
-O critério será selecionar o modelo que:
-1. Atenda aos requisitos funcionais dos agentes;
-2. Apresente comportamento adequado nas tarefas do benchmark;
-3. Suporte tool calling e saída estruturada de maneira confiável;
-4. Apresente custo compatível com o volume estimado;
-5. Apresente latência aceitável;
-6. Seja compatível com a política de dados definida para o projeto.
-
-Neste momento, dentre os 3 modelos, ainda estamos decidindo qual será o modelo escolhido para a arquitetura de agentes.
-
-## Possibilidade de roteamento entre modelos
-
-A arquitetura não precisa obrigatoriamente utilizar um único modelo para todas as tarefas.
-
-Caso o benchmark demonstre que um modelo menor atende às tarefas simples, enquanto outro apresenta vantagens nas tarefas mais complexas, pode ser utilizado **roteamento de modelos**.
-
-Um possível fluxo seria:
-
-```text
-                 Solicitação
-                      |
-                      v
-              Modelo principal
-                      |
-             +--------+--------+
-             |                 |
-        tarefa simples     tarefa complexa
-             |                 |
-             v                 v
-        resposta          modelo de maior
-                            capacidade
-```
-
-Outra possibilidade é utilizar validação:
-
-```text
-LLM
- |
- v
-JSON Schema
- |
- +---- válido ------> executar ferramenta
- |
- +---- inválido ----> nova tentativa
-                         |
-                         v
-                    outro modelo
-                         |
-                         v
-                   humano, se necessário
-```
-
-Essa possibilidade é particularmente relevante para um sistema de agentes, pois diferentes tarefas podem apresentar diferentes níveis de dificuldade.
-
-## Condições para reconsiderar o modelo
-
-A escolha do modelo não será permanente.
-
-O modelo poderá ser reconsiderado quando ocorrer uma das seguintes situações:
-- Lançamento de uma nova versão relevante;
-- Alteração significativa de preço;
-- Aumento do custo por execução;
-- Aumento da latência;
-- Falhas recorrentes no tool calling;
-- Falhas na saída estruturada;
-- Alteração da política de dados;
-- Descontinuação ou depreciação da versão utilizada;
-- Aumento da complexidade dos agentes;
-- Alteração do volume de usuários;
-- Surgimento de um modelo que atenda aos requisitos com menor custo ou menor latência.
-
-Quando houver uma mudança relevante, os mesmos cinco casos do benchmark deverão ser executados novamente para permitir uma comparação reprodutível.
+Escolher somente após completar a matriz de avaliação. Um candidato é inelegível se falhar repetidamente em confirmação de escrita, fonte, schema, privacidade ou escalonamento seguro, mesmo que seja mais barato. Entre elegíveis, comparar taxa de decisões corretas no verificador, latência e custo por execução. A decisão deve registrar responsável, evidências e condições de revisão. Até lá, **modelo escolhido: nenhum**.

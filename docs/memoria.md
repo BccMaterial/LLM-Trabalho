@@ -1,47 +1,37 @@
-# Memória do agente
+# Memória e estado compartilhado
 
-Este documento descreve a proposta de memória para o agente de agendamentos. A persistência de conversas ainda não está implementada no código do projeto.
+O estado mantém somente o necessário para retomar uma interação e coordenar as tarefas dos três agentes. Não substitui a API da clínica, o histórico clínico ou as políticas oficiais. A persistência ainda não está implementada.
 
-## Identificação da conversa
+## Identificadores
 
-Cada conversa deve receber um `conversation_id` único e estável, preferencialmente um UUID, criado no início do atendimento. Esse identificador permite recuperar o contexto da conversa mesmo que o processo do agente seja reiniciado. Se o paciente estiver autenticado, o identificador pode ser associado ao seu cadastro; nome ou texto da mensagem não devem ser usados como identificador.
+Cada conversa recebe `conversation_id` estável. O paciente é associado por identidade autenticada e `patient_id`; nome ou texto livre não serve como identificador. Um paciente pode ter várias conversas. O ID da conversa pode aparecer em logs, mas não dá acesso a dados sem autorização própria.
 
-O `conversation_id` identifica a conversa, enquanto o identificador do paciente identifica a pessoa. Uma pessoa pode ter mais de uma conversa.
+## Estado de curto prazo
 
-## Memória de curto prazo e checkpoint
+Campos previstos:
 
-A memória de curto prazo é o contexto necessário para continuar o atendimento: mensagens recentes, dados já informados para o agendamento, etapa atual do fluxo e um resumo do que ocorreu anteriormente.
+- `conversation_id`, `patient_id` autorizado e etapa atual;
+- intenções detectadas, dados explicitamente necessários e pendências;
+- estado do encaminhamento (status e referência, não cópia do arquivo);
+- prioridade/alerta e versão da regra aprovada, se houver;
+- IDs das opções consultadas, escolha do paciente, confirmação exata e retorno da API;
+- tarefas encaminhadas ao Gestor ou à Secretária, estado e responsável;
+- fonte, suficiência, contagem de chamadas, tokens, tempo e erros da execução.
 
-O checkpoint deve guardar esse estado para que a conversa possa ser retomada. Na execução local, a proposta é gravar um arquivo por conversa em:
+Cada agente recebe uma mensagem de tarefa estruturada com `task_id`, agente destino, objetivo, campos estritamente necessários, referências de fonte e schema de resposta. Ele devolve o mesmo `task_id`, status, resultado, fonte, suficiência e necessidade de revisão. O histórico livre não é transmitido integralmente entre agentes.
 
-```text
-data/checkpoints/<conversation_id>.json
-```
+## Histórico e resumo
 
-O arquivo é atualizado ao longo da conversa e não deve ser versionado no Git, pois pode conter dados pessoais. Em produção, o armazenamento deve ser persistente e protegido, com acesso controlado e políticas de retenção adequadas; o diretório local é apenas a convenção inicial para desenvolvimento.
-
-## Quando a janela de contexto enche
-
-O limite da janela é tratado antes de enviar uma chamada que excederia o contexto disponível. O agente deve:
-
-1. preservar no checkpoint os dados necessários para continuar o fluxo e o estado atual;
-2. resumir as partes antigas da conversa que ainda sejam relevantes;
-3. manter as mensagens recentes necessárias para interpretar a solicitação atual;
-4. montar o próximo contexto com as instruções, o resumo, as mensagens recentes e apenas as memórias de longo prazo pertinentes.
-
-Assim, o histórico completo pode permanecer no armazenamento da conversa sem ser reenviado integralmente ao modelo em cada chamada. O resumo não deve substituir os dados oficiais do paciente nem inventar informações ausentes.
+Mensagens podem ser mantidas pelo sistema de conversa segundo uma política institucional aprovada. Se o contexto precisar ser resumido, preservar somente a intenção, decisões já confirmadas, referências de fonte e pendências necessárias ao fluxo. O resumo não substitui a API e não deve registrar diagnóstico ou laudo em texto livre.
 
 ## Memória de longo prazo
 
-A memória de longo prazo pode conter informações estáveis que ajudem em atendimentos futuros, como preferências de comunicação ou de horário informadas pelo paciente. Ela deve ser recuperada no início de uma nova conversa e somente quando for relevante para a solicitação.
+Não há memória clínica de longo prazo do agente. Preferências estáveis só podem ser salvas quando necessárias, informadas pelo paciente e cobertas por política de consentimento e retenção. Suspeita, laudo, exame, encaminhamento e decisões clínicas permanecem nos sistemas oficiais, não na memória do modelo.
 
-Não se deve copiar automaticamente toda a conversa para essa memória. Sintomas, suspeitas, laudos, resultados de exames e outros dados clínicos pertencem ao histórico cadastral/clínico do paciente, com as proteções próprias desse sistema; não devem ser tratados como preferências nem registrados na memória do agente por padrão. Informações temporárias, detalhes de uma conversa e dados sem utilidade para atendimentos futuros também ficam fora da memória de longo prazo.
+## Proteção e retenção
 
-Qualquer gravação de memória duradoura deve ser limitada ao necessário, transparente para o paciente e sujeita às regras de privacidade, consentimento e retenção definidas para o projeto.
+Arquivos locais de checkpoint, quando implementados, não devem ser versionados. O armazenamento precisa de controle de acesso, criptografia conforme infraestrutura e política de retenção definida pela clínica. Logs usam IDs técnicos e evitam mensagens completas, documentos e segredos. Prazo de retenção ainda não foi fornecido e não deve ser inventado.
 
-## Resumo dos ciclos
+## Limites atuais
 
-| Tipo de memória | Conteúdo | Persistência e uso |
-|---|---|---|
-| Curto prazo | Mensagens, resumo e estado do atendimento | Checkpoint identificado por `conversation_id`; atualizado durante a conversa e recuperado ao retomá-la |
-| Longo prazo | Preferências estáveis e úteis para atendimentos futuros | Associada ao paciente, consultada no início de conversas e atualizada somente com informações apropriadas |
+O checkpoint e a comunicação estruturada entre agentes são propostas; não existem no código atual. A implantação precisa adicionar persistência protegida e mecanismo para reabrir tarefas pendentes sem duplicar agendamentos.
