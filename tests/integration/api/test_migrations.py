@@ -1,5 +1,5 @@
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from alembic import command
 from alembic.config import Config
@@ -37,24 +37,31 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         inspector = inspect(engine)
         assert inspector.has_table("migration_test")
         assert inspector.has_table("professionals")
-        assert {
-            column["name"] for column in inspector.get_columns("professionals")
-        } == {
+        professional_columns = {
+            column["name"]: column for column in inspector.get_columns("professionals")
+        }
+        assert set(professional_columns) == {
             "id",
             "nome",
             "status",
             "created_at",
             "updated_at",
         }
+        assert "gen_random_uuid()" in professional_columns["id"]["default"]
+        assert professional_columns["status"]["default"] == "1"
+        assert professional_columns["created_at"]["default"] == "CURRENT_TIMESTAMP"
+        assert professional_columns["updated_at"]["default"] == "CURRENT_TIMESTAMP"
+        identifier = uuid4()
         with engine.begin() as connection:
             row = connection.execute(
                 text(
-                    "INSERT INTO professionals (nome) "
-                    "VALUES ('Database default') "
+                    "INSERT INTO professionals (id, nome) "
+                    "VALUES (:id, 'Database default') "
                     "RETURNING id, status, created_at, updated_at"
-                )
+                ),
+                {"id": identifier.hex},
             ).one()
-        assert UUID(row.id).version == 4
+        assert UUID(row.id) == identifier
         assert row.status == 1
         assert row.created_at
         assert row.updated_at
