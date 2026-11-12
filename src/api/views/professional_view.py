@@ -10,7 +10,3 @@ def professional_response(professional: Professional, status_code: int = 200):
 
 def professionals_response(page: PageResult[Professional]):
     return jsonify(page.to_dict())
-
-
-def error_response(message: str, status_code: int):
-    return jsonify({"error": message}), status_code

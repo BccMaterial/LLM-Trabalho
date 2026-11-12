@@ -12,7 +12,7 @@ from ..services.professional_service import (
     ProfessionalChanges,
     ProfessionalService,
 )
-from ..views import professional_view
+from ..views import error_view, professional_view
 
 professional_controller = Blueprint("professional_controller", __name__)
 Result = TypeVar("Result")
@@ -23,7 +23,11 @@ def create_professional():
     payload = _json_object()
     nome = _validated_create_name(payload)
     if nome is None:
-        return professional_view.error_response("Invalid professional data", 400)
+        return error_view.error_response(
+            "Invalid professional data",
+            400,
+            "Provide a non-empty name of at most 255 characters.",
+        )
 
     professional = _run_with_session(ProfessionalService.create, nome)
     return professional_view.professional_response(professional, 201)
@@ -34,7 +38,11 @@ def list_professionals():
     try:
         parameters = PaginationParameters.from_query_params(request.args)
     except InvalidPageError:
-        return professional_view.error_response("Invalid page parameter", 400)
+        return error_view.error_response(
+            "Invalid page parameter",
+            400,
+            "Use an integer greater than or equal to 1.",
+        )
 
     page = _run_with_session(ProfessionalService.list, parameters, request.url)
     return professional_view.professionals_response(page)
@@ -44,11 +52,11 @@ def list_professionals():
 def get_professional(professional_id: str):
     parsed_id = _parse_id(professional_id)
     if parsed_id is None:
-        return professional_view.error_response("Professional not found", 404)
+        return _professional_not_found()
 
     professional = _run_with_session(ProfessionalService.get, parsed_id)
     if professional is None:
-        return professional_view.error_response("Professional not found", 404)
+        return _professional_not_found()
     return professional_view.professional_response(professional)
 
 
@@ -56,12 +64,16 @@ def get_professional(professional_id: str):
 def update_professional(professional_id: str):
     parsed_id = _parse_id(professional_id)
     if parsed_id is None:
-        return professional_view.error_response("Professional not found", 404)
+        return _professional_not_found()
 
     payload = _json_object()
     fields = _validated_patch_fields(payload)
     if fields is None:
-        return professional_view.error_response("Invalid professional data", 400)
+        return error_view.error_response(
+            "Invalid professional data",
+            400,
+            "Provide a non-empty name of at most 255 characters and a boolean status.",
+        )
 
     def update(session: Session) -> Professional | None:
         professional = ProfessionalService.get(session, parsed_id)
@@ -71,7 +83,7 @@ def update_professional(professional_id: str):
 
     updated = _run_with_session(update)
     if updated is None:
-        return professional_view.error_response("Professional not found", 404)
+        return _professional_not_found()
     return professional_view.professional_response(updated)
 
 
@@ -79,7 +91,7 @@ def update_professional(professional_id: str):
 def deactivate_professional(professional_id: str):
     parsed_id = _parse_id(professional_id)
     if parsed_id is None:
-        return professional_view.error_response("Professional not found", 404)
+        return _professional_not_found()
 
     def deactivate(session: Session) -> Professional | None:
         professional = ProfessionalService.get(session, parsed_id)
@@ -89,12 +101,20 @@ def deactivate_professional(professional_id: str):
 
     deactivated = _run_with_session(deactivate)
     if deactivated is None:
-        return professional_view.error_response("Professional not found", 404)
+        return _professional_not_found()
     return professional_view.professional_response(deactivated)
 
 
 def _run_with_session(operation: Callable[..., Result], *args: object) -> Result:
     return current_app.extensions["database_service"].run_with_session(operation, *args)
+
+
+def _professional_not_found():
+    return error_view.error_response(
+        "Professional not found",
+        404,
+        "Verify the professional ID and try again.",
+    )
 
 
 def _json_object() -> dict[str, object] | None:

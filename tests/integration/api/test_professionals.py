@@ -56,7 +56,11 @@ def test_create_professional_rejects_invalid_data(client, payload):
     response = client.post("/api/professionals", json=payload)
 
     assert response.status_code == 400
-    assert "error" in response.get_json()
+    assert response.get_json() == {
+        "error": "Invalid professional data",
+        "status_code": 400,
+        "action": "Provide a non-empty name of at most 255 characters.",
+    }
 
 
 def test_get_professional_and_missing_professional(client):
@@ -127,7 +131,11 @@ def test_list_professionals_rejects_invalid_page(client, page):
     response = client.get(f"/api/professionals?page={page}")
 
     assert response.status_code == 400
-    assert "error" in response.get_json()
+    assert response.get_json() == {
+        "error": "Invalid page parameter",
+        "status_code": 400,
+        "action": "Use an integer greater than or equal to 1.",
+    }
 
 
 @pytest.mark.parametrize("page_size", ["0", "-1", "invalid", "501"])
