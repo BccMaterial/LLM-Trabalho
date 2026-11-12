@@ -1,186 +1,102 @@
-# Integrantes do grupo
+# Case: atendimento e gestão de avaliações neuropsicológicas
 
-O grupo é composto pelos seguintes integrantes:
-- Caio Troiano
-- Thiago Lins
-- Vinicius Vianna
+## Grupo
 
-# Indústria & Problema
+- Caio Troiano Collino
+- Thiago Pereira Lins da Silva
+- Vinícius Vianna Egydio de Carvalho
 
-**Setor:** Indústria da saúde, Psicologia
+## 1. Problema
 
-## Problema
+Pacientes encaminhados para avaliações neuropsicológicas e a equipe de recepção enfrentam espera e retrabalho porque a fila e a agenda não têm um processo de priorização e conferência consistente e rastreável.
 
-A clínica apresenta problemas de organização e priorização da fila de atendimento, gerando longos tempos de espera de maneira inconsistente. A ausência da priorização gera diagnósticos demorados em casos graves, no qual é recomendado o início do tratamento o mais rápido possível.
+## 2. Contexto do case
 
-## Contexto
+### Situação conhecida
 
-Em uma clínica especializada em diagnósticos a partir de Avaliações Neuropsicológicas, a priorização e a organização da fila é arbitrária, gerando longos tempos de espera de maneira inconsistente. 
+A clínica realiza avaliações neuropsicológicas. A documentação inicial informa que a ordem da fila é arbitrária, que há espera prolongada, reclamações e desistências. A capacidade de atendimento é limitada por profissionais especializados. Um paciente pode realizar de quatro a seis exames, conforme o caso, e precisa de encaminhamento médico, que pode vir de profissional da própria clínica ou de outra clínica.
 
-Além disso, há reclamações e desistências frequentes. A ausência da priorização gera diagnósticos demorados em casos graves, no qual é recomendado o início do tratamento o mais rápido possível.
+O paciente ou responsável inicia o contato por mensagem. O sistema interpreta a solicitação, consulta dados autorizados na API da clínica, encaminha tarefas administrativas e apresenta opções compatíveis com a preferência e a disponibilidade retornada pela API. A API é a fonte oficial para cadastro, encaminhamento, fila e agenda.
 
-O agente será executado a partir da interação do paciente, que pode ser feita através de mensagens. O agente conversacional aciona o agente de priorização, encaminhando os dados autorizados do paciente e os insumos obtidos da lista atual de agendamentos consultada pela API. O agente de priorização retorna um coeficiente; com esse resultado, a preferência do paciente e a disponibilidade consultada na API, o agente conversacional gera sugestões de agenda.
+### Processo atual e lacunas de informação
 
-Como regras de domínio temos:
-- **Quantidade de exames:** A clínica possui uma quantidade máxima de exames, que são realizados por profissionais especializados. A quantidade de exames disponíveis é limitada, e a clínica não possui capacidade de aumentar a quantidade de exames disponíveis. Atualmente um paciente pode realizar entre 4 a 6 exames, dependendo do caso.
-- **Agendamentos:** O agendamento é feito de acordo com a preferência do paciente. Caso haja disponibilidade no horário escolhido, o paciente é agendado. Caso não haja disponibilidade, o paciente é informado e pode escolher outro horário.
-- **Encaminhamentos:** Para realizar os exames, o paciente precisa de um encaminhamento médico. Seja ele vindo de um médico de outra clínica ou da própria clínica.
+O material do case descreve a organização atual da fila como arbitrária, mas não informa qual ferramenta a equipe usa hoje, quem define a ordem, quanto tempo leva um atendimento, nem o tempo médio de espera. Não vamos inventar esses números. Antes de apresentar uma comparação de impacto, a clínica deve registrar a linha de base: duração do atendimento administrativo, espera por avaliação, cancelamentos e desistências, com período e denominador definidos.
 
-## Justificativa
+Também faltam políticas oficiais para calcular prioridade, cancelar ou remarcar, e para determinar quais documentos são obrigatórios além do encaminhamento. Até essas regras serem aprovadas pela clínica, o agente deve expor a insuficiência da informação e encaminhar a decisão a uma pessoa autorizada. O sistema não usará simulações de exames nem estimará prazo de diagnóstico.
 
-A escolha do uso de agentes de IA para esse problema se dá por conta da complexidade do problema, que envolve a priorização de pacientes com base em diversos fatores, como histórico médico, suspeita do paciente e preferências de horário. Além disso, a utilização de agentes permite uma maior agilidade no atendimento, reduzindo o tempo de espera dos pacientes e aumentando a satisfação dos mesmos, juntamente com a redução do gasto se comparar com a nova contratação de funcionários para suprir essa demanda.
+### Regras de domínio já documentadas
 
-## Usuários
+- A clínica tem capacidade limitada e não pode aumentar a quantidade de exames disponíveis no curto prazo.
+- Um paciente pode realizar de quatro a seis exames, dependendo do caso.
+- O encaminhamento médico é necessário para realizar os exames.
+- O horário deve respeitar a disponibilidade real consultada na API e a preferência informada pelo paciente.
+- Se o horário pedido não estiver disponível, o paciente deve receber opções reais ou ser convidado a escolher outra faixa.
+- Um agendamento só é gravado depois da confirmação explícita do paciente.
 
-| Perfil   | O que ele quer                        | O que ele sabe                                      | O que ele pode saber |
-|----------|---------------------------------------|-----------------------------------------------------|----------------------|
-| Usuários | Facilidade e agilidade no atendimento | Sua suspeita, seus dados, e preferências de horário | Seus agendamentos    |
+## 3. Finalidade e limites
 
-## Ganhos esperados
+O sistema apoia o atendimento administrativo de pacientes e responsáveis, a organização operacional da fila e da agenda e a conferência de pendências documentais. Ele não realiza diagnóstico, não recomenda tratamento e não deduz gravidade clínica a partir de texto livre. A priorização só pode usar critérios formalizados e aprovados pela clínica; sem esses critérios, o gestor prepara os dados e solicita revisão humana.
 
-Espera-se que haja uma redução de aproximadamente 10% na fila de espera, de forma que não haja um custo muito elevado em relação à contratação de funcionários novos. É possível que com o aumento do fluxo de pessoas por conta da espera menor tenha como consequência um lucro maior.
+## 4. Usuários e aprovações
 
-# Arquitetura do agente
+| Perfil | Papel no sistema | O que pode fazer | O que não pode delegar ao agente |
+|---|---|---|---|
+| Paciente ou responsável — usuário principal | Inicia o atendimento por mensagem e recebe opções | Informar preferências, esclarecer dados, confirmar ou recusar uma opção e solicitar cancelamento ou remarcação | Não precisa fornecer novamente dados que a API já confirme; deve poder interromper o atendimento |
+| Recepcionista/secretária | Acompanha pendências administrativas e documentos | Consultar tarefas, conferir completude segundo política oficial e pedir documentos faltantes | Validar conteúdo clínico ou inventar regras administrativas |
+| Gestor da agenda | Acompanha fila, disponibilidade, conflitos e cancelamentos | Revisar alertas operacionais e encaminhar casos para análise | Alterar prioridades clínicas sem critérios aprovados ou apagar registros |
+| Responsável autorizado da clínica | Aprova políticas e exceções de alto impacto | Aprovar critérios de priorização, políticas e decisões encaminhadas | Delegar ao modelo a aprovação de regras ou exceções |
 
-Será desenvolvido dois agentes:
-- **Agente Conversacional:** Responsável por conversar com o paciente, coletar informações e fornecer sugestões de agendamento.
-- **Agente de Priorização:** Responsável por analisar os dados autorizados do paciente conforme os critérios definidos para o projeto e retornar um coeficiente de priorização. Pode receber insumos derivados da lista de agendamentos consultada na API.
+O paciente confirma o próprio agendamento. Um responsável autorizado da clínica aprova as regras de prioridade e qualquer exceção que altere a ordem da fila. Cancelamentos e remarcações seguem uma política oficial ainda a ser fornecida; até lá, o agente apenas registra a solicitação e a encaminha.
 
-## Agente Conversacional
+## 5. Desenho dos três agentes
 
-Agente especializado em conversar com o paciente.
+| Agente | Responsabilidade | Entradas autorizadas | Saída principal |
+|---|---|---|---|
+| Atendente | Conversar com paciente/responsável, classificar intenção, coletar o mínimo necessário e apresentar opções | Mensagem atual, identidade autenticada e dados necessários retornados pela API | Pergunta de esclarecimento, orientação administrativa com fonte, opções reais ou confirmação de resultado |
+| Gestor | Conferir fila e agenda e aplicar critérios de prioridade aprovados | Registros autorizados da API e versão vigente dos critérios aprovados | Prioridade operacional estruturada, alerta de conflito ou encaminhamento humano, sempre com evidência |
+| Secretária | Organizar pendências e conferir completude administrativa de encaminhamentos e documentos | Metadados/documentos autorizados e checklist oficial | Checklist concluído, item faltante ou tarefa para revisão humana |
 
-### Entrada
+Um controlador de fluxo, implementado em código, encaminha cada tarefa ao agente adequado e mantém o estado compartilhado. Os agentes não trocam mensagens livres entre si: recebem tarefas com campos definidos e devolvem resultados validados. A prioridade que o case previa continua no papel do gestor.
 
-Recebemos (ou podemos receber) os seguintes dados do paciente:
-- Suspeita do paciente
-- Reclamações de demora
-- Solicitação de agenda
-- Exames marcados
-- Dados do cliente
+## 6. Interação principal
 
-O agente é disparado pelo próprio paciente, através de mensagens.
+- **Canal do protótipo:** mensagem de texto; uma interface de chat é adequada porque o paciente pode começar com pedidos incompletos ou combinar dúvidas e agendamento na mesma mensagem. O canal concreto usado pela clínica ainda precisa ser confirmado.
+- **Quem começa:** paciente ou responsável.
+- **Trocas esperadas:** de três a oito mensagens do usuário, incluindo esclarecimentos e confirmação; o fluxo pode terminar antes se faltarem dados ou se houver necessidade de atendimento humano. O orçamento técnico é definido em `docs/arquitetura.md`.
+- **Formato de saída:** resposta em português e objeto validado com `resultado`, `fonte` e `suficiencia`.
+- **Término:** agendamento confirmado; solicitação encaminhada; ausência de cadastro ou encaminhamento válido; falta de disponibilidade; desistência do usuário; limite de execução; ou escalonamento humano.
 
-Estima-se que 60% das interações sejam para marcar agenda, 10% reclamações, 10% para consultar o andamento da fila de atendimento e 20% perguntas gerais.
+### Diálogo ilustrativo
 
-### System
+Os horários abaixo são marcadores para demonstrar a conversa; em execução, devem ser substituídos somente por opções devolvidas pela API.
 
-**System prompt:** "Você é um organizador de agendas de uma clínica de avaliação neuropsicológica,  que deve agendar os exames dos pacientes com base em sua prioridade. Além disso, você pode orientar os pacientes dependendo da sua pergunta, seja uma reclamação, dúvidas sobre processos e consulta de dados".
+**Paciente:** Quero marcar minha avaliação de manhã.  
+**Atendente:** Posso verificar. Primeiro vou confirmar seu cadastro e se o encaminhamento está registrado.  
+**Atendente:** A agenda retornou [opção A] e [opção B] para o período da manhã. Qual você prefere?  
+**Paciente:** A opção A.  
+**Atendente:** Confirma que deseja reservar [opção A]?  
+**Paciente:** Sim, confirmo.  
+**Atendente:** O agendamento foi registrado. Consultei a disponibilidade e confirmei o registro na agenda da clínica.
 
-O agente conversa com um subagente, especializado em definir a prioridade do paciente.
+## 7. Verificação e critério de sucesso
 
-Ferramentas:
-- **Agente de priorização:** Analisa os dados do paciente e retorna um coeficiente estruturado.
-- **API da Clínica:** Consulta os dados do paciente e a lista de agendamentos, valida disponibilidade e registra agendamentos após confirmação do paciente.
+O modelo não verifica a própria resposta. Um verificador determinístico, separado dos prompts, deve validar:
 
-O que precisa ser armazenado:
-- Quem é o paciente
-- A prioridade do paciente
-- Se já possui agendamento ou não
-- As sugestões de agendas fornecida pelo agente
+1. se toda opção sugerida veio da disponibilidade atual da API, respeita a preferência e não cria conflito;
+2. se a gravação ocorreu somente após confirmação explícita e se o resultado retornado pela API corresponde à opção confirmada;
+3. se o resultado de prioridade respeita o schema, a versão da regra aprovada e os dados consultados; se a regra estiver ausente ou os dados forem insuficientes, deve bloquear a decisão e pedir revisão humana;
+4. se a resposta identifica fonte e suficiência e não afirma dado ausente.
 
-Orçamento:
-- **Passos:** No mínimo 5 passos, e no máximo 10.
-- **Tokens:** Até 1500 tokens
-- **Tempo:** 2 minutos, mas pode aumentar de acordo com a escolha do modelo, e da quantidade de reprocessamento de agendas
+**Meta do protótipo, ainda não medida:** 100% das gravações devem ter confirmação explícita e corresponder a um horário que a API indicava como disponível no momento da gravação. Denominador: total de tentativas de gravação no conjunto de avaliação. A concordância da prioridade com a referência aprovada deve ser medida separadamente antes de se definir uma meta clínica; não há referência rotulada no repositório.
 
-### Processamento
+Os casos de avaliação devem usar dados autorizados e minimizados, com identificadores removidos ou pseudonimizados. Nenhum caso clínico real será incluído no repositório. Até a clínica fornecer dados e política aprovados, os casos descritos em `docs/io.md` são cenários de fluxo, não resultados de avaliação.
 
-Fluxo:
-- **ENTRADA:** Mensagem livre do paciente
-- **TRIAGEM:** Classifica em 4 rotas (Agendamento - Segue pra análise, consulta de dados, reclamação, orientações)
-- **ANÁLISE:** Encaminha os dados do paciente e os insumos da API ao agente de priorização; com o coeficiente retornado, a preferência do paciente e a disponibilidade consultada, gera sugestões de agenda
-- **VALIDAÇÃO:** Verifica a disponibilidade, retorna as agendas para o paciente, e pergunta se ele deseja marcar
-- **REGISTRO:** Marca as agendas para o paciente
-- **RETORNO:** Avisa ao paciente se as agendas foram marcadas ou não.
+## 8. Dados e risco
 
-Entrada e saída:
+Suspeita diagnóstica, laudos, histórico e encaminhamento podem conter dados de saúde sensíveis. A API deve fornecer somente os campos necessários a cada tarefa. O histórico clínico não deve ser copiado integralmente para prompts, logs ou memória conversacional. Logs devem registrar identificadores técnicos, decisão, fonte, versão da regra e resultado da ferramenta; conteúdo clínico só pode ser retido conforme política institucional aprovada.
 
-**Triagem:**
-- Entra: Texto do paciente
-- Sai: Rota que o agente vai seguir
+**Maior risco:** priorização incorreta, exposição de dados de saúde ou gravação indevida de um horário. **Plano B:** bloquear escrita quando a confirmação, a regra ou a fonte estiver ausente; manter cancelamentos e exceções em estado pendente; encaminhar para pessoa autorizada; permitir interrupção e revisão humana; auditar a decisão sem registrar dados clínicos desnecessários.
 
-**Priorização:**
-- Entra: Dados do cliente, suspeita, histórico e insumos derivados da lista de agendamentos consultada pela API
-- Sai: Coeficiente de priorização estruturado
+## 9. Estado de implementação
 
-**Análise:**
-- Entra: Coeficiente retornado pelo agente de priorização, preferência do paciente e disponibilidade consultada pela API
-- Sai: Sugestões de agenda
-
-**Validação:**
-- Entra: Sugestões de agenda
-- Sai: Disponibilidade de agenda
-
-**Registro:**
-- Entra: Disponibilidade de agenda para a API
-- Sai: Retorno da API
-
-**Retorno:**
-- Entra: Status do agendamento (Retorno da API)
-- Sai: Mensagem com as sugestões para o paciente
-
-#### Justificativa
-
-Escolhemos o roteamento e o fluxo sequencial, pois por ser um chat, o cliente pode pedir mais de uma coisa. Além disso, escolhemos a criação de um agente especializado em priorização porque a priorização depende de diversos fatores, que não precisam do contexto inteiro da conversa com o agente principal, mas depende dos dados inseridos.
-
-## Agente de Priorização
-
-Agente especializado em priorizar os pacientes com base em seus dados.
-
-### Entrada
-
-Recebemos (ou podemos receber) os seguintes dados do agente conversacional:
-- Suspeita do paciente
-- Histórico do paciente (Laudos de exames anteriores, se houver)
-- Preferências de horário
-- Dados do cliente
-
-O agente é disparado pelo agente conversacional.
-
-Estima-se que 60% das interações sejam para marcar agenda, 10% reclamações, 10% para consultar o andamento da fila de atendimento e 20% perguntas gerais.
-
-Todas as interações com esse agente será realizada a partir do agente conversacional.
-
-### System
-
-**System prompt:** "Você é um agente especializado em priorização de pacientes para agendamentos. Sua responsabilidade é receber dados autorizados de um agente conversacional e retornar um coeficiente de priorização estruturado, considerando os critérios definidos para o projeto e os insumos gerados a partir da lista de agendamentos consultada pela API."
-
-Ferramentas:
-- **API da Clínica:** Consulta os dados do paciente e a lista atual de agendamentos, que são usados para gerar insumos para priorização.
-
-O que precisa ser armazenado:
-- Quem é o paciente
-- Coeficiente de priorização
-- Se já possui agendamento ou não
-
-Orçamento:
-- **Passos:** No mínimo 5 passos, e no máximo 10.
-- **Tokens:** Até 15000 tokens
-- **Tempo:** 2 minutos, mas pode aumentar de acordo com a escolha do modelo, e da quantidade de reprocessamento de agendas
-
-### Processamento
-
-Fluxo:
-- **ENTRADA:** Dados do paciente;
-- **CONSULTA:** Obtém pela API a lista atual de agendamentos e prepara insumos para priorização;
-- **ANÁLISE:** Recebe os dados do paciente e os insumos derivados da API, aplica os critérios definidos para o projeto e retorna o coeficiente de priorização;
-- **RETORNO:** Envia o coeficiente ao agente conversacional, que o usa com a preferência do paciente e a disponibilidade da API para gerar sugestões de agenda.
-
-Entrada e saída:
-
-**Análise:**
-- Entra: Dados do paciente e insumos derivados dos agendamentos consultados pela API
-- Sai: Coeficiente de priorização
-
-**Validação:**
-- Entra: Coeficiente calculado
-- Sai: Coeficiente validado conforme o schema de saída
-
-**Retorno:**
-- Entra: Coeficiente de priorização
-- Sai: Coeficiente estruturado para o agente conversacional
-
-#### Justificativa
-
-Escolhemos um fluxo sequencial, pois é um agente que possui um fluxo bem definido, e não depende do contexto da conversa com o paciente. Além disso, escolhemos a criação de um agente especializado em priorização porque a priorização depende de diversos fatores, que não precisam do contexto inteiro da conversa com o agente principal, mas depende dos dados inseridos.
+O repositório tem uma API Flask com recursos de profissionais e um protótipo de agente que envia uma mensagem fixa ao modelo. Ainda não há integração de agendamentos, ferramenta de priorização, secretária digital, verificador, laço conversacional ou benchmark executado. A arquitetura deste documento é o desenho-alvo, não uma descrição do que já está funcionando.

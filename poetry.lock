@@ -216,6 +216,7 @@ httpcore2 = {version = "2.13.0", markers = "sys_platform != \"emscripten\""}
 httpx2-jsfetch = {version = "*", markers = "sys_platform == \"emscripten\" and python_version >= \"3.12\""}
 idna = ">=3.18"
 truststore = {version = ">=0.10", markers = "sys_platform != \"emscripten\""}
+typing-extensions = {version = ">=4.5.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
 brotli = ["brotli (>=1.2.0) ; platform_python_implementation == \"CPython\"", "brotlicffi (>=1.2.0.2) ; platform_python_implementation != \"CPython\""]
@@ -750,6 +751,7 @@ files = [
 
 [package.dependencies]
 psycopg-binary = {version = "3.3.8", optional = true, markers = "implementation_name != \"pypy\" and extra == \"binary\""}
+typing-extensions = {version = ">=4.6", markers = "python_version < \"3.13\""}
 tzdata = {version = "*", markers = "sys_platform == \"win32\""}
 
 [package.extras]
@@ -1372,5 +1374,5 @@ watchdog = ["watchdog (>=2.3)"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.14,<4.0"
-content-hash = "d799912be3954555400d3d59441cb6ba800f7e288bb29600814b49fb8d848c81"
+python-versions = ">=3.12,<4.0"
+content-hash = "64b392a7efd90698953403623148d0d53fa95ce9093154bed6afaec461df6fc9"
