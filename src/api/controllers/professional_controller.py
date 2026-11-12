@@ -1,8 +1,12 @@
+from collections.abc import Callable
+from typing import TypeVar
 from uuid import UUID
 
 from flask import Blueprint, current_app, request
+from sqlalchemy.orm import Session
 from werkzeug.exceptions import BadRequest
 
+from ..models.professional import Professional
 from ..services.pagination_service import InvalidPageError, PaginationParameters
 from ..services.professional_service import (
     ProfessionalChanges,
@@ -11,6 +15,7 @@ from ..services.professional_service import (
 from ..views import professional_view
 
 professional_controller = Blueprint("professional_controller", __name__)
+Result = TypeVar("Result")
 
 
 @professional_controller.post("/api/professionals")
@@ -20,9 +25,8 @@ def create_professional():
     if nome is None:
         return professional_view.error_response("Invalid professional data", 400)
 
-    with current_app.extensions["database_connector"].session() as session:
-        professional = ProfessionalService.create(session, nome)
-        return professional_view.professional_response(professional, 201)
+    professional = _run_with_session(ProfessionalService.create, nome)
+    return professional_view.professional_response(professional, 201)
 
 
 @professional_controller.get("/api/professionals")
@@ -32,9 +36,8 @@ def list_professionals():
     except InvalidPageError:
         return professional_view.error_response("Invalid page parameter", 400)
 
-    with current_app.extensions["database_connector"].session() as session:
-        page = ProfessionalService.list(session, parameters, request.url)
-        return professional_view.professionals_response(page)
+    page = _run_with_session(ProfessionalService.list, parameters, request.url)
+    return professional_view.professionals_response(page)
 
 
 @professional_controller.get("/api/professionals/<professional_id>")
@@ -43,11 +46,10 @@ def get_professional(professional_id: str):
     if parsed_id is None:
         return professional_view.error_response("Professional not found", 404)
 
-    with current_app.extensions["database_connector"].session() as session:
-        professional = ProfessionalService.get(session, parsed_id)
-        if professional is None:
-            return professional_view.error_response("Professional not found", 404)
-        return professional_view.professional_response(professional)
+    professional = _run_with_session(ProfessionalService.get, parsed_id)
+    if professional is None:
+        return professional_view.error_response("Professional not found", 404)
+    return professional_view.professional_response(professional)
 
 
 @professional_controller.patch("/api/professionals/<professional_id>")
@@ -61,12 +63,16 @@ def update_professional(professional_id: str):
     if fields is None:
         return professional_view.error_response("Invalid professional data", 400)
 
-    with current_app.extensions["database_connector"].session() as session:
+    def update(session: Session) -> Professional | None:
         professional = ProfessionalService.get(session, parsed_id)
         if professional is None:
-            return professional_view.error_response("Professional not found", 404)
-        updated = ProfessionalService.update(session, professional, fields)
-        return professional_view.professional_response(updated)
+            return None
+        return ProfessionalService.update(session, professional, fields)
+
+    updated = _run_with_session(update)
+    if updated is None:
+        return professional_view.error_response("Professional not found", 404)
+    return professional_view.professional_response(updated)
 
 
 @professional_controller.delete("/api/professionals/<professional_id>")
@@ -75,12 +81,20 @@ def deactivate_professional(professional_id: str):
     if parsed_id is None:
         return professional_view.error_response("Professional not found", 404)
 
-    with current_app.extensions["database_connector"].session() as session:
+    def deactivate(session: Session) -> Professional | None:
         professional = ProfessionalService.get(session, parsed_id)
         if professional is None:
-            return professional_view.error_response("Professional not found", 404)
-        deactivated = ProfessionalService.deactivate(session, professional)
-        return professional_view.professional_response(deactivated)
+            return None
+        return ProfessionalService.deactivate(session, professional)
+
+    deactivated = _run_with_session(deactivate)
+    if deactivated is None:
+        return professional_view.error_response("Professional not found", 404)
+    return professional_view.professional_response(deactivated)
+
+
+def _run_with_session(operation: Callable[..., Result], *args: object) -> Result:
+    return current_app.extensions["database_service"].run_with_session(operation, *args)
 
 
 def _json_object() -> dict[str, object] | None:

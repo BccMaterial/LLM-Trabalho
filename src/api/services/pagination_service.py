@@ -1,12 +1,17 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import Protocol, TypeVar
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 
-Entity = TypeVar("Entity")
+
+class SerializableEntity(Protocol):
+    def to_dict(self) -> dict[str, object]: ...
+
+
+Entity = TypeVar("Entity", bound=SerializableEntity)
 
 DEFAULT_PAGE = 1
 DEFAULT_PAGE_SIZE = 50
@@ -58,6 +63,15 @@ class PageResult[Entity]:
     next_link: str | None
     value: list[Entity]
     total_items: int
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "page": self.page,
+            "page_size": self.page_size,
+            "next_link": self.next_link,
+            "value": [item.to_dict() for item in self.value],
+            "total_items": self.total_items,
+        }
 
 
 class PaginationService:

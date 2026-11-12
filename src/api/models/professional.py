@@ -32,3 +32,18 @@ class Professional(Base):
         default=utc_now,
         onupdate=utc_now,
     )
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "id": str(self.id),
+            "nome": self.nome,
+            "status": self.status,
+            "created_at": _timestamp(self.created_at),
+            "updated_at": _timestamp(self.updated_at),
+        }
+
+
+def _timestamp(value: datetime) -> str:
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.isoformat()

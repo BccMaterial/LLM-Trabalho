@@ -7,7 +7,7 @@ from .controllers.example_controller import example_controller
 from .controllers.migration_controller import migration_controller
 from .controllers.professional_controller import professional_controller
 from .database import DatabaseConnector
-from .services import MigrationService
+from .services import DatabaseService, MigrationService
 
 load_dotenv()
 
@@ -18,7 +18,9 @@ def create_app(database_url: str | None = None):
     if not database_url:
         raise RuntimeError("DATABASE_URL must be set to start the API")
 
-    app.extensions["database_connector"] = DatabaseConnector(database_url)
+    database_connector = DatabaseConnector(database_url)
+    app.extensions["database_connector"] = database_connector
+    app.extensions["database_service"] = DatabaseService(database_connector)
     app.extensions["migration_service"] = MigrationService(database_url)
     app.register_blueprint(example_controller)
     app.register_blueprint(migration_controller)

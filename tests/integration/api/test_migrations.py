@@ -1,8 +1,9 @@
 from pathlib import Path
+from uuid import UUID
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 
 from api.app import create_app
 
@@ -45,6 +46,18 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
             "created_at",
             "updated_at",
         }
+        with engine.begin() as connection:
+            row = connection.execute(
+                text(
+                    "INSERT INTO professionals (nome) "
+                    "VALUES ('Database default') "
+                    "RETURNING id, status, created_at, updated_at"
+                )
+            ).one()
+        assert UUID(row.id).version == 4
+        assert row.status == 1
+        assert row.created_at
+        assert row.updated_at
     finally:
         engine.dispose()
 
