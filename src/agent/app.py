@@ -1,16 +1,20 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
 
-SYSTEM_PROMPT = """
-Você é um agente de agendamentos para avaliações neuropsicológicas.
-Responda em português, seja objetivo e solicite apenas as informações
-necessárias para realizar um agendamento. Quando ainda não houver dados
-suficientes, explique quais informações estão faltando.
-""".strip()
+PROMPT_PATH = (
+    Path(__file__).resolve().parents[2] / "prompts" / "atendente_v1.txt"
+)
+
+# This versioned prompt uses intent routing and source-grounded responses.
+# Its target contract is docs/io.md; it prevents guessed clinic facts and
+# unconfirmed bookings. Tool calls and deterministic schema validation are
+# not implemented in this prototype yet.
+SYSTEM_PROMPT = PROMPT_PATH.read_text(encoding="utf-8")
 
 TEST_MESSAGE = "Olá! Esta é uma mensagem de teste do agente."
 
@@ -22,7 +26,7 @@ def send_test_message() -> str:
         api_key=os.environ["OPENAI_API_KEY"],
     )
     response = client.chat.completions.create(
-        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+        model=os.environ["LLM_MODEL"],
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": TEST_MESSAGE},
