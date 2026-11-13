@@ -19,16 +19,18 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
 
     assert pending_response.status_code == 200
     pending = pending_response.get_json()["pending"]
-    assert pending_response.get_json()["count"] == 2
+    assert pending_response.get_json()["count"] == 3
     assert {migration["revision"] for migration in pending} == {
         "20261106_01",
         "20261111_01",
+        "20261112_01",
     }
     assert apply_response.status_code == 200
-    assert apply_response.get_json()["count"] == 2
+    assert apply_response.get_json()["count"] == 3
     assert set(apply_response.get_json()["applied"]) == {
         "20261106_01",
         "20261111_01",
+        "20261112_01",
     }
     assert no_pending_response.get_json() == {"pending": [], "count": 0}
 
@@ -37,6 +39,7 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         inspector = inspect(engine)
         assert inspector.has_table("migration_test")
         assert inspector.has_table("professionals")
+        assert inspector.has_table("users")
         professional_columns = {
             column["name"]: column for column in inspector.get_columns("professionals")
         }
@@ -73,6 +76,33 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         assert row.status == 1
         assert row.created_at
         assert row.updated_at
+
+        user_columns = {
+            column["name"]: column for column in inspector.get_columns("users")
+        }
+        assert set(user_columns) == {
+            "id",
+            "nome",
+            "username",
+            "cpf",
+            "type",
+            "email",
+            "password_hash",
+            "status",
+            "created_at",
+            "updated_at",
+        }
+        user_unique_columns = {
+            tuple(constraint["column_names"])
+            for constraint in inspector.get_unique_constraints("users")
+        }
+        assert ("username",) in user_unique_columns
+        assert ("cpf",) in user_unique_columns
+        assert ("email",) in user_unique_columns
+        assert "gen_random_uuid()" in user_columns["id"]["default"]
+        assert user_columns["status"]["default"] == "1"
+        assert user_columns["created_at"]["default"] == "CURRENT_TIMESTAMP"
+        assert user_columns["updated_at"]["default"] == "CURRENT_TIMESTAMP"
     finally:
         engine.dispose()
 
@@ -94,6 +124,7 @@ def test_professionals_migration_can_be_reversed_and_reapplied(tmp_path):
     engine = create_engine(database_url)
     try:
         assert not inspect(engine).has_table("professionals")
+        assert not inspect(engine).has_table("users")
         assert inspect(engine).has_table("migration_test")
     finally:
         engine.dispose()
@@ -103,6 +134,7 @@ def test_professionals_migration_can_be_reversed_and_reapplied(tmp_path):
     engine = create_engine(database_url)
     try:
         assert inspect(engine).has_table("professionals")
+        assert inspect(engine).has_table("users")
     finally:
         engine.dispose()
         app.extensions["database_connector"].dispose()
