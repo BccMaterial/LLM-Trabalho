@@ -6,6 +6,7 @@ from flask import Flask
 from .controllers.example_controller import example_controller
 from .controllers.migration_controller import migration_controller
 from .controllers.professional_controller import professional_controller
+from .controllers.user_controller import user_controller
 from .database import DatabaseConnector
 from .services import DatabaseService, MigrationService
 
@@ -14,6 +15,11 @@ load_dotenv()
 
 def create_app(database_url: str | None = None):
     app = Flask(__name__)
+    app.config["PASSWORD_PEPPER"] = os.getenv("PASSWORD_PEPPER")
+    app.config["CORPORATE_EMAIL_DOMAINS"] = os.getenv(
+        "CORPORATE_EMAIL_DOMAINS",
+        "",
+    )
     database_url = database_url or os.getenv("DATABASE_URL")
     if not database_url:
         raise RuntimeError("DATABASE_URL must be set to start the API")
@@ -25,6 +31,7 @@ def create_app(database_url: str | None = None):
     app.register_blueprint(example_controller)
     app.register_blueprint(migration_controller)
     app.register_blueprint(professional_controller)
+    app.register_blueprint(user_controller)
     return app
 
 

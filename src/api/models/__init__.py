@@ -6,5 +6,6 @@ class Base(DeclarativeBase):
 
 
 from .professional import Professional
+from .user import User
 
-__all__ = ["Base", "Professional"]
+__all__ = ["Base", "Professional", "User"]
