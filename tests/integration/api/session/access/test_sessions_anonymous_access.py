@@ -1,6 +1,9 @@
 def test_session_route_rejects_anonymous_invalid_and_token_authentication(
-    application, client, unauthenticated_client
+    application,
+    client,
 ):
+    unauthenticated_client = application.test_client()
+
     assert unauthenticated_client.get("/api/sessions").status_code == 401
     assert client.get("/api/sessions").status_code == 401
 

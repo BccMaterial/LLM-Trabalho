@@ -28,7 +28,9 @@ def migration_alembic_directory():
 
 
 @pytest.fixture
-def migration_app(migration_database_url):
+def migration_app(migration_database_url, monkeypatch):
+    monkeypatch.setenv("PASSWORD_PEPPER", "test-password-pepper")
+    monkeypatch.setenv("CORPORATE_EMAIL_DOMAINS", "clinica.example")
     app = create_app(database_url=migration_database_url)
     app.config["ADMIN_API_TOKEN"] = "test-admin-api-token"
     app.config["SESSION_COOKIE_SECURE"] = False

@@ -1,5 +1,6 @@
-def test_patient_can_access_own_session(login_session_profile):
-    client, user = login_session_profile("patient")
+def test_patient_can_access_own_session(create_user, login_as_user):
+    user = create_user(type="patient", email="patient@example.test")
+    client = login_as_user(user)
 
     response = client.get("/api/sessions")
 
