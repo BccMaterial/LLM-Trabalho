@@ -1,7 +1,8 @@
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import Column, ForeignKey, MetaData, String, Table, Uuid, select
+from sqlalchemy import MetaData, Table, select
 
 from api.app import create_app
 
@@ -75,37 +76,43 @@ def create_appointments_table(application):
     def create(professional_id: UUID):
         engine = application.extensions["database_connector"].engine
         metadata = MetaData()
-        Table(
-            "professionals",
-            metadata,
-            Column("id", Uuid(as_uuid=True), primary_key=True),
-        )
-        appointments = Table(
-            "appointments",
-            metadata,
-            Column("id", Uuid(as_uuid=True), primary_key=True),
-            Column(
-                "id_profissional",
-                Uuid(as_uuid=True),
-                ForeignKey("professionals.id"),
-                nullable=False,
-            ),
-            Column("status", String, nullable=False),
-        )
+        users = Table("users", metadata, autoload_with=engine)
+        appointments = Table("appointments", metadata, autoload_with=engine)
         metadata.create_all(engine)
 
+        patient_id = uuid4()
         with engine.begin() as connection:
+            connection.execute(
+                users.insert(),
+                {
+                    "id": patient_id.hex,
+                    "nome": "Paciente de teste",
+                    "username": f"appointment-patient-{patient_id.hex}",
+                    "cpf": f"{patient_id.int % 10**11:011d}",
+                    "type": "patient",
+                    "email": f"{patient_id.hex}@example.test",
+                    "password_hash": "test",
+                },
+            )
             connection.execute(
                 appointments.insert(),
                 [
                     {
-                        "id": uuid4(),
-                        "id_profissional": professional_id,
+                        "id": uuid4().hex,
+                        "patient_id": patient_id.hex,
+                        "professional_id": professional_id.hex,
+                        "agenda_inicio": datetime(2026, 12, 1, 10, tzinfo=timezone.utc),
+                        "agenda_fim": datetime(2026, 12, 1, 11, tzinfo=timezone.utc),
+                        "suspeita_paciente": "Teste",
                         "status": "agendado",
                     },
                     {
-                        "id": uuid4(),
-                        "id_profissional": professional_id,
+                        "id": uuid4().hex,
+                        "patient_id": patient_id.hex,
+                        "professional_id": professional_id.hex,
+                        "agenda_inicio": datetime(2026, 12, 1, 11, tzinfo=timezone.utc),
+                        "agenda_fim": datetime(2026, 12, 1, 12, tzinfo=timezone.utc),
+                        "suspeita_paciente": "Teste",
                         "status": "confirmado",
                     },
                 ],

@@ -88,7 +88,10 @@ class ProfessionalService:
             return
 
         columns = {column["name"] for column in inspector.get_columns("appointments")}
-        missing_columns = {"id_profissional", "status"} - columns
+        professional_column = (
+            "professional_id" if "professional_id" in columns else "id_profissional"
+        )
+        missing_columns = {professional_column, "status"} - columns
         if missing_columns:
             missing = ", ".join(sorted(missing_columns))
             raise RuntimeError(
@@ -98,12 +101,18 @@ class ProfessionalService:
         appointments = Table(
             "appointments",
             MetaData(),
-            Column("id_profissional", Uuid(as_uuid=True)),
+            Column(professional_column, Uuid(as_uuid=True)),
             Column("status", String()),
             autoload_with=connection,
         )
         session.execute(
             update(appointments)
-            .where(appointments.c.id_profissional == professional_id)
-            .values(status="cancelado")
+            .where(getattr(appointments.c, professional_column) == professional_id)
+            .values(
+                status=(
+                    "Cancelado"
+                    if professional_column == "professional_id"
+                    else "cancelado"
+                )
+            )
         )

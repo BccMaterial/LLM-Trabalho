@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 
+from .controllers.appointment_controller import appointment_controller
 from .controllers.example_controller import example_controller
 from .controllers.migration_controller import migration_controller
 from .controllers.professional_controller import professional_controller
@@ -43,6 +44,7 @@ def create_app(database_url: str | None = None):
     app.extensions["database_service"] = DatabaseService(database_connector)
     app.extensions["migration_service"] = MigrationService(database_url)
     app.register_blueprint(example_controller)
+    app.register_blueprint(appointment_controller)
     app.register_blueprint(migration_controller)
     app.register_blueprint(professional_controller)
     app.register_blueprint(session_controller)

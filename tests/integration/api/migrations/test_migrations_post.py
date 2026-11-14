@@ -18,6 +18,7 @@ def test_migrations_post_applies_all_pending_migrations(
         "20261111_01",
         "20261112_01",
         "20261114_01",
+        "20261114_02",
     }
 
     engine = create_engine(migration_database_url)
@@ -27,6 +28,7 @@ def test_migrations_post_applies_all_pending_migrations(
         assert inspector.has_table("professionals")
         assert inspector.has_table("users")
         assert inspector.has_table("user_sessions")
+        assert inspector.has_table("appointments")
         professional_columns = {
             column["name"]: column for column in inspector.get_columns("professionals")
         }
@@ -105,6 +107,28 @@ def test_migrations_post_applies_all_pending_migrations(
         assert (
             inspector.get_foreign_keys("user_sessions")[0]["referred_table"] == "users"
         )
+        appointment_columns = {
+            column["name"]: column for column in inspector.get_columns("appointments")
+        }
+        assert set(appointment_columns) == {
+            "id",
+            "patient_id",
+            "professional_id",
+            "agenda_inicio",
+            "agenda_fim",
+            "suspeita_paciente",
+            "status",
+            "created_at",
+            "updated_at",
+        }
+        assert "gen_random_uuid()" in appointment_columns["id"]["default"]
+        assert appointment_columns["status"]["default"] == "'Pendente'"
+        assert appointment_columns["created_at"]["default"] == "CURRENT_TIMESTAMP"
+        assert appointment_columns["updated_at"]["default"] == "CURRENT_TIMESTAMP"
+        assert {
+            foreign_key["referred_table"]
+            for foreign_key in inspector.get_foreign_keys("appointments")
+        } == {"users", "professionals"}
     finally:
         engine.dispose()
 
@@ -126,6 +150,7 @@ def test_migrations_post_can_be_reversed_and_reapplied(
         assert not inspect(engine).has_table("professionals")
         assert not inspect(engine).has_table("users")
         assert not inspect(engine).has_table("user_sessions")
+        assert not inspect(engine).has_table("appointments")
         assert inspect(engine).has_table("migration_test")
     finally:
         engine.dispose()
@@ -137,5 +162,6 @@ def test_migrations_post_can_be_reversed_and_reapplied(
         assert inspect(engine).has_table("professionals")
         assert inspect(engine).has_table("users")
         assert inspect(engine).has_table("user_sessions")
+        assert inspect(engine).has_table("appointments")
     finally:
         engine.dispose()
