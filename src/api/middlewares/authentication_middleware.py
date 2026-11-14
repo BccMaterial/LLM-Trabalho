@@ -2,7 +2,7 @@ import hmac
 
 from flask import Flask, current_app, g, request
 
-from ..services.user_session_service import UserSessionService
+from ..services.user.user_session_service import UserSessionService
 from ..views import error_view
 
 SESSION_COOKIE_NAME = "session_id"

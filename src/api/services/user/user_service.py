@@ -4,8 +4,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..models.user import User
-from .pagination_service import PageResult, PaginationParameters, PaginationService
+from ...models.user import User
+from ..pagination_service import PageResult, PaginationParameters, PaginationService
 
 
 class UserChanges(TypedDict, total=False):

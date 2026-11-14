@@ -6,8 +6,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..models.user import User
-from ..models.user_session import UserSession
+from ...models.user import User
+from ...models.user_session import UserSession
 
 
 class UserSessionService:

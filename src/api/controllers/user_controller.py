@@ -9,11 +9,11 @@ from ..models.user import User
 from ..policies.authorization_context import current_actor_type
 from ..policies.user_authorization_policy import UserAuthorizationPolicy
 from ..services.pagination_service import InvalidPageError, PaginationParameters
-from ..services.user_password_service import (
+from ..services.user.user_password_service import (
     PasswordPepperNotConfiguredError,
     hash_password,
 )
-from ..services.user_service import UserChanges, UserService
+from ..services.user.user_service import UserChanges, UserService
 from ..utils.normalizers import normalize_email, normalize_username
 from ..utils.validators import (
     is_identity_conflict,

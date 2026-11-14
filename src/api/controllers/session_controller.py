@@ -5,12 +5,12 @@ from sqlalchemy.orm import Session
 
 from ..middlewares.authentication_middleware import SESSION_COOKIE_NAME
 from ..models.user import User
-from ..services.user_password_service import (
+from ..services.user.user_password_service import (
     PasswordPepperNotConfiguredError,
     verify_password,
 )
-from ..services.user_service import UserService
-from ..services.user_session_service import UserSessionService
+from ..services.user.user_service import UserService
+from ..services.user.user_session_service import UserSessionService
 from ..utils.normalizers import normalize_email
 from ..utils.validators import json_object
 from ..views import error_view, session_view

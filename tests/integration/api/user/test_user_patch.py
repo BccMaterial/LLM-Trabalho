@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import select
 
 from api.models.user import User
-from api.services.user_password_service import verify_password
+from api.services.user.user_password_service import verify_password
 
 
 def _stored_user(client, user_id):
