@@ -12,32 +12,6 @@ _PUBLIC_ENDPOINTS = {
     "session_controller.create_session",
     "session_controller.delete_current_session",
 }
-_PROTECTED_ENDPOINTS = {
-    "user_controller.create_user",
-    "user_controller.list_users",
-    "user_controller.get_user",
-    "user_controller.update_user",
-    "user_controller.deactivate_user",
-    "professional_controller.create_professional",
-    "professional_controller.list_professionals",
-    "professional_controller.get_professional",
-    "professional_controller.update_professional",
-    "professional_controller.deactivate_professional",
-    "migration_controller.list_pending_migrations",
-    "migration_controller.apply_pending_migrations",
-    "session_controller.get_current_session",
-}
-_PROFESSIONAL_ENDPOINTS = {
-    "professional_controller.create_professional",
-    "professional_controller.list_professionals",
-    "professional_controller.get_professional",
-    "professional_controller.update_professional",
-    "professional_controller.deactivate_professional",
-}
-_ADMIN_ENDPOINTS = {
-    "migration_controller.list_pending_migrations",
-    "migration_controller.apply_pending_migrations",
-}
 
 
 def register_authentication_middleware(app: Flask) -> None:
@@ -70,14 +44,6 @@ def register_authentication_middleware(app: Flask) -> None:
         g.admin_api_token = False
         g.authenticated_user = user
         g.authenticated_session = user_session
-
-        if endpoint in _ADMIN_ENDPOINTS and user.type != "admin":
-            return _permission_denied()
-        if endpoint in _PROFESSIONAL_ENDPOINTS and user.type not in {
-            "admin",
-            "manager",
-        }:
-            return _permission_denied()
         return None
 
 
@@ -99,12 +65,4 @@ def _authentication_required():
         "Authentication required",
         401,
         "Sign in with a valid account and try again.",
-    )
-
-
-def _permission_denied():
-    return error_view.error_response(
-        "Permission denied",
-        403,
-        "Your account is not authorized to perform this action.",
     )

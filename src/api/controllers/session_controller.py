@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 from flask import Blueprint, current_app, g, jsonify, request
 from sqlalchemy.orm import Session
 
+from ..middlewares.authentication_middleware import SESSION_COOKIE_NAME
 from ..models.user import User
-from ..services.authentication_middleware import SESSION_COOKIE_NAME
 from ..services.user_password_service import (
     PasswordPepperNotConfiguredError,
     verify_password,

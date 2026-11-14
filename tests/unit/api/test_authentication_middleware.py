@@ -1,6 +1,6 @@
 from flask import Flask
 
-from api.services.authentication_middleware import register_authentication_middleware
+from api.middlewares.authentication_middleware import register_authentication_middleware
 
 
 def test_undeclared_endpoint_requires_authentication():

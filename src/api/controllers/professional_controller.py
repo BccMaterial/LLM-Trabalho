@@ -3,6 +3,10 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..models.professional import Professional
+from ..policies.authorization_context import current_actor_type
+from ..policies.professional_authorization_policy import (
+    ProfessionalAuthorizationPolicy,
+)
 from ..services.pagination_service import InvalidPageError, PaginationParameters
 from ..services.professional_service import (
     ProfessionalChanges,
@@ -23,6 +27,10 @@ professional_controller = Blueprint("professional_controller", __name__)
 @professional_controller.post("/api/professionals")
 def create_professional():
     db_service = current_app.extensions["database_service"]
+    if not ProfessionalAuthorizationPolicy.can_create_professional(
+        current_actor_type()
+    ):
+        return _permission_denied()
     payload = json_object()
     fields = _validated_create_fields(payload)
     if fields is None:
@@ -53,6 +61,8 @@ def create_professional():
 @professional_controller.get("/api/professionals")
 def list_professionals():
     db_service = current_app.extensions["database_service"]
+    if not ProfessionalAuthorizationPolicy.can_list_professionals(current_actor_type()):
+        return _permission_denied()
     try:
         parameters = PaginationParameters.from_query_params(request.args)
     except InvalidPageError:
@@ -71,6 +81,8 @@ def list_professionals():
 @professional_controller.get("/api/professionals/<professional_id>")
 def get_professional(professional_id: str):
     db_service = current_app.extensions["database_service"]
+    if not ProfessionalAuthorizationPolicy.can_read_professional(current_actor_type()):
+        return _permission_denied()
     parsed_id = parse_uuid(professional_id)
     if parsed_id is None:
         return _professional_not_found()
@@ -84,6 +96,10 @@ def get_professional(professional_id: str):
 @professional_controller.patch("/api/professionals/<professional_id>")
 def update_professional(professional_id: str):
     db_service = current_app.extensions["database_service"]
+    if not ProfessionalAuthorizationPolicy.can_update_professional(
+        current_actor_type()
+    ):
+        return _permission_denied()
     parsed_id = parse_uuid(professional_id)
     if parsed_id is None:
         return _professional_not_found()
@@ -121,6 +137,10 @@ def update_professional(professional_id: str):
 @professional_controller.delete("/api/professionals/<professional_id>")
 def deactivate_professional(professional_id: str):
     db_service = current_app.extensions["database_service"]
+    if not ProfessionalAuthorizationPolicy.can_deactivate_professional(
+        current_actor_type()
+    ):
+        return _permission_denied()
     parsed_id = parse_uuid(professional_id)
     if parsed_id is None:
         return _professional_not_found()
@@ -142,6 +162,14 @@ def _professional_not_found():
         "Professional not found",
         404,
         "Verify the professional ID and try again.",
+    )
+
+
+def _permission_denied():
+    return error_view.error_response(
+        "Permission denied",
+        403,
+        "Your account is not authorized to perform this action.",
     )
 
 

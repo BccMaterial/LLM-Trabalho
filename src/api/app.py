@@ -9,8 +9,8 @@ from .controllers.professional_controller import professional_controller
 from .controllers.session_controller import session_controller
 from .controllers.user_controller import user_controller
 from .database import DatabaseConnector
+from .middlewares.authentication_middleware import register_authentication_middleware
 from .services import DatabaseService, MigrationService
-from .services.authentication_middleware import register_authentication_middleware
 
 load_dotenv()
 

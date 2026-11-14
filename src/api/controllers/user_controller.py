@@ -6,8 +6,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..models.user import User
+from ..policies.authorization_context import current_actor_type
+from ..policies.user_authorization_policy import UserAuthorizationPolicy
 from ..services.pagination_service import InvalidPageError, PaginationParameters
-from ..services.user_authorization_policy import UserAuthorizationPolicy
 from ..services.user_password_service import (
     PasswordPepperNotConfiguredError,
     hash_password,
@@ -40,7 +41,7 @@ class UserCreateFields(TypedDict):
 @user_controller.post("/api/users")
 def create_user():
     db_service = current_app.extensions["database_service"]
-    if not UserAuthorizationPolicy.can_create_user(_actor_type()):
+    if not UserAuthorizationPolicy.can_create_user(current_actor_type()):
         return _permission_denied()
     payload = json_object()
     fields = _validated_create_fields(payload)
@@ -86,7 +87,7 @@ def create_user():
 @user_controller.get("/api/users")
 def list_users():
     db_service = current_app.extensions["database_service"]
-    if not UserAuthorizationPolicy.can_list_users(_actor_type()):
+    if not UserAuthorizationPolicy.can_list_users(current_actor_type()):
         return _permission_denied()
     username = request.args.get("username")
     if username is not None:
@@ -119,7 +120,7 @@ def list_users():
 @user_controller.get("/api/users/<user_id>")
 def get_user(user_id: str):
     db_service = current_app.extensions["database_service"]
-    if not UserAuthorizationPolicy.can_read_user(_actor_type()):
+    if not UserAuthorizationPolicy.can_read_user(current_actor_type()):
         return _permission_denied()
     parsed_id = parse_uuid(user_id)
     if parsed_id is None:
@@ -150,7 +151,7 @@ def update_user(user_id: str):
     authenticated_user = getattr(g, "authenticated_user", None)
     is_self = authenticated_user is not None and authenticated_user.id == parsed_id
     if not UserAuthorizationPolicy.can_update_user(
-        _actor_type(),
+        current_actor_type(),
         is_self,
         fields.keys(),
     ):
@@ -199,7 +200,7 @@ def update_user(user_id: str):
 @user_controller.delete("/api/users/<user_id>")
 def deactivate_user(user_id: str):
     db_service = current_app.extensions["database_service"]
-    if not UserAuthorizationPolicy.can_deactivate_user(_actor_type()):
+    if not UserAuthorizationPolicy.can_deactivate_user(current_actor_type()):
         return _permission_denied()
     parsed_id = parse_uuid(user_id)
     if parsed_id is None:
@@ -365,13 +366,6 @@ def _identity_conflict():
         409,
         "Use a username, CPF, and email not assigned to another user.",
     )
-
-
-def _actor_type() -> str | None:
-    if getattr(g, "admin_api_token", False):
-        return "admin"
-    user = getattr(g, "authenticated_user", None)
-    return user.type if user is not None else None
 
 
 def _permission_denied():
