@@ -20,7 +20,7 @@ O paciente ou responsável inicia o contato por mensagem. O sistema interpreta a
 
 ### Processo atual e lacunas de informação
 
-O material do case descreve a organização atual da fila como arbitrária, mas não informa qual ferramenta a equipe usa hoje, quem define a ordem, quanto tempo leva um atendimento, nem o tempo médio de espera. Não vamos inventar esses números. Antes de apresentar uma comparação de impacto, a clínica deve registrar a linha de base: duração do atendimento administrativo, espera por avaliação, cancelamentos e desistências, com período e denominador definidos.
+O material do case descreve a organização atual da fila como arbitrária, mas não informa qual ferramenta a equipe usa hoje, quem define a ordem, quanto tempo leva um atendimento, nem o tempo médio de espera. Este trabalho é um estudo acadêmico baseado no material público disponível; não pressupõe contato, parceria, acesso a dados ou validação pela clínica. Por isso, não atribui à clínica números, procedimentos internos ou resultados que não estejam documentados.
 
 Também faltam políticas oficiais para calcular prioridade, cancelar ou remarcar, e para determinar quais documentos são obrigatórios além do encaminhamento. Até essas regras serem aprovadas pela clínica, o agente deve expor a insuficiência da informação e encaminhar a decisão a uma pessoa autorizada. O sistema não usará simulações de exames nem estimará prazo de diagnóstico.
 
@@ -32,6 +32,30 @@ Também faltam políticas oficiais para calcular prioridade, cancelar ou remarca
 - O horário deve respeitar a disponibilidade real consultada na API e a preferência informada pelo paciente.
 - Se o horário pedido não estiver disponível, o paciente deve receber opções reais ou ser convidado a escolher outra faixa.
 - Um agendamento só é gravado depois da confirmação explícita do paciente.
+
+## 2.5 A justificativa de negócio — a venda
+
+### Por que um agente, e não software comum
+
+O atendimento começa em linguagem livre e pode misturar dúvidas, preferências de agenda, informações faltantes e mudanças de última hora; o agente interpreta o pedido, identifica o que falta e conduz esclarecimentos antes de acionar regras e ferramentas determinísticas. Um formulário ou fluxo fixo cobre campos conhecidos, mas não conduz por si só essa conversa variável; a escrita na agenda, a aplicação de regras e os limites de autonomia continuam sob controle do código e de confirmação humana.
+
+### Ganho esperado para a operação
+
+O ganho esperado é organizar em um fluxo rastreável o atendimento administrativo, as pendências, a fila e os horários, para reduzir desencontros e retrabalho e apoiar melhor o uso do tempo dos profissionais. O sistema também pode ajudar a equipe a lidar com cancelamentos, remarcações e outras mudanças de última hora, apresentando informações e tarefas em um estado claro para revisão humana; não promete aumentar a capacidade clínica nem decide prioridade clínica por conta própria.
+
+Não há linha de base, volume observado, duração de tarefas ou taxa de retrabalho no material disponível. Portanto, não é possível calcular honestamente um ganho de X para Y, uma porcentagem ou economia financeira. Qualquer percentual, inclusive 10%, seria inventado. A hipótese de organização e apoio ao tempo da equipe é qualitativa e não foi testada; este projeto não depende de obter esses dados para concluir seu protótipo acadêmico.
+
+### Ganho esperado para o paciente ou responsável
+
+O benefício esperado para quem procura atendimento é ter uma conversa mais clara, evitar repetir informações já confirmadas, receber orientação administrativa consistente e compreender o que está pendente ou qual é o próximo passo. Isso é uma expectativa de design do fluxo, não uma melhora comprovada de espera, satisfação, acesso ou resultado neuropsicológico.
+
+### Custo, limites e risco da proposta
+
+- **Operação:** o custo real por atendimento não está calculado, pois não há modelo/provedor selecionado, execuções registradas ou volume observado. `docs/modelos.md` descreve como medir tokens, latência e custo quando o benchmark for executado; não apresenta resultados atuais.
+- **Construção:** o esforço de desenvolvimento do grupo não foi cronometrado e não é convertido em valor monetário.
+- **O que se perde:** respostas ambíguas, indisponibilidade de dados e exceções podem exigir mais interações ou encaminhamento, e uma interpretação inadequada pode confundir o paciente ou gerar trabalho adicional. Por isso, o protótipo não diagnostica, não define prioridade clínica e não executa alterações sem as salvaguardas descritas no case.
+
+**Limite da evidência:** os benefícios operacionais e humanos acima não têm teste no repositório e não podem ser demonstrados por cenários simulados. Os cenários podem verificar apenas o comportamento técnico do protótipo diante de entradas e retornos definidos; não comprovam economia de tempo, melhora da organização real, experiência do paciente ou efeito sobre a qualidade do cuidado. O projeto não afirma ter essa comprovação.
 
 ## 3. Finalidade e limites
 
@@ -87,7 +111,9 @@ O modelo não verifica a própria resposta. Um verificador determinístico, sepa
 3. se o resultado de prioridade respeita o schema, a versão da regra aprovada e os dados consultados; se a regra estiver ausente ou os dados forem insuficientes, deve bloquear a decisão e pedir revisão humana;
 4. se a resposta identifica fonte e suficiência e não afirma dado ausente.
 
-**Meta do protótipo, ainda não medida:** 100% das gravações devem ter confirmação explícita e corresponder a um horário que a API indicava como disponível no momento da gravação. Denominador: total de tentativas de gravação no conjunto de avaliação. A concordância da prioridade com a referência aprovada deve ser medida separadamente antes de se definir uma meta clínica; não há referência rotulada no repositório.
+**Critério técnico do protótipo, ainda não testado:** em casos controlados, toda gravação simulada deve exigir confirmação explícita e corresponder a um horário que a API de teste indicou como disponível. O denominador seria o total de tentativas de gravação nesses casos. Este critério verifica a regra do software; não mede organização da clínica, tempo dos profissionais, espera, experiência do paciente ou qualidade do cuidado. Não há testes desses resultados no repositório.
+
+Não há conjunto de referência humana rotulado para avaliar prioridade, e este trabalho não apresenta uma meta clínica nem uma taxa de sucesso desse tipo.
 
 Os casos de avaliação devem usar dados autorizados e minimizados, com identificadores removidos ou pseudonimizados. Nenhum caso clínico real será incluído no repositório. Até a clínica fornecer dados e política aprovados, os casos descritos em `docs/io.md` são cenários de fluxo, não resultados de avaliação.
 
