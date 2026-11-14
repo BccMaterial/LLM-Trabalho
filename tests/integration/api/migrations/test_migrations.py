@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, inspect, text
 
 from api.app import create_app
 
-ALEMBIC_DIRECTORY = Path(__file__).resolve().parents[3] / "infra" / "alembic"
+ALEMBIC_DIRECTORY = Path(__file__).resolve().parents[4] / "infra" / "alembic"
 MIGRATIONS_DIRECTORY = ALEMBIC_DIRECTORY / "versions"
 MIGRATION_COUNT = sum(
     1

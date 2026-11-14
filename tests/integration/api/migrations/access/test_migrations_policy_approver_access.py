@@ -1,0 +1,2 @@
+def test_policy_approver_cannot_access_migrations(assert_non_admin_migration_access):
+    assert_non_admin_migration_access("policy_approver")
