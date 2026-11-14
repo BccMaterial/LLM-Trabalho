@@ -52,6 +52,7 @@ LLM_BASE_URL="<YOUR_LLM_BASE_URL>"
 OPENAI_API_KEY="<YOUR_OPENAI_API_KEY>"
 LLM_MODEL="<YOUR_LLM_MODEL>"
 ```
+Para a API, configure também `DATABASE_URL`, `PASSWORD_PEPPER` e `ADMIN_API_TOKEN` conforme o `.env.example`. Não versionar nem registrar os valores secretos.
 
 ### Execução de código
 
@@ -67,10 +68,10 @@ docker compose --env-file .env -f infra/compose.yaml up --build
 
 Para encerrar os serviços, pressione `Ctrl+C`.
 
-As migrations podem ser consultadas e aplicadas pela API:
+Defina `ADMIN_API_TOKEN` no ambiente do terminal com o mesmo valor configurado no `.env`. As migrations podem então ser consultadas e aplicadas pela API:
 ```bash
-curl http://localhost:5000/api/migrations
-curl -X POST http://localhost:5000/api/migrations
+curl -H "Authorization: Bearer $ADMIN_API_TOKEN" http://localhost:5000/api/migrations
+curl -X POST -H "Authorization: Bearer $ADMIN_API_TOKEN" http://localhost:5000/api/migrations
 ```
 
 Execução do agente:
@@ -82,6 +83,18 @@ Execução dos testes automatizados:
 ```bash
 poetry run test
 ```
+
+## Autenticação da API
+
+O login cria uma sessão persistida no servidor e entrega o identificador somente em um cookie `HttpOnly`:
+
+- `POST /api/sessions` com `email` e `password`: inicia uma sessão.
+- `GET /api/sessions`: retorna os dados do usuário e a expiração da sessão atual.
+- `DELETE /api/sessions`: revoga a sessão atual e remove o cookie.
+
+O cookie usa `SameSite=Lax`; `SESSION_TTL_SECONDS` define sua duração (padrão: `86400`, 24 horas). `SESSION_COOKIE_SECURE` deve permanecer habilitado em produção; para desenvolvimento local sem HTTPS, pode ser desabilitado no `.env`.
+
+As rotas de usuários aplicam `UserAuthorizationPolicy`: a administração gerencia contas, e cada usuário pode atualizar apenas os próprios campos permitidos. As rotas de profissionais aceitam `admin` e `manager`; as rotas de migrations aceitam somente `admin`. `ADMIN_API_TOKEN` é uma credencial administrativa alternativa enviada como Bearer token e pode ser usada para essas operações. `/api/example` permanece pública.
 
 # Contrato de entrada e saída
 

@@ -10,8 +10,11 @@ from api.app import create_app
 def application(tmp_path):
     database_url = f"sqlite:///{tmp_path / 'professionals.db'}"
     app = create_app(database_url=database_url)
+    app.config["ADMIN_API_TOKEN"] = "test-admin-api-token"
+    app.config["SESSION_COOKIE_SECURE"] = False
 
     with app.test_client() as client:
+        client.environ_base["HTTP_AUTHORIZATION"] = "Bearer test-admin-api-token"
         response = client.post("/api/migrations")
     assert response.status_code == 200
 
@@ -21,7 +24,9 @@ def application(tmp_path):
 
 @pytest.fixture
 def client(application):
-    return application.test_client()
+    test_client = application.test_client()
+    test_client.environ_base["HTTP_AUTHORIZATION"] = "Bearer test-admin-api-token"
+    return test_client
 
 
 @pytest.fixture

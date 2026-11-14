@@ -1,25 +1,28 @@
 import os
-import re
-from collections.abc import Callable
-from typing import TypedDict, TypeGuard, TypeVar
-from uuid import UUID
+from typing import TypedDict
 
-from flask import Blueprint, current_app, request
+from flask import Blueprint, current_app, g, request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from werkzeug.exceptions import BadRequest
 
 from ..models.user import User
 from ..services.pagination_service import InvalidPageError, PaginationParameters
+from ..services.user_authorization_policy import UserAuthorizationPolicy
 from ..services.user_password_service import (
     PasswordPepperNotConfiguredError,
     hash_password,
 )
 from ..services.user_service import UserChanges, UserService
+from ..utils.normalizers import normalize_email, normalize_username
+from ..utils.validators import (
+    is_identity_conflict,
+    is_valid_cpf,
+    json_object,
+    parse_uuid,
+)
 from ..views import error_view, user_view
 
 user_controller = Blueprint("user_controller", __name__)
-Result = TypeVar("Result")
 
 USER_TYPES = frozenset({"patient", "manager", "secretary", "policy_approver", "admin"})
 
@@ -36,7 +39,10 @@ class UserCreateFields(TypedDict):
 
 @user_controller.post("/api/users")
 def create_user():
-    payload = _json_object()
+    db_service = current_app.extensions["database_service"]
+    if not UserAuthorizationPolicy.can_create_user(_actor_type()):
+        return _permission_denied()
+    payload = json_object()
     fields = _validated_create_fields(payload)
     if fields is None:
         return error_view.error_response(
@@ -56,7 +62,7 @@ def create_user():
         return _password_configuration_error()
 
     try:
-        user = _run_with_session(
+        user = db_service.run_with_session(
             UserService.create,
             fields["nome"],
             fields["username"],
@@ -67,7 +73,11 @@ def create_user():
             fields["status"],
         )
     except IntegrityError as error:
-        if not _is_identity_conflict(error):
+        if not is_identity_conflict(
+            error,
+            {"uq_users_username", "uq_users_cpf", "uq_users_email"},
+            "users",
+        ):
             raise
         return _identity_conflict()
     return user_view.user_response(user, 201)
@@ -75,6 +85,9 @@ def create_user():
 
 @user_controller.get("/api/users")
 def list_users():
+    db_service = current_app.extensions["database_service"]
+    if not UserAuthorizationPolicy.can_list_users(_actor_type()):
+        return _permission_denied()
     username = request.args.get("username")
     if username is not None:
         username = username.strip()
@@ -94,7 +107,7 @@ def list_users():
             "Use an integer greater than or equal to 1.",
         )
 
-    page = _run_with_session(
+    page = db_service.run_with_session(
         UserService.list,
         parameters,
         request.url,
@@ -105,11 +118,14 @@ def list_users():
 
 @user_controller.get("/api/users/<user_id>")
 def get_user(user_id: str):
-    parsed_id = _parse_id(user_id)
+    db_service = current_app.extensions["database_service"]
+    if not UserAuthorizationPolicy.can_read_user(_actor_type()):
+        return _permission_denied()
+    parsed_id = parse_uuid(user_id)
     if parsed_id is None:
         return _user_not_found()
 
-    user = _run_with_session(UserService.get, parsed_id)
+    user = db_service.run_with_session(UserService.get, parsed_id)
     if user is None:
         return _user_not_found()
     return user_view.user_response(user)
@@ -117,11 +133,12 @@ def get_user(user_id: str):
 
 @user_controller.patch("/api/users/<user_id>")
 def update_user(user_id: str):
-    parsed_id = _parse_id(user_id)
+    db_service = current_app.extensions["database_service"]
+    parsed_id = parse_uuid(user_id)
     if parsed_id is None:
         return _user_not_found()
 
-    payload = _json_object()
+    payload = json_object()
     fields = _validated_patch_fields(payload)
     if fields is None:
         return error_view.error_response(
@@ -130,7 +147,16 @@ def update_user(user_id: str):
             "Provide valid values for the supplied name, username, email, CPF, type, status, and password.",
         )
 
-    user = _run_with_session(UserService.get, parsed_id)
+    authenticated_user = getattr(g, "authenticated_user", None)
+    is_self = authenticated_user is not None and authenticated_user.id == parsed_id
+    if not UserAuthorizationPolicy.can_update_user(
+        _actor_type(),
+        is_self,
+        fields.keys(),
+    ):
+        return _permission_denied()
+
+    user = db_service.run_with_session(UserService.get, parsed_id)
     if user is None:
         return _user_not_found()
 
@@ -156,9 +182,13 @@ def update_user(user_id: str):
         return UserService.update(session, current_user, fields)
 
     try:
-        updated = _run_with_session(update)
+        updated = db_service.run_with_session(update)
     except IntegrityError as error:
-        if not _is_identity_conflict(error):
+        if not is_identity_conflict(
+            error,
+            {"uq_users_username", "uq_users_cpf", "uq_users_email"},
+            "users",
+        ):
             raise
         return _identity_conflict()
     if updated is None:
@@ -168,7 +198,10 @@ def update_user(user_id: str):
 
 @user_controller.delete("/api/users/<user_id>")
 def deactivate_user(user_id: str):
-    parsed_id = _parse_id(user_id)
+    db_service = current_app.extensions["database_service"]
+    if not UserAuthorizationPolicy.can_deactivate_user(_actor_type()):
+        return _permission_denied()
+    parsed_id = parse_uuid(user_id)
     if parsed_id is None:
         return _user_not_found()
 
@@ -178,14 +211,10 @@ def deactivate_user(user_id: str):
             return None
         return UserService.deactivate(session, user)
 
-    deactivated = _run_with_session(deactivate)
+    deactivated = db_service.run_with_session(deactivate)
     if deactivated is None:
         return _user_not_found()
     return user_view.user_response(deactivated)
-
-
-def _run_with_session(operation: Callable[..., Result], *args: object) -> Result:
-    return current_app.extensions["database_service"].run_with_session(operation, *args)
 
 
 def _user_not_found():
@@ -212,16 +241,6 @@ def _password_configuration_error():
     )
 
 
-def _json_object() -> dict[str, object] | None:
-    if not request.is_json:
-        return None
-    try:
-        payload = request.get_json()
-    except BadRequest:
-        return None
-    return payload if isinstance(payload, dict) else None
-
-
 def _validated_create_fields(
     payload: dict[str, object] | None,
 ) -> UserCreateFields | None:
@@ -237,10 +256,10 @@ def _validated_create_fields(
         return None
 
     nome = payload.get("nome")
-    username = _normalize_username(payload.get("username"))
+    username = normalize_username(payload.get("username"))
     cpf = payload.get("cpf")
     user_type = payload.get("type")
-    email = _normalize_email(payload.get("email"))
+    email = normalize_email(payload.get("email"))
     password = payload.get("password")
     status = payload.get("status", True)
     if (
@@ -248,7 +267,7 @@ def _validated_create_fields(
         or not nome.strip()
         or len(nome.strip()) > 255
         or username is None
-        or not _is_valid_cpf(cpf)
+        or not is_valid_cpf(cpf)
         or not isinstance(user_type, str)
         or user_type not in USER_TYPES
         or email is None
@@ -290,13 +309,13 @@ def _validated_patch_fields(
             return None
         fields["nome"] = nome.strip()
     if "username" in payload:
-        username = _normalize_username(payload["username"])
+        username = normalize_username(payload["username"])
         if username is None:
             return None
         fields["username"] = username
     if "cpf" in payload:
         cpf = payload["cpf"]
-        if not _is_valid_cpf(cpf):
+        if not is_valid_cpf(cpf):
             return None
         fields["cpf"] = cpf
     if "type" in payload:
@@ -305,7 +324,7 @@ def _validated_patch_fields(
             return None
         fields["type"] = user_type
     if "email" in payload:
-        email = _normalize_email(payload["email"])
+        email = normalize_email(payload["email"])
         if email is None:
             return None
         fields["email"] = email
@@ -320,33 +339,6 @@ def _validated_patch_fields(
             return None
         fields["status"] = status
     return fields
-
-
-def _normalize_username(value: object) -> str | None:
-    if not isinstance(value, str):
-        return None
-    username = value.strip()
-    if not username or len(username) > 100:
-        return None
-    return username
-
-
-def _normalize_email(value: object) -> str | None:
-    if not isinstance(value, str):
-        return None
-    email = value.strip().lower()
-    if len(email) > 254 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-        return None
-    return email
-
-
-def _is_valid_cpf(value: object) -> TypeGuard[str]:
-    return (
-        isinstance(value, str)
-        and len(value) == 11
-        and value.isascii()
-        and value.isdecimal()
-    )
 
 
 def _has_valid_corporate_domain(user_type: str, email: str) -> bool:
@@ -367,19 +359,6 @@ def _has_valid_corporate_domain(user_type: str, email: str) -> bool:
     return bool(domains) and email_domain in domains
 
 
-def _is_identity_conflict(error: IntegrityError) -> bool:
-    constraint_name = getattr(
-        getattr(error.orig, "diag", None), "constraint_name", None
-    )
-    if constraint_name in {
-        "uq_users_username",
-        "uq_users_cpf",
-        "uq_users_email",
-    }:
-        return True
-    return str(error.orig).startswith("UNIQUE constraint failed: users.")
-
-
 def _identity_conflict():
     return error_view.error_response(
         "User username, CPF, or email already exists",
@@ -388,8 +367,16 @@ def _identity_conflict():
     )
 
 
-def _parse_id(user_id: str) -> UUID | None:
-    try:
-        return UUID(user_id)
-    except ValueError:
-        return None
+def _actor_type() -> str | None:
+    if getattr(g, "admin_api_token", False):
+        return "admin"
+    user = getattr(g, "authenticated_user", None)
+    return user.type if user is not None else None
+
+
+def _permission_denied():
+    return error_view.error_response(
+        "Permission denied",
+        403,
+        "Your account is not authorized to perform this action.",
+    )
