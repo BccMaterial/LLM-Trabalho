@@ -25,7 +25,7 @@ def test_patch_updates_name_and_deactivation_cancels_appointments(
     assert response.get_json()["email"] == "beatriz@example.test"
     assert response.get_json()["cpf"] == "98765432100"
     assert response.get_json()["status"] is False
-    assert appointment_statuses(appointments) == ["cancelado", "cancelado"]
+    assert appointment_statuses(appointments) == ["Cancelado", "Cancelado"]
 
     reactivation = client.patch(
         f"/api/professionals/{professional['id']}",
