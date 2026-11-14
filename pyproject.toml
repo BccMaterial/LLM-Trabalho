@@ -33,8 +33,10 @@ profile = "black"
 package-mode = false
 
 [tool.taskipy.tasks]
+"dev" = "docker compose --env-file .env -f infra/compose.yaml up --build -d && poetry run task migrations:up"
 "dev:api" = "python -m src.api.app"
 "dev:agent" = "python -m src.agent.app"
+"migrations:up" = "python scripts/migrations_up.py"
 test = "python -m pytest"
 "lint:fix" = "isort . && black ."
 "lint:check" = "isort --check-only . && black --check ."
