@@ -44,7 +44,7 @@ def register_authentication_middleware(app: Flask) -> None:
     @app.before_request
     def authenticate_request():
         endpoint = request.endpoint
-        if endpoint in _PUBLIC_ENDPOINTS or endpoint not in _PROTECTED_ENDPOINTS:
+        if endpoint in _PUBLIC_ENDPOINTS:
             return None
 
         if (
