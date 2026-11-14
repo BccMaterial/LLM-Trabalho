@@ -66,6 +66,10 @@ class UserService:
         return session.get(User, user_id)
 
     @staticmethod
+    def get_by_email(session: Session, email: str) -> User | None:
+        return session.scalar(select(User).where(User.email == email))
+
+    @staticmethod
     def update(
         session: Session,
         user: User,

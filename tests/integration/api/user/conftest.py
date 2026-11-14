@@ -11,14 +11,22 @@ def client(tmp_path, monkeypatch):
         "CORPORATE_EMAIL_DOMAINS",
         "clinica.example, grupo.example",
     )
+    monkeypatch.setenv("ADMIN_API_TOKEN", "test-admin-api-token")
     app = create_app(database_url=database_url)
+    app.config["SESSION_COOKIE_SECURE"] = False
 
     with app.test_client() as test_client:
+        test_client.environ_base["HTTP_AUTHORIZATION"] = "Bearer test-admin-api-token"
         response = test_client.post("/api/migrations")
         assert response.status_code == 200
         yield test_client
 
     app.extensions["database_connector"].dispose()
+
+
+@pytest.fixture
+def unauthenticated_client(client):
+    return client.application.test_client()
 
 
 @pytest.fixture

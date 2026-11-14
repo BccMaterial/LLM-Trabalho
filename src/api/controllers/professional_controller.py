@@ -1,12 +1,6 @@
-import re
-from collections.abc import Callable
-from typing import TypeGuard, TypeVar
-from uuid import UUID
-
 from flask import Blueprint, current_app, request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from werkzeug.exceptions import BadRequest
 
 from ..models.professional import Professional
 from ..services.pagination_service import InvalidPageError, PaginationParameters
@@ -14,15 +8,22 @@ from ..services.professional_service import (
     ProfessionalChanges,
     ProfessionalService,
 )
+from ..utils.normalizers import normalize_email
+from ..utils.validators import (
+    is_identity_conflict,
+    is_valid_cpf,
+    json_object,
+    parse_uuid,
+)
 from ..views import error_view, professional_view
 
 professional_controller = Blueprint("professional_controller", __name__)
-Result = TypeVar("Result")
 
 
 @professional_controller.post("/api/professionals")
 def create_professional():
-    payload = _json_object()
+    db_service = current_app.extensions["database_service"]
+    payload = json_object()
     fields = _validated_create_fields(payload)
     if fields is None:
         return error_view.error_response(
@@ -32,14 +33,18 @@ def create_professional():
         )
 
     try:
-        professional = _run_with_session(
+        professional = db_service.run_with_session(
             ProfessionalService.create,
             fields["nome"],
             fields["email"],
             fields["cpf"],
         )
     except IntegrityError as error:
-        if not _is_identity_conflict(error):
+        if not is_identity_conflict(
+            error,
+            {"uq_professionals_email", "uq_professionals_cpf"},
+            "professionals",
+        ):
             raise
         return _identity_conflict()
     return professional_view.professional_response(professional, 201)
@@ -47,6 +52,7 @@ def create_professional():
 
 @professional_controller.get("/api/professionals")
 def list_professionals():
+    db_service = current_app.extensions["database_service"]
     try:
         parameters = PaginationParameters.from_query_params(request.args)
     except InvalidPageError:
@@ -56,17 +62,20 @@ def list_professionals():
             "Use an integer greater than or equal to 1.",
         )
 
-    page = _run_with_session(ProfessionalService.list, parameters, request.url)
+    page = db_service.run_with_session(
+        ProfessionalService.list, parameters, request.url
+    )
     return professional_view.professionals_response(page)
 
 
 @professional_controller.get("/api/professionals/<professional_id>")
 def get_professional(professional_id: str):
-    parsed_id = _parse_id(professional_id)
+    db_service = current_app.extensions["database_service"]
+    parsed_id = parse_uuid(professional_id)
     if parsed_id is None:
         return _professional_not_found()
 
-    professional = _run_with_session(ProfessionalService.get, parsed_id)
+    professional = db_service.run_with_session(ProfessionalService.get, parsed_id)
     if professional is None:
         return _professional_not_found()
     return professional_view.professional_response(professional)
@@ -74,11 +83,12 @@ def get_professional(professional_id: str):
 
 @professional_controller.patch("/api/professionals/<professional_id>")
 def update_professional(professional_id: str):
-    parsed_id = _parse_id(professional_id)
+    db_service = current_app.extensions["database_service"]
+    parsed_id = parse_uuid(professional_id)
     if parsed_id is None:
         return _professional_not_found()
 
-    payload = _json_object()
+    payload = json_object()
     fields = _validated_patch_fields(payload)
     if fields is None:
         return error_view.error_response(
@@ -94,9 +104,13 @@ def update_professional(professional_id: str):
         return ProfessionalService.update(session, professional, fields)
 
     try:
-        updated = _run_with_session(update)
+        updated = db_service.run_with_session(update)
     except IntegrityError as error:
-        if not _is_identity_conflict(error):
+        if not is_identity_conflict(
+            error,
+            {"uq_professionals_email", "uq_professionals_cpf"},
+            "professionals",
+        ):
             raise
         return _identity_conflict()
     if updated is None:
@@ -106,7 +120,8 @@ def update_professional(professional_id: str):
 
 @professional_controller.delete("/api/professionals/<professional_id>")
 def deactivate_professional(professional_id: str):
-    parsed_id = _parse_id(professional_id)
+    db_service = current_app.extensions["database_service"]
+    parsed_id = parse_uuid(professional_id)
     if parsed_id is None:
         return _professional_not_found()
 
@@ -116,14 +131,10 @@ def deactivate_professional(professional_id: str):
             return None
         return ProfessionalService.deactivate(session, professional)
 
-    deactivated = _run_with_session(deactivate)
+    deactivated = db_service.run_with_session(deactivate)
     if deactivated is None:
         return _professional_not_found()
     return professional_view.professional_response(deactivated)
-
-
-def _run_with_session(operation: Callable[..., Result], *args: object) -> Result:
-    return current_app.extensions["database_service"].run_with_session(operation, *args)
 
 
 def _professional_not_found():
@@ -134,16 +145,6 @@ def _professional_not_found():
     )
 
 
-def _json_object() -> dict[str, object] | None:
-    if not request.is_json:
-        return None
-    try:
-        payload = request.get_json()
-    except BadRequest:
-        return None
-    return payload if isinstance(payload, dict) else None
-
-
 def _validated_create_fields(
     payload: dict[str, object] | None,
 ) -> dict[str, str] | None:
@@ -152,7 +153,7 @@ def _validated_create_fields(
     if set(payload) - {"nome", "email", "cpf", "status"}:
         return None
     nome = payload.get("nome")
-    email = _normalize_email(payload.get("email"))
+    email = normalize_email(payload.get("email"))
     cpf = payload.get("cpf")
     status = payload.get("status", True)
     if (
@@ -160,7 +161,7 @@ def _validated_create_fields(
         or not nome.strip()
         or len(nome.strip()) > 255
         or email is None
-        or not _is_valid_cpf(cpf)
+        or not is_valid_cpf(cpf)
         or type(status) is not bool
         or not status
     ):
@@ -185,13 +186,13 @@ def _validated_patch_fields(
             return None
         fields["nome"] = nome.strip()
     if "email" in payload:
-        email = _normalize_email(payload["email"])
+        email = normalize_email(payload["email"])
         if email is None:
             return None
         fields["email"] = email
     if "cpf" in payload:
         cpf = payload["cpf"]
-        if not _is_valid_cpf(cpf):
+        if not is_valid_cpf(cpf):
             return None
         fields["cpf"] = cpf
     if "status" in payload:
@@ -202,43 +203,9 @@ def _validated_patch_fields(
     return fields
 
 
-def _normalize_email(value: object) -> str | None:
-    if not isinstance(value, str):
-        return None
-    email = value.strip().lower()
-    if len(email) > 254 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
-        return None
-    return email
-
-
-def _is_valid_cpf(value: object) -> TypeGuard[str]:
-    return (
-        isinstance(value, str)
-        and len(value) == 11
-        and value.isascii()
-        and value.isdecimal()
-    )
-
-
-def _is_identity_conflict(error: IntegrityError) -> bool:
-    constraint_name = getattr(
-        getattr(error.orig, "diag", None), "constraint_name", None
-    )
-    if constraint_name in {"uq_professionals_email", "uq_professionals_cpf"}:
-        return True
-    return str(error.orig).startswith("UNIQUE constraint failed: professionals.")
-
-
 def _identity_conflict():
     return error_view.error_response(
         "Professional email or CPF already exists",
         409,
         "Use an email and CPF not assigned to another professional.",
     )
-
-
-def _parse_id(professional_id: str) -> UUID | None:
-    try:
-        return UUID(professional_id)
-    except ValueError:
-        return None
