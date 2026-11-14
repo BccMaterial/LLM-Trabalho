@@ -7,5 +7,6 @@ class Base(DeclarativeBase):
 
 from .professional import Professional
 from .user import User
+from .user_session import UserSession
 
-__all__ = ["Base", "Professional", "User"]
+__all__ = ["Base", "Professional", "User", "UserSession"]

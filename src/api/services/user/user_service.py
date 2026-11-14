@@ -4,8 +4,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..models.user import User
-from .pagination_service import PageResult, PaginationParameters, PaginationService
+from ...models.user import User
+from ..pagination_service import PageResult, PaginationParameters, PaginationService
 
 
 class UserChanges(TypedDict, total=False):
@@ -64,6 +64,10 @@ class UserService:
     @staticmethod
     def get(session: Session, user_id: UUID) -> User | None:
         return session.get(User, user_id)
+
+    @staticmethod
+    def get_by_email(session: Session, email: str) -> User | None:
+        return session.scalar(select(User).where(User.email == email))
 
     @staticmethod
     def update(

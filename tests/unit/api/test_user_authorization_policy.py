@@ -1,4 +1,4 @@
-from api.services.user_authorization_policy import UserAuthorizationPolicy
+from api.policies.user_authorization_policy import UserAuthorizationPolicy
 
 
 def test_only_admin_can_create_list_read_or_deactivate_users():

@@ -15,8 +15,10 @@ def test_list_users_can_filter_by_username_and_get_user_by_id(client, create_use
     assert "password_hash" not in fetched.get_json()
 
 
-def test_get_users_routes_are_callable_without_authentication(client, create_user):
+def test_get_users_routes_require_authentication(
+    unauthenticated_client, client, create_user
+):
     created = create_user()
 
-    assert client.get("/api/users").status_code == 200
-    assert client.get(f"/api/users/{created['id']}").status_code == 200
+    assert unauthenticated_client.get("/api/users").status_code == 401
+    assert unauthenticated_client.get(f"/api/users/{created['id']}").status_code == 401
