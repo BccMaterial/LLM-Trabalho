@@ -7,6 +7,14 @@ from sqlalchemy import create_engine, inspect, text
 
 from api.app import create_app
 
+ALEMBIC_DIRECTORY = Path(__file__).resolve().parents[3] / "infra" / "alembic"
+MIGRATIONS_DIRECTORY = ALEMBIC_DIRECTORY / "versions"
+MIGRATION_COUNT = sum(
+    1
+    for migration_file in MIGRATIONS_DIRECTORY.glob("*.py")
+    if migration_file.name != "__init__.py"
+)
+
 
 def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
     database_url = f"sqlite:///{tmp_path / 'migrations.db'}"
@@ -22,7 +30,7 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
 
     assert pending_response.status_code == 200
     pending = pending_response.get_json()["pending"]
-    assert pending_response.get_json()["count"] == 4
+    assert pending_response.get_json()["count"] == MIGRATION_COUNT
     assert {migration["revision"] for migration in pending} == {
         "20261106_01",
         "20261111_01",
@@ -30,7 +38,7 @@ def test_migration_endpoints_list_and_apply_pending_migrations(tmp_path):
         "20261114_01",
     }
     assert apply_response.status_code == 200
-    assert apply_response.get_json()["count"] == 4
+    assert apply_response.get_json()["count"] == MIGRATION_COUNT
     assert set(apply_response.get_json()["applied"]) == {
         "20261106_01",
         "20261111_01",
@@ -139,9 +147,7 @@ def test_professionals_migration_can_be_reversed_and_reapplied(tmp_path):
         response = client.post("/api/migrations")
     assert response.status_code == 200
 
-    config = Config(
-        str(Path(__file__).resolve().parents[3] / "infra" / "alembic" / "alembic.ini")
-    )
+    config = Config(str(ALEMBIC_DIRECTORY / "alembic.ini"))
     config.set_main_option("sqlalchemy.url", database_url)
     command.downgrade(config, "20261106_01")
 
