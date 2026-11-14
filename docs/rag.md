@@ -17,7 +17,7 @@ autoriza o agente a fazer diagnóstico.
 | Forma usada | Com o quê | O que responde no case |
 |---|---|---|
 | Consulta estruturada | API/banco de dados da clínica, consultado por identificador do paciente e campos definidos | Dados cadastrais, encaminhamento registrado, agendamentos, disponibilidade e status/posição na fila |
-| Busca vetorial | Proposta para o protótipo: ChromaDB e `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, com embeddings de 384 dimensões | Perguntas em linguagem natural sobre regras e orientações da clínica, como encaminhamentos e quantidade de exames |
+| Busca vetorial | Proposta para o protótipo: ChromaDB e `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, com embeddings de 384 dimensões | Perguntas em linguagem natural sobre regras e orientações administrativas vigentes, como encaminhamentos, documentação e procedimentos aprovados de agendamento/cancelamento |
 
 Assim, a resposta à pergunta “o RAG é vetorial ou é banco de dados?” é:
 **a proposta combina os dois, para perguntas diferentes**. Registros individuais
@@ -38,14 +38,18 @@ para orientar o atendimento, por exemplo:
 
 - política vigente de encaminhamentos;
 - regras de agendamento e remarcação;
+- procedimento de cancelamento e tratamento de vagas liberadas;
+- checklist de documentos administrativos e responsável pela validação;
 - regras sobre a quantidade e a sequência dos exames;
 - orientações administrativas aprovadas para pacientes.
 
-`docs/case.md` descreve regras iniciais do case e serve como fonte provisória
-para este conjunto de avaliação, mas não substitui as políticas oficiais da
-clínica. A coordenação da clínica deve ser responsável por aprovar e manter as
-políticas fora do repositório; a equipe técnica deve publicar as versões
-aprovadas no índice.
+`docs/case.md` descreve somente regras iniciais do case e lacunas conhecidas;
+não substitui políticas oficiais da clínica. Critérios de prioridade,
+cancelamento/remarcação e checklist documental ainda precisam de aprovação da
+coordenação. Sem uma versão oficial vigente, o agente deve informar
+insuficiência e encaminhar a decisão. Não haverá simulação de exames nem
+estimativa de prazo de diagnóstico. A equipe técnica deve publicar no índice
+somente as versões aprovadas e vigentes.
 
 **Frequência proposta:** revisar o corpus ao menos trimestralmente e atualizar
 o índice sempre que uma política for criada, alterada ou revogada. Cada trecho

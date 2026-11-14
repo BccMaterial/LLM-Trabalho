@@ -1,169 +1,147 @@
 # Contrato de entrada e saída
 
-Este documento reúne exemplos de I/O do sistema. Os exemplos foram produzidos como amostras de contrato e não dependem de execução real no ambiente. Os commits e datas são fictícios, e os logs correspondentes ficam em `logs/`.
+Os exemplos deste documento definem o formato esperado; não são registros de execução. Valores entre `<...>` são campos que devem vir da mensagem, da API ou de política oficial. Nenhum horário, regra clínica ou resultado é inventado pelo modelo.
 
-## 1. Caminho feliz
+## Entrada
 
-### Entrada
+O atendimento recebe uma mensagem em português e metadados separados do texto, como `conversation_id` e identidade autenticada. O sistema interpreta a intenção, identifica lacunas e consulta apenas fontes autorizadas. Metadados não são tratados como conteúdo escrito pelo paciente.
 
-"Quero agendar uma avaliação neuropsicológica. Tenho encaminhamento do meu médico. Quero um horário na próxima semana, de manhã."
-
-### Saída
+## Saída obrigatória
 
 ```json
 {
   "resultado": {
-    "status": "agendamento_sugerido",
-    "mensagem": "Posso ajudar com o agendamento. Tenho as seguintes opções na próxima semana pela manhã: 18/11, 9h-10h; 19/11, 8h-9h; 20/11, 10h-11h. Preciso confirmar qual opção você prefere.",
+    "status": "<status_controlado>",
+    "mensagem": "<resposta_em_portugues>",
+    "acao": "<nenhuma|aguarda_confirmacao|encaminhada|concluida>"
+  },
+  "fonte": [
+    {
+      "tipo": "<api|politica|pedido_de_clarificacao|regra_de_escopo>",
+      "referencia": "<id_ou_documento>"
+    }
+  ],
+  "suficiencia": "<suficiente|insuficiente>"
+}
+```
+
+O schema deve ser validado em código. `fonte` aponta para a ferramenta/registro ou política consultada. Quando a informação for insuficiente, `resultado` informa o dado ou a aprovação que falta.
+
+## 1. Opções disponíveis, aguardando confirmação
+
+**Paciente:** “Quero marcar minha avaliação de manhã.”
+
+```json
+{
+  "resultado": {
+    "status": "opcoes_disponiveis",
+    "mensagem": "A API retornou estas opções para a manhã: <opções_reais_da_API>. Qual você prefere?",
     "acao": "aguarda_confirmacao"
   },
-  "fonte": {
-    "tipo": "disponibilidade_agenda",
-    "registro": "agenda_proxima_semana_manha",
-    "detalhes": "Consulta de disponibilidade atual da agenda para o paciente com encaminhamento válido."
-  },
+  "fonte": [
+    {"tipo": "api", "referencia": "<consulta_de_disponibilidade>"},
+    {"tipo": "api", "referencia": "<status_do_encaminhamento>"}
+  ],
   "suficiencia": "suficiente"
 }
 ```
 
-### O que ler ali
+O atendente apresenta opções atuais, mas não registra nada antes da escolha e confirmação do paciente.
 
-A saída mostra que o sistema aceitou texto livre, identificou a intenção de agendamento, usou uma fonte verificável de disponibilidade e manteve a resposta em formato de objeto validado. A ausência de uma confirmação final indica que o fluxo ainda está em espera e não inventa um agendamento concluído.
+## 2. Confirmação e gravação
 
-### Metadados do exemplo
+**Paciente:** “Confirmo a opção `<slot_id>`.”
 
-- commit: `0000000` (fictício)
-- data: `2026-10-19T15:51:45-03:00`
-- log: `logs/io-caminho-feliz.log`
-
-## 2. Recusa
-
-### Entrada
-
-"Quero saber o prazo de diagnóstico garantido pela clínica."
-
-### Saída
+O código revalida a disponibilidade e chama a ferramenta de escrita com a opção confirmada. Se a API confirmar a gravação:
 
 ```json
 {
   "resultado": {
-    "status": "recusa",
-    "mensagem": "Não encontrei uma garantia de prazo de diagnóstico documentada no corpus disponível. Não posso afirmar um prazo sem fonte oficial."
+    "status": "agendamento_confirmado",
+    "mensagem": "O agendamento foi registrado para <data_e_horário_retornados_pela_API>.",
+    "acao": "concluida"
   },
-  "fonte": {
-    "tipo": "corpus",
-    "registro": "docs/case.md",
-    "detalhes": "Nenhum trecho documenta prazo garantido de diagnóstico."
-  },
-  "suficiencia": "insuficiente"
+  "fonte": [
+    {"tipo": "api", "referencia": "<resposta_da_gravacao>"}
+  ],
+  "suficiencia": "suficiente"
 }
 ```
 
-### O que ler ali
+Se a API não confirmar, o sistema informa que não concluiu e consulta novamente a agenda. Não diz “marcado” com base apenas na resposta do modelo.
 
-A resposta não tenta inventar um prazo. O sistema recusa com base em ausência de fonte e informa a lacuna claramente. Isso demonstra a exigência de `suficiencia = "insuficiente"` como parte do contrato.
+## 3. Documento ou encaminhamento pendente
 
-### Metadados do exemplo
-
-- commit: `0000001` (fictício)
-- data: `2026-10-19T15:52:12-03:00`
-- log: `logs/io-recusa.log`
-
-## 3. Entrada incompleta
-
-### Entrada
-
-"Quero marcar um exame, mas não sei qual horário."
-
-### Saída
+**Paciente:** “Quero marcar a avaliação.”  
+**API:** não há encaminhamento registrado.
 
 ```json
 {
   "resultado": {
-    "status": "solicita_dados",
-    "mensagem": "Para continuar, preciso saber qual tipo de exame e se você já tem encaminhamento médico registrado. Também preciso saber a faixa de horários que você prefere."
+    "status": "encaminhamento_pendente",
+    "mensagem": "Não encontrei um encaminhamento registrado. Para continuar, preciso que a equipe confira o documento ou que ele seja incluído conforme o procedimento da clínica.",
+    "acao": "encaminhada"
   },
-  "fonte": {
-    "tipo": "pedido_de_clarificacao",
-    "registro": "necessidade_de_dados",
-    "detalhes": "A entrada menciona agendamento, mas ainda falta a informação essencial para oferecer horários válidos."
-  },
+  "fonte": [
+    {"tipo": "api", "referencia": "<consulta_de_encaminhamento>"},
+    {"tipo": "politica", "referencia": "<regra_vigente_de_encaminhamento>"}
+  ],
   "suficiencia": "insuficiente"
 }
 ```
 
-### O que ler ali
+A secretária pode organizar a pendência administrativa. Não valida diagnóstico nem presume que o documento está aprovado.
 
-O sistema não assume que tudo foi informado. Ele pede o que falta e não produz uma resposta que pareça completa sobre um caso ainda indefinido.
+## 4. Cancelamento ou remarcação sem política disponível
 
-### Metadados do exemplo
-
-- commit: `0000002` (fictício)
-- data: `2026-10-19T15:53:04-03:00`
-- log: `logs/io-incompleta.log`
-
-## 4. Entrada ambígua
-
-### Entrada
-
-"Quero agendar para terça."
-
-### Saída
+**Paciente:** “Preciso cancelar meu horário.”
 
 ```json
 {
   "resultado": {
-    "status": "solicita_desambiguacao",
-    "mensagem": "Você se refere a qual terça? Preciso saber a data exata ou a semana. Também quero confirmar se a preferência é pela manhã ou tarde para sugerir horários corretos."
+    "status": "solicitacao_encaminhada",
+    "mensagem": "Registrei seu pedido para a equipe verificar. Ainda não consigo confirmar o cancelamento porque não encontrei a regra vigente para concluir essa alteração.",
+    "acao": "encaminhada"
   },
-  "fonte": {
-    "tipo": "pedido_de_clarificacao",
-    "registro": "ambiguidade_temporal",
-    "detalhes": "A expressão 'terça' sem data ou turno é ambígua e não pode ser convertida em horário sem escolha."
-  },
+  "fonte": [
+    {"tipo": "api", "referencia": "<agendamento_atual>"},
+    {"tipo": "pedido_de_clarificacao", "referencia": "<politica_de_cancelamento_ausente>"}
+  ],
   "suficiencia": "insuficiente"
 }
 ```
 
-### O que ler ali
+O pedido não apaga nem altera o agendamento. A equipe aplica a política aprovada e registra o resultado na API.
 
-O sistema reconhece a ambiguidade e não responde como se a data já estivesse determinada. A saída deixa claro que a escolha precisa ser confirmada antes de agir.
+## 5. Prioridade sem critério aprovado
 
-### Metadados do exemplo
-
-- commit: `0000003` (fictício)
-- data: `2026-10-19T15:54:11-03:00`
-- log: `logs/io-ambigua.log`
-
-## 5. Entrada fora do escopo
-
-### Entrada
-
-"Me diga quem é o melhor técnico de computador para consertar meu notebook."
-
-### Saída
+Se a política da clínica não trouxer critérios vigentes e versionados, o gestor não calcula um coeficiente:
 
 ```json
 {
   "resultado": {
-    "status": "fora_do_escopo",
-    "mensagem": "Esse sistema atua apenas em agendamentos e orientações relacionadas a avaliações neuropsicológicas e processos da clínica. Não posso ajudar com suporte técnico de computadores."
+    "status": "revisao_humana_necessaria",
+    "mensagem": "Não encontrei critérios aprovados para ordenar este caso. Encaminhei a solicitação para revisão da equipe responsável.",
+    "acao": "encaminhada"
   },
-  "fonte": {
-    "tipo": "escopo",
-    "registro": "definicao_do_sistema",
-    "detalhes": "O sistema limita seu escopo à clínica, não a suporte geral de tecnologia."
-  },
+  "fonte": [
+    {"tipo": "politica", "referencia": "<busca_sem_criterio_vigente>"}
+  ],
   "suficiencia": "insuficiente"
 }
 ```
 
-### O que ler ali
+## 6. Dado ausente, contradição e encaminhamento humano
 
-A recusa é explícita e informa o que o sistema faz. Isso atende ao requisito de não responder como se a pergunta estivesse dentro do escopo, mesmo quando a conversa parece natural.
+| Situação | Comportamento esperado | Suficiência |
+|---|---|---|
+| Falta preferência necessária | Perguntar período/dia desejado antes de consultar ou oferecer opções | Insuficiente |
+| Mensagem contradiz cadastro ou agenda | Não escolher silenciosamente; confirmar ou encaminhar | Insuficiente |
+| API indisponível | Informar que não foi possível consultar; não usar disponibilidade antiga | Insuficiente |
+| Paciente pede diagnóstico/tratamento | Recusar a parte clínica e manter apenas orientação administrativa aprovada | Insuficiente |
+| Prioridade ou exceção sem regra aprovada | Suspender decisão e encaminhar ao responsável autorizado | Insuficiente |
+| Mensagem fora do escopo | Dizer que o sistema atende agenda e processos administrativos da clínica | Insuficiente |
 
-### Metadados do exemplo
+## Verificação
 
-- commit: `0000004` (fictício)
-- data: `2026-10-19T15:55:20-03:00`
-- log: `logs/io-fora-do-escopo.log`
+Cada resposta deve passar por validação do schema e por regras determinísticas: fonte presente, status permitido, coerência entre ação e confirmação, e correspondência com o retorno da API. Esses exemplos ainda não são logs de execução; evidências reais devem ser registradas em `logs/` quando o agente e as ferramentas forem implementados.
