@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "properties": {
+    "resultado": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "opcoes_disponiveis",
+            "agendamento_confirmado",
+            "encaminhamento_pendente",
+            "solicitacao_encaminhada",
+            "revisao_humana_necessaria",
+            "fora_de_escopo",
+            "orientacao_administrativa",
+            "aguarda_confirmacao",
+            "erro_ferramenta"
+          ]
+        },
+        "mensagem": {"type": "string"},
+        "acao": {
+          "type": "string",
+          "enum": ["nenhuma", "aguarda_confirmacao", "encaminhada", "concluida"]
+        }
+      },
+      "required": ["status", "mensagem", "acao"],
+      "additionalProperties": false
+    },
+    "fonte": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": ["api", "politica", "pedido_de_clarificacao", "regra_de_escopo"]
+          },
+          "referencia": {"type": "string"}
+        },
+        "required": ["tipo", "referencia"],
+        "additionalProperties": false
+      }
+    },
+    "suficiencia": {
+      "type": "string",
+      "enum": ["suficiente", "insuficiente"]
+    }
+  },
+  "required": ["resultado", "fonte", "suficiencia"],
+  "additionalProperties": false
+}

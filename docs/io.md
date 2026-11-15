@@ -57,6 +57,8 @@ resposta de gravação da API que contenha o identificador do agendamento.
 Quando a informação for insuficiente, `resultado` informa o dado ou a aprovação
 que falta.
 
+O schema executável usado na comparação de modelos está em [`benchmarks/response.schema.json`](../benchmarks/response.schema.json); ele detalha os status e valores de ação permitidos pelo contrato acima.
+
 ## 1. Opções disponíveis, aguardando confirmação
 
 **Paciente:** “Quero marcar minha avaliação de manhã.”
