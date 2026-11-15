@@ -1,0 +1,63 @@
+[benchmark]
+prompt = "prompts/atendente_v1.txt"
+cases = "benchmarks/casos.json"
+schema = "benchmarks/response.schema.json"
+results_dir = "logs/model-benchmark"
+max_model_calls = 5
+max_tool_calls = 5
+max_total_steps = 8
+max_total_tokens = 6000
+timeout_seconds = 120
+max_output_tokens = 700
+temperature = 0
+
+[[models]]
+name = "Mistral Small 4"
+provider = "Mistral API"
+model_id = "mistral-small-2603"
+base_url = "https://api.mistral.ai/v1"
+api_key_env = "MISTRAL_API_KEY"
+currency = "USD"
+input_price_per_million = 0.15
+output_price_per_million = 0.60
+price_checked = "2026-11-14"
+pricing_source = "https://docs.mistral.ai/inference/pricing"
+
+[[models]]
+name = "Ministral 3 8B"
+provider = "Mistral API"
+model_id = "ministral-8b-2512"
+base_url = "https://api.mistral.ai/v1"
+api_key_env = "MISTRAL_API_KEY"
+currency = "USD"
+input_price_per_million = 0.15
+output_price_per_million = 0.15
+price_checked = "2026-11-14"
+pricing_source = "https://docs.mistral.ai/inference/pricing"
+
+[[models]]
+name = "GPT-OSS 20B"
+provider = "Groq API"
+model_id = "openai/gpt-oss-20b"
+base_url = "https://api.groq.com/openai/v1"
+api_key_env = "GROQ_API_KEY"
+currency = "USD"
+input_price_per_million = 0.075
+output_price_per_million = 0.30
+price_checked = "2026-11-14"
+pricing_source = "https://console.groq.com/docs/model/openai/gpt-oss-20b"
+
+[[models]]
+name = "Gemini 2.5 Flash-Lite"
+provider = "Gemini API (compatibilidade OpenAI)"
+model_id = "gemini-2.5-flash-lite"
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+api_key_env = "GEMINI_API_KEY"
+currency = "USD"
+# Tarifas da faixa gratuita; o custo estimado não considera limites de uso.
+input_price_per_million = 0.0
+output_price_per_million = 0.0
+paid_input_price_per_million = 0.10
+paid_output_price_per_million = 0.40
+price_checked = "2026-11-14"
+pricing_source = "https://ai.google.dev/gemini-api/docs/pricing"
