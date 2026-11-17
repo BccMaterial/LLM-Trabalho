@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 
 from ..middlewares.authentication_middleware import SESSION_COOKIE_NAME
 from ..models.user import User
+from ..policies.authorization_context import current_actor_type
+from ..policies.user_authorization_policy import UserAuthorizationPolicy
 from ..services.user.user_password_service import (
     PasswordPepperNotConfiguredError,
     verify_password,
@@ -12,7 +14,7 @@ from ..services.user.user_password_service import (
 from ..services.user.user_service import UserService
 from ..services.user.user_session_service import UserSessionService
 from ..utils.normalizers import normalize_email
-from ..utils.validators import json_object
+from ..utils.validators import json_object, parse_uuid
 from ..views import error_view, session_view
 
 session_controller = Blueprint("session_controller", __name__)
@@ -53,8 +55,8 @@ def create_session():
             return None
         if not verify_password(password, user.password_hash, pepper):
             return None
-        token, expires_at = UserSessionService.create(session, user.id, lifetime)
-        return token, expires_at, user
+        token, user_session = UserSessionService.create(session, user.id, lifetime)
+        return token, user_session, user
 
     try:
         result = db_service.run_with_session(authenticate)
@@ -67,12 +69,12 @@ def create_session():
     if result is None:
         return _invalid_credentials()
 
-    token, expires_at, user = result
-    response = session_view.session_response(user, expires_at)
+    token, user_session, user = result
+    response = session_view.session_response(user, user_session)
     response.set_cookie(
         SESSION_COOKIE_NAME,
         token,
-        expires=expires_at,
+        expires=user_session.expires_at,
         httponly=True,
         secure=current_app.config["SESSION_COOKIE_SECURE"],
         samesite="Lax",
@@ -85,7 +87,24 @@ def create_session():
 def get_current_session():
     user = g.authenticated_user
     user_session = g.authenticated_session
-    return session_view.session_response(user, user_session.expires_at)
+    return session_view.session_response(user, user_session)
+
+
+@session_controller.get("/api/sessions/<session_id>")
+def get_session(session_id: str):
+    if not UserAuthorizationPolicy.can_access_session(current_actor_type()):
+        return _permission_denied()
+    parsed_id = parse_uuid(session_id)
+    if parsed_id is None:
+        return _session_not_found()
+    session_info = current_app.extensions["database_service"].run_with_session(
+        UserSessionService.get_for_id,
+        parsed_id,
+    )
+    if session_info is None:
+        return _session_not_found()
+    user_session, user = session_info
+    return session_view.session_response(user, user_session)
 
 
 @session_controller.delete("/api/sessions")
@@ -111,4 +130,20 @@ def _invalid_credentials():
         "Invalid credentials",
         401,
         "Check the email and password and try again.",
+    )
+
+
+def _session_not_found():
+    return error_view.error_response(
+        "Session not found",
+        404,
+        "Verify the session ID and try again.",
+    )
+
+
+def _permission_denied():
+    return error_view.error_response(
+        "Permission denied",
+        403,
+        "Your account is not authorized to perform this action.",
     )

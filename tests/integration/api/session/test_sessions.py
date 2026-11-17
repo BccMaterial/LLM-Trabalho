@@ -22,7 +22,7 @@ def test_login_current_session_and_logout(application, create_user):
 
     assert login_response.status_code == 200
     assert login_response.get_json()["user"]["id"] == user["id"]
-    assert "session_id" not in login_response.get_json()
+    assert login_response.get_json()["session_id"]
     assert cookie is not None
     assert "HttpOnly" in login_response.headers["Set-Cookie"]
     assert "SameSite=Lax" in login_response.headers["Set-Cookie"]
@@ -37,6 +37,11 @@ def test_login_current_session_and_logout(application, create_user):
     current_response = client.get("/api/sessions")
     assert current_response.status_code == 200
     assert current_response.get_json()["user"]["id"] == user["id"]
+    assert (
+        current_response.get_json()["session_id"]
+        == login_response.get_json()["session_id"]
+    )
+    assert current_response.get_json()["created_at"]
     assert current_response.get_json()["expires_at"]
 
     logout_response = client.delete("/api/sessions")

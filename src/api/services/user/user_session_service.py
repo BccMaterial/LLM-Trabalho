@@ -16,19 +16,38 @@ class UserSessionService:
         session: Session,
         user_id: UUID,
         lifetime: timedelta,
-    ) -> tuple[str, datetime]:
+    ) -> tuple[str, UserSession]:
         token = secrets.token_urlsafe(32)
         expires_at = datetime.now(timezone.utc) + lifetime
-        session.add(
-            UserSession(
-                token_hash=_token_hash(token),
-                user_id=user_id,
-                created_at=datetime.now(timezone.utc),
-                expires_at=expires_at,
+        user_session = UserSession(
+            token_hash=_token_hash(token),
+            user_id=user_id,
+            created_at=datetime.now(timezone.utc),
+            expires_at=expires_at,
+        )
+        session.add(user_session)
+        session.flush()
+        return token, user_session
+
+    @staticmethod
+    def get_for_id(
+        session: Session,
+        session_id: UUID,
+    ) -> tuple[UserSession, User] | None:
+        user_session = session.scalar(
+            select(UserSession).where(
+                UserSession.id == session_id,
+                UserSession.revoked_at.is_(None),
             )
         )
-        session.flush()
-        return token, expires_at
+        if user_session is None or _as_utc(user_session.expires_at) <= datetime.now(
+            timezone.utc
+        ):
+            return None
+        user = session.get(User, user_session.user_id)
+        if user is None or not user.status:
+            return None
+        return user_session, user
 
     @staticmethod
     def get_for_token(
