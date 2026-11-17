@@ -89,7 +89,9 @@ terminal são:
 Para chamadas à API, configure uma conta técnica própria com
 `API_AGENT_USER` e `API_AGENT_PASSWORD`. `API_USER` e `API_PASSWORD` continuam
 como fallback temporário. O login do usuário não é enviado ao LLM nem misturado
-com o cookie técnico usado pelo agente.
+com o cookie técnico usado pelo agente. Ele identifica o usuário para
+operações que precisam desse contexto, mas não restringe a listagem de
+agendamentos: o agente pode consultar registros de todos os pacientes.
 
 Execução dos testes automatizados:
 ```bash
