@@ -10,6 +10,10 @@
 
 `src/agent/app.py::run_scheduling_flow` mantém a conversa em uma lista `messages`
 durante o processo. A cada rodada, envia as mensagens e as ferramentas ao LLM.
+O terminal inicia em modo convidado e aceita `/login`, `/help` e `/sair`.
+Uma sessão técnica separada autentica as chamadas do agente à API; os dados da
+conta do usuário autenticado ficam em estado separado e nunca são enviados ao
+LLM como texto ou credencial.
 Se o modelo pedir uma ferramenta, o código a executa, acrescenta o resultado à
 conversa e chama o modelo novamente. Se não pedir ferramenta, mostra a resposta
 e, no modo interativo, aguarda outra mensagem do paciente.
@@ -39,7 +43,8 @@ tempo ou tokens declarado no código.
 
 | Etapa/nó lógico | O que faz | Chama LLM? | Quem decide o próximo passo | Estado observado |
 |---|---|---:|---|---|
-| `abrir_sessao` | Autentica o usuário na API e guarda o cookie no `ApiClient` | Não | Código | `session_cookie` no cliente |
+| `abrir_sessao_tecnica` | Autentica a conta própria do agente na API e guarda o cookie técnico no `ApiClient` | Não | Código | `agent_session_cookie` no cliente |
+| `login_usuario` | `/login` autentica a conta do usuário no terminal e guarda apenas sua identidade local | Não | Pessoa fornece e-mail/senha; código valida a resposta da API | `authenticated_user` no estado |
 | `receber_mensagem` | Lê a mensagem inicial ou a próxima mensagem interativa | Não | Pessoa fornece a próxima entrada; código encerra por comando/EOF | Texto local |
 | `consultar_llm` | Envia histórico e definições de ferramentas | Sim | Modelo escolhe resposta ou tool call | Lista `messages` |
 | `consultar_disponibilidade` | Consulta agendamentos na API; pode resolver identificador de paciente | Não | Código despacha a função pedida pelo modelo | Retorno da API em `messages` |

@@ -60,6 +60,10 @@ def _state():
         "approval_result": None,
         "tool_results": [],
         "answer": None,
+        "authenticated_user": {
+            "id": "authenticated-patient",
+            "email": "patient@example.test",
+        },
     }
 
 
@@ -97,7 +101,7 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
 
     result = graph.invoke(_state())
 
-    assert api_client.calls == ["paciente-demo"]
+    assert api_client.calls == ["authenticated-patient"]
     assert result["answer"] == "Encontrei um agendamento."
     assert result["tool_results"] == [
         {
@@ -159,7 +163,7 @@ def test_scheduling_graph_requires_explicit_approval_before_booking(monkeypatch)
 
     assert api_client.appointments == [
         {
-            "patient_id": "patient-1",
+            "patient_id": "authenticated-patient",
             "professional_id": "professional-1",
             "agenda_inicio": start,
             "agenda_fim": end,
@@ -249,3 +253,38 @@ def test_scheduling_graph_does_not_infer_approval_from_ambiguous_reply(monkeypat
     assert result["pending_action"] is not None
     assert result["approval_result"] is None
     assert "Não consegui identificar" in result["answer"]
+
+
+def test_scheduling_graph_requires_login_before_booking(monkeypatch):
+    start = "2027-01-15T10:00:00-03:00"
+    end = "2027-01-15T11:00:00-03:00"
+    monkeypatch.setattr(
+        "agent.app.llm.request_with_retry",
+        lambda client, messages: _response(
+            FakeMessage(
+                tool_calls=[
+                    FakeToolCall(
+                        "confirmar_agendamento",
+                        {
+                            "patient_id": "patient-supplied-by-model",
+                            "professional_id": "professional-1",
+                            "agenda_inicio": start,
+                            "agenda_fim": end,
+                            "suspeita_paciente": "Avaliação",
+                        },
+                    )
+                ]
+            )
+        ),
+    )
+    api_client = FakeApiClient()
+    graph = build_scheduling_graph(object(), api_client)
+    state = _state()
+    state["authenticated_user"] = None
+    state["messages"].append({"role": "user", "content": "Quero agendar."})
+
+    result = graph.invoke(state)
+
+    assert api_client.appointments == []
+    assert result["pending_action"] is None
+    assert "/login" in result["answer"]

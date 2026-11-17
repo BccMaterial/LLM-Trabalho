@@ -79,6 +79,18 @@ Execução do agente:
 poetry run task dev:agent
 ```
 
+Ao iniciar, o agente fica em modo convidado. Os comandos disponíveis no
+terminal são:
+
+- `/login`: autentica a conta do usuário com e-mail e senha;
+- `/help`: mostra os comandos disponíveis;
+- `/sair`: encerra o atendimento.
+
+Para chamadas à API, configure uma conta técnica própria com
+`API_AGENT_USER` e `API_AGENT_PASSWORD`. `API_USER` e `API_PASSWORD` continuam
+como fallback temporário. O login do usuário não é enviado ao LLM nem misturado
+com o cookie técnico usado pelo agente.
+
 Execução dos testes automatizados:
 ```bash
 poetry run task test
