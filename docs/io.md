@@ -11,7 +11,7 @@ O atendimento recebe uma mensagem em português e metadados separados do texto, 
 ```json
 {
   "resultado": {
-    "status": "<status_controlado>",
+    "status": "<um_dos_status_controlados>",
     "mensagem": "<resposta_em_portugues>",
     "acao": "<nenhuma|aguarda_confirmacao|encaminhada|concluida>"
   },
@@ -25,7 +25,37 @@ O atendimento recebe uma mensagem em português e metadados separados do texto, 
 }
 ```
 
-O schema deve ser validado em código. `fonte` aponta para a ferramenta/registro ou política consultada. Quando a informação for insuficiente, `resultado` informa o dado ou a aprovação que falta.
+Todos os campos são obrigatórios; propriedades adicionais não são aceitas e
+`mensagem`, `fonte` e `referencia` não podem estar vazios. Os status permitidos
+são `opcoes_disponiveis`, `agendamento_confirmado`,
+`encaminhamento_pendente`, `solicitacao_encaminhada`,
+`revisao_humana_necessaria`, `informacao_insuficiente`,
+`consulta_indisponivel`, `fora_do_escopo` e `agendamento_nao_confirmado`.
+
+O schema Pydantic em `src/agent/output_contract.py` é a fonte de validação em
+tempo de execução. `fonte` aponta para a ferramenta ou registro consultado, a
+política usada, o dado solicitado em clarificação ou a regra de escopo. Para
+fontes do tipo `api`, `referencia` deve ser o nome exato de uma ferramenta
+executada ou um identificador retornado por ela.
+
+| Status | Ação | Suficiência | Fontes obrigatórias |
+|---|---|---|---|
+| `opcoes_disponiveis` | `aguarda_confirmacao` | `suficiente` | `api` |
+| `agendamento_confirmado` | `concluida` | `suficiente` | `api`, com gravação confirmada pela API |
+| `encaminhamento_pendente` | `encaminhada` | `insuficiente` | `api`, `politica` |
+| `solicitacao_encaminhada` | `encaminhada` | `insuficiente` | `api`, `pedido_de_clarificacao` |
+| `revisao_humana_necessaria` | `encaminhada` | `insuficiente` | `politica` |
+| `informacao_insuficiente` | `aguarda_confirmacao` | `insuficiente` | `pedido_de_clarificacao` |
+| `consulta_indisponivel` | `nenhuma` | `insuficiente` | `api` |
+| `fora_do_escopo` | `nenhuma` | `insuficiente` | `regra_de_escopo` |
+| `agendamento_nao_confirmado` | `nenhuma` | `insuficiente` | `api` |
+
+O código rejeita combinações divergentes entre status, ação e suficiência,
+fontes ausentes e referências de API que não correspondam aos resultados das
+ferramentas da execução. Também rejeita `agendamento_confirmado` sem uma
+resposta de gravação da API que contenha o identificador do agendamento.
+Quando a informação for insuficiente, `resultado` informa o dado ou a aprovação
+que falta.
 
 ## 1. Opções disponíveis, aguardando confirmação
 
@@ -39,8 +69,8 @@ O schema deve ser validado em código. `fonte` aponta para a ferramenta/registro
     "acao": "aguarda_confirmacao"
   },
   "fonte": [
-    {"tipo": "api", "referencia": "<consulta_de_disponibilidade>"},
-    {"tipo": "api", "referencia": "<status_do_encaminhamento>"}
+    {"tipo": "api", "referencia": "consultar_disponibilidade"},
+    {"tipo": "api", "referencia": "<id_do_registro_de_encaminhamento>"}
   ],
   "suficiencia": "suficiente"
 }
@@ -83,7 +113,7 @@ Se a API não confirmar, o sistema informa que não concluiu e consulta novament
     "acao": "encaminhada"
   },
   "fonte": [
-    {"tipo": "api", "referencia": "<consulta_de_encaminhamento>"},
+    {"tipo": "api", "referencia": "<id_do_registro_de_encaminhamento>"},
     {"tipo": "politica", "referencia": "<regra_vigente_de_encaminhamento>"}
   ],
   "suficiencia": "insuficiente"
@@ -104,7 +134,7 @@ A secretária pode organizar a pendência administrativa. Não valida diagnósti
     "acao": "encaminhada"
   },
   "fonte": [
-    {"tipo": "api", "referencia": "<agendamento_atual>"},
+    {"tipo": "api", "referencia": "<id_do_agendamento_atual>"},
     {"tipo": "pedido_de_clarificacao", "referencia": "<politica_de_cancelamento_ausente>"}
   ],
   "suficiencia": "insuficiente"
@@ -144,4 +174,7 @@ Se a política da clínica não trouxer critérios vigentes e versionados, o ges
 
 ## Verificação
 
-Cada resposta deve passar por validação do schema e por regras determinísticas: fonte presente, status permitido, coerência entre ação e confirmação, e correspondência com o retorno da API. Esses exemplos ainda não são logs de execução; evidências reais devem ser registradas em `logs/` quando o agente e as ferramentas forem implementados.
+Cada resposta final deve passar por validação do schema antes de ser exibida.
+Uma resposta inválida gera erro explícito e não é apresentada como confirmada.
+Esses exemplos ainda não são logs de execução; evidências reais devem ser
+registradas em `logs/` quando o agente e as ferramentas forem implementados.

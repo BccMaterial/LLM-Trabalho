@@ -12,6 +12,7 @@ from src.prompts import load_prompt
 
 from . import llm, tools
 from .demo_data import populate_example_data
+from .output_contract import insufficient_response, validate_agent_output
 
 load_dotenv()
 
@@ -60,6 +61,7 @@ class SchedulingState(TypedDict):
     pending_message: dict | None
     approval_result: bool | None
     tool_results: list[dict[str, Any]]
+    structured_response: dict | None
     answer: str | None
     authenticated_user: dict[str, Any] | None
 
@@ -87,6 +89,15 @@ def build_scheduling_graph(
         message = response.choices[0].message
         tool_calls = message.tool_calls or []
         assistant_message = message.model_dump(exclude_none=True)
+        structured_response = None
+        answer = None
+        if not tool_calls:
+            output = validate_agent_output(
+                message.content or "",
+                state["tool_results"],
+            )
+            structured_response = output.model_dump(mode="json")
+            answer = output.resultado.mensagem
         return {
             "messages": (
                 state["messages"]
@@ -99,7 +110,8 @@ def build_scheduling_graph(
             ]
             or None,
             "pending_message": assistant_message if tool_calls else None,
-            "answer": None if tool_calls else message.content or "",
+            "structured_response": structured_response,
+            "answer": answer,
         }
 
     def execute_tool_calls(
@@ -199,10 +211,12 @@ def build_scheduling_graph(
             f"{start} a {end}. Responda “sim, confirmo” para autorizar "
             "ou “não” para cancelar."
         )
+        output = insufficient_response(answer, "confirmacao_de_horario")
         return {
             "messages": state["messages"] + [{"role": "assistant", "content": answer}],
             "pending_action": pending_actions,
             "approval_result": None,
+            "structured_response": output.model_dump(mode="json"),
             "answer": answer,
         }
 
@@ -245,8 +259,10 @@ def build_scheduling_graph(
             "Responda “sim, confirmo” para autorizar esse horário ou “não” "
             "para cancelar."
         )
+        output = insufficient_response(answer, "confirmacao_de_horario")
         return {
             "messages": state["messages"] + [{"role": "assistant", "content": answer}],
+            "structured_response": output.model_dump(mode="json"),
             "answer": answer,
         }
 
@@ -263,11 +279,13 @@ def build_scheduling_graph(
         )
 
     def limit_reached(_: SchedulingState) -> dict:
+        output = insufficient_response(
+            "Não foi possível concluir o atendimento dentro do limite da demonstração.",
+            "limite_de_rodadas",
+        )
         return {
-            "answer": (
-                "Não foi possível concluir o atendimento dentro do limite "
-                "da demonstração."
-            )
+            "structured_response": output.model_dump(mode="json"),
+            "answer": output.resultado.mensagem,
         }
 
     builder = StateGraph(SchedulingState)
@@ -335,6 +353,7 @@ def run_scheduling_flow(
         "pending_message": None,
         "approval_result": None,
         "tool_results": [],
+        "structured_response": None,
         "answer": None,
         "authenticated_user": None,
     }
