@@ -5,22 +5,22 @@ responder dúvidas administrativas da clínica. Ela não substitui a API da
 clínica, que é a fonte dos dados individuais e mutáveis dos pacientes, nem
 autoriza o agente a fazer diagnóstico.
 
-> **Estado da implementação:** este documento registra uma proposta de
-> arquitetura e um primeiro conjunto de avaliação. O repositório ainda não
-> contém um índice vetorial ou uma API implementada para os registros
-> descritos abaixo. Os documentos oficiais da clínica serão mantidos fora do
-> repositório. As escolhas técnicas e os testes precisam ser validados quando
-> essas fontes estiverem disponíveis.
+> **Estado da implementação:** o repositório contém um primeiro serviço local
+> de recuperação vetorial em `src/agent/policy_retrieval.py`, baseado em
+> ChromaDB e no modelo de embeddings multilíngue descrito abaixo. Ainda não há
+> documentos oficiais da clínica no índice, ingestão integrada nem validação
+> com essas fontes. Os testes usam somente fixtures sintéticas identificadas
+> como tal; elas não representam políticas da clínica.
 
 ## 1. Formas de recuperação escolhidas
 
 | Forma usada | Com o quê | O que responde no case |
 |---|---|---|
 | Consulta estruturada | API/banco de dados da clínica, consultado por identificador do paciente e campos definidos | Dados cadastrais, encaminhamento registrado, agendamentos, disponibilidade e status/posição na fila |
-| Busca vetorial | Proposta para o protótipo: ChromaDB e `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, com embeddings de 384 dimensões | Perguntas em linguagem natural sobre regras e orientações administrativas vigentes, como encaminhamentos, documentação e procedimentos aprovados de agendamento/cancelamento |
+| Busca vetorial | Implementação inicial do protótipo: ChromaDB e `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, com embeddings de 384 dimensões | Perguntas em linguagem natural sobre regras e orientações administrativas vigentes, como encaminhamentos, documentação e procedimentos aprovados de agendamento/cancelamento |
 
 Assim, a resposta à pergunta “o RAG é vetorial ou é banco de dados?” é:
-**a proposta combina os dois, para perguntas diferentes**. Registros individuais
+**a arquitetura combina os dois, para perguntas diferentes**. Registros individuais
 exigem consulta estruturada; regras redigidas em linguagem natural podem ser
 recuperadas semanticamente. A busca vetorial não deve ser usada para localizar
 ou inferir dados pessoais de pacientes.
@@ -53,11 +53,22 @@ somente as versões aprovadas e vigentes.
 
 **Frequência proposta:** revisar o corpus ao menos trimestralmente e atualizar
 o índice sempre que uma política for criada, alterada ou revogada. Cada trecho
-deve guardar, no mínimo, a fonte, a versão, o estado (vigente ou revogado) e as
-datas de vigência. A atualização deve remover ou excluir da recuperação as
-versões revogadas, sem perder o histórico necessário para auditoria. Dados de
-pacientes e de agenda mudam com maior frequência e devem ser consultados na API,
-não indexados neste corpus.
+indexado guarda fonte, versão, identificadores do documento e seção, estado de
+aprovação, responsável e data de aprovação quando aplicável, data de revogação
+quando aplicável e datas de vigência. `PolicyRetriever.upsert` atualiza a
+representação vetorial sem apagar versões anteriores; `search` filtra por estado
+`approved` e vigência na data da consulta. Os estados aceitos são `pending`,
+`approved`, `rejected` e `revoked`. Para excluir uma versão da recuperação, seu
+estado deve ser atualizado para `revoked`. O diretório persistente pode ser
+definido por `POLICY_INDEX_PATH`; por padrão, fica no cache local do usuário.
+Dados de pacientes e de agenda mudam com maior frequência e devem ser
+consultados na API, não indexados neste corpus.
+
+O serviço recebe um trecho já delimitado por seção/artigo/tópico; ele não
+implementa ingestão, divisão automática de documentos, autenticação de
+aprovadores ou API de administração do índice. Essas operações precisam ser
+integradas a uma origem institucional autorizada antes de uso real. A busca
+normal exclui registros marcados como fixtures de teste.
 
 ## 3. Conjunto inicial de avaliação
 
@@ -97,13 +108,14 @@ serem usadas para responder dúvidas de pacientes.
 
 **Avaliação proposta:** quando as fontes oficiais e o índice estiverem
 disponíveis, verificar que as consultas retornam a versão vigente e citam sua
-fonte. Registrar como falha se uma versão revogada for usada na resposta. Até
-que essas fontes existam, não incluir no repositório exemplos de conteúdo de
-políticas nem afirmar resultados de testes ainda não executados.
+fonte. Registrar como falha se uma versão revogada for usada na resposta. Os
+testes atuais verificam os filtros de status e vigência com documentos
+sintéticos marcados como fixtures; eles não validam a relevância semântica do
+modelo nem políticas reais.
 
 ## 5. Corte e `k` da busca vetorial
 
-Estas decisões aplicam-se somente à busca vetorial proposta; não se aplicam às
+Estas decisões aplicam-se somente à busca vetorial implementada; não se aplicam às
 consultas estruturadas da API.
 
 - **Estratégia de corte:** dividir por seção, artigo ou tópico da política,
