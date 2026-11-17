@@ -95,7 +95,7 @@ agendamentos: o agente pode consultar registros de todos os pacientes.
 
 Benchmark comparativo dos modelos (usa somente casos fictícios e ferramentas simuladas):
 
-1. Copie as chaves de API da Mistral, Groq e Gemini para `MISTRAL_API_KEY`, `GROQ_API_KEY` e `GEMINI_API_KEY` no `.env` local. Nunca coloque as chaves no repositório.
+1. Copie as chaves de API da Groq e Gemini para `GROQ_API_KEY` e `GEMINI_API_KEY` no `.env` local. A mesma chave Groq é usada pelo GPT-OSS 20B e Qwen 3.8 27B. Nunca coloque as chaves no repositório.
 2. Confira os modelos, endpoints e preços em `benchmarks/modelos.toml`.
 3. Confira a configuração sem fazer chamadas pagas:
 
@@ -109,7 +109,7 @@ poetry run python -m src.agent.benchmark --dry-run
 poetry run python -m src.agent.benchmark
 ```
 
-Para repetir os casos três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As chamadas aos provedores são cobradas conforme as tarifas vigentes; `--dry-run` não envia chamadas.
+Para repetir os casos três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As tarifas configuradas estimam o custo em faixa paga; na faixa gratuita da Groq ou do Gemini há limites de uso e as solicitações permitidas dentro deles não geram cobrança. `--dry-run` não envia chamadas.
 
 Os relatórios Markdown, JSON e CSV são gravados em `logs/model-benchmark/`. O CSV deixa campos para avaliação humana; o programa não escolhe vencedor automaticamente. A projeção semestral usa 182 dias e só é calculada quando `--daily-volume` é fornecido.
 

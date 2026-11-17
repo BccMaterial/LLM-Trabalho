@@ -12,30 +12,6 @@ max_output_tokens = 700
 temperature = 0
 
 [[models]]
-name = "Mistral Small 4"
-provider = "Mistral API"
-model_id = "mistral-small-2603"
-base_url = "https://api.mistral.ai/v1"
-api_key_env = "MISTRAL_API_KEY"
-currency = "USD"
-input_price_per_million = 0.15
-output_price_per_million = 0.60
-price_checked = "2026-11-14"
-pricing_source = "https://docs.mistral.ai/inference/pricing"
-
-[[models]]
-name = "Ministral 3 8B"
-provider = "Mistral API"
-model_id = "ministral-8b-2512"
-base_url = "https://api.mistral.ai/v1"
-api_key_env = "MISTRAL_API_KEY"
-currency = "USD"
-input_price_per_million = 0.15
-output_price_per_million = 0.15
-price_checked = "2026-11-14"
-pricing_source = "https://docs.mistral.ai/inference/pricing"
-
-[[models]]
 name = "GPT-OSS 20B"
 provider = "Groq API"
 model_id = "openai/gpt-oss-20b"
@@ -46,6 +22,18 @@ input_price_per_million = 0.075
 output_price_per_million = 0.30
 price_checked = "2026-11-14"
 pricing_source = "https://console.groq.com/docs/model/openai/gpt-oss-20b"
+
+[[models]]
+name = "Qwen 3.8 27B"
+provider = "Groq API (faixa gratuita com limites)"
+model_id = "qwen/qwen3.8-27b"
+base_url = "https://api.groq.com/openai/v1"
+api_key_env = "GROQ_API_KEY"
+currency = "USD"
+input_price_per_million = 0.80
+output_price_per_million = 4.00
+price_checked = "2026-11-17"
+pricing_source = "https://console.groq.com/docs/model/qwen/qwen3.8-27b"
 
 [[models]]
 name = "Gemini 2.5 Flash-Lite"
