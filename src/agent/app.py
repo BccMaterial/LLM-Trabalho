@@ -1,3 +1,4 @@
+import getpass
 import json
 import re
 import unicodedata
@@ -19,6 +20,12 @@ SYSTEM_PROMPT = ATENDENTE_PROMPT.content
 DEMO_MESSAGE = "Quero agendar uma avaliação neuropsicológica para a manhã."
 MAX_TOOL_ROUNDS = 5
 STOP_COMMANDS = {"sair", "encerrar", "fim", "quit", "exit"}
+TERMINAL_HELP = (
+    "Comandos disponíveis:\n"
+    "/login - autenticar sua conta\n"
+    "/help - mostrar esta ajuda\n"
+    "/sair - encerrar o atendimento"
+)
 
 AFFIRMATIVE_APPROVALS = {
     "confirmo",
@@ -54,6 +61,7 @@ class SchedulingState(TypedDict):
     approval_result: bool | None
     tool_results: list[dict[str, Any]]
     answer: str | None
+    authenticated_user: dict[str, Any] | None
 
 
 def _parse_approval_response(message: str) -> bool | None:
@@ -99,6 +107,7 @@ def build_scheduling_graph(
         messages: list[dict],
         tool_results: list[dict[str, Any]],
         approval_result: bool | None = None,
+        authenticated_user: dict[str, Any] | None = None,
     ) -> None:
         for tool_call in tool_calls:
             name = tool_call["function"]["name"]
@@ -107,7 +116,12 @@ def build_scheduling_graph(
                     "O agendamento não pode ser executado sem aprovação explícita."
                 )
             arguments = json.loads(tool_call["function"]["arguments"])
-            result = tools.execute_tool(api_client, name, arguments)
+            result = tools.execute_tool(
+                api_client,
+                name,
+                arguments,
+                authenticated_user=authenticated_user,
+            )
             messages.append(
                 {
                     "role": "tool",
@@ -125,8 +139,19 @@ def build_scheduling_graph(
             tool_call["function"]["name"] == "confirmar_agendamento"
             for tool_call in state["pending_action"]
         ):
+            if not state.get("authenticated_user"):
+                return "require_authentication"
             return "request_approval"
         return "dispatch_tools"
+
+    def require_authentication(state: SchedulingState) -> dict:
+        answer = "Para agendar, faça login com o comando /login."
+        return {
+            "messages": state["messages"] + [{"role": "assistant", "content": answer}],
+            "pending_action": None,
+            "pending_message": None,
+            "answer": answer,
+        }
 
     def dispatch_tools(state: SchedulingState) -> dict:
         messages = list(state["messages"])
@@ -138,6 +163,7 @@ def build_scheduling_graph(
             messages,
             tool_results,
             approval_result=state["approval_result"],
+            authenticated_user=state.get("authenticated_user"),
         )
         return {
             "messages": messages,
@@ -249,6 +275,7 @@ def build_scheduling_graph(
     builder.add_node("dispatch_tools", dispatch_tools)
     builder.add_node("request_approval", request_approval)
     builder.add_node("resolve_approval", resolve_approval)
+    builder.add_node("require_authentication", require_authentication)
     builder.add_node("limit_reached", limit_reached)
     builder.add_conditional_edges(
         START,
@@ -261,8 +288,14 @@ def build_scheduling_graph(
         {
             "dispatch_tools": "dispatch_tools",
             "request_approval": "request_approval",
+            "require_authentication": "require_authentication",
             "end": END,
         },
+    )
+    builder.add_conditional_edges(
+        "require_authentication",
+        lambda _: "end",
+        {"end": END},
     )
     builder.add_conditional_edges(
         "request_approval",
@@ -303,7 +336,11 @@ def run_scheduling_flow(
         "approval_result": None,
         "tool_results": [],
         "answer": None,
+        "authenticated_user": None,
     }
+
+    if interactive:
+        print("Modo convidado ativo. Use /login para autenticar ou /help.")
 
     while True:
         state["messages"].append({"role": "user", "content": user_message})
@@ -322,7 +359,23 @@ def run_scheduling_flow(
         except EOFError:
             print("\nAtendimento encerrado.")
             return answer
-        if user_message.lower() in STOP_COMMANDS:
+        command = user_message.casefold()
+        if command == "/help":
+            print(TERMINAL_HELP)
+            continue
+        if command == "/login":
+            email = input("\nE-mail: ").strip()
+            password = getpass.getpass("Senha: ")
+            if not email or not password:
+                print("Informe o e-mail e a senha.")
+                continue
+            try:
+                state["authenticated_user"] = api_client.login_user(email, password)
+                print("Login realizado.")
+            except RuntimeError as error:
+                print(f"Não foi possível fazer login: {error}")
+            continue
+        if command == "/sair" or command in STOP_COMMANDS:
             print("Atendimento encerrado.")
             return answer
         if not user_message:

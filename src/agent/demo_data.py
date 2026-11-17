@@ -49,8 +49,8 @@ def _find_professional(email: str) -> dict:
 
 def populate_example_data() -> None:
     """Cria, pela API, os registros mínimos usados na demonstração."""
-    api_user = os.environ["API_USER"].strip().lower()
-    api_password = os.environ["API_PASSWORD"]
+    api_user = (os.getenv("API_AGENT_USER") or os.environ["API_USER"]).strip().lower()
+    api_password = os.getenv("API_AGENT_PASSWORD") or os.environ["API_PASSWORD"]
 
     _request(
         "/api/users",

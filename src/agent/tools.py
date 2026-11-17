@@ -14,12 +14,7 @@ TOOLS = [
             "description": "Consulta os agendamentos existentes na API da clínica.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "patient_id": {
-                        "type": "string",
-                        "description": "ID do paciente, quando a consulta for específica.",
-                    },
-                },
+                "properties": {},
                 "additionalProperties": False,
             },
         },
@@ -32,10 +27,6 @@ TOOLS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "patient_id": {
-                        "type": "string",
-                        "description": "UUID do paciente.",
-                    },
                     "professional_id": {
                         "type": "string",
                         "description": "UUID do profissional.",
@@ -54,7 +45,6 @@ TOOLS = [
                     },
                 },
                 "required": [
-                    "patient_id",
                     "professional_id",
                     "agenda_inicio",
                     "agenda_fim",
@@ -70,27 +60,42 @@ TOOLS = [
 class ApiClient:
     def __init__(self) -> None:
         self.opener = build_opener()
+        self.agent_session_cookie = ""
         self.session_cookie = ""
+        self.user_session_cookie = ""
+        self.authenticated_user: dict | None = None
         self.base_url = os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
+        agent_email = os.getenv("API_AGENT_USER") or os.environ["API_USER"]
+        agent_password = os.getenv("API_AGENT_PASSWORD") or os.environ["API_PASSWORD"]
         self._request(
             "/api/sessions",
             method="POST",
             payload={
-                "email": os.environ["API_USER"],
-                "password": os.environ["API_PASSWORD"],
+                "email": agent_email,
+                "password": agent_password,
             },
+            cookie_kind="agent",
         )
 
     def _request(
-        self, path: str, method: str = "GET", payload: dict | None = None
+        self,
+        path: str,
+        method: str = "GET",
+        payload: dict | None = None,
+        cookie_kind: str = "agent",
     ) -> dict:
         data = json.dumps(payload).encode() if payload is not None else None
+        cookie = (
+            self.agent_session_cookie
+            if cookie_kind == "agent"
+            else self.user_session_cookie
+        )
         request = Request(
             f"{self.base_url}{path}",
             data=data,
             headers={
                 "Content-Type": "application/json",
-                "Cookie": self.session_cookie,
+                "Cookie": cookie,
             },
             method=method,
         )
@@ -98,13 +103,35 @@ class ApiClient:
             with self.opener.open(request) as response:
                 cookie = SimpleCookie(response.headers.get("Set-Cookie"))
                 if "session_id" in cookie:
-                    self.session_cookie = f"session_id={cookie['session_id'].value}"
+                    session_cookie = f"session_id={cookie['session_id'].value}"
+                    if cookie_kind == "agent":
+                        self.agent_session_cookie = session_cookie
+                        self.session_cookie = session_cookie
+                    else:
+                        self.user_session_cookie = session_cookie
                 return json.loads(response.read().decode())
         except (HTTPError, URLError) as error:
             detail = (
                 error.read().decode() if isinstance(error, HTTPError) else str(error)
             )
             raise RuntimeError(f"API indisponível ({path}): {detail}") from error
+
+    def login_user(self, email: str, password: str) -> dict:
+        result = self._request(
+            "/api/sessions",
+            method="POST",
+            payload={"email": email, "password": password},
+            cookie_kind="user",
+        )
+        user = result.get("user")
+        if not isinstance(user, dict) or not user.get("id"):
+            raise RuntimeError("A API não retornou uma identidade de usuário válida.")
+        self.authenticated_user = user
+        return user
+
+    def logout_user(self) -> None:
+        self.user_session_cookie = ""
+        self.authenticated_user = None
 
     def consultar_agendamentos(self, patient_id: str | None = None) -> dict:
         if patient_id:
@@ -142,10 +169,25 @@ class ApiClient:
         return self._request("/api/appointments", method="POST", payload=fields)
 
 
-def execute_tool(client: ApiClient, name: str, arguments: dict) -> dict:
+def execute_tool(
+    client: ApiClient,
+    name: str,
+    arguments: dict,
+    authenticated_user: dict | None = None,
+) -> dict:
     """Executa somente as ferramentas expostas ao modelo."""
     if name == "consultar_disponibilidade":
-        return client.consultar_agendamentos(**arguments)
+        patient_id = None
+        if authenticated_user:
+            patient_id = authenticated_user["id"]
+        return client.consultar_agendamentos(patient_id=patient_id)
     if name == "confirmar_agendamento":
+        if not authenticated_user or not authenticated_user.get("id"):
+            return {
+                "erro": "authentication_required",
+                "mensagem": "Faça login com /login antes de agendar.",
+            }
+        arguments = dict(arguments)
+        arguments["patient_id"] = authenticated_user["id"]
         return client.criar_agendamento(**arguments)
     raise ValueError(f"Ferramenta desconhecida: {name}")
