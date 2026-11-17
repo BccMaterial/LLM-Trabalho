@@ -19,6 +19,7 @@ def test_migrations_post_applies_all_pending_migrations(
         "20261112_01",
         "20261114_01",
         "20261114_02",
+        "20261116_01",
     }
 
     engine = create_engine(migration_database_url)
@@ -97,6 +98,7 @@ def test_migrations_post_applies_all_pending_migrations(
             column["name"]: column for column in inspector.get_columns("user_sessions")
         }
         assert set(session_columns) == {
+            "id",
             "token_hash",
             "user_id",
             "created_at",

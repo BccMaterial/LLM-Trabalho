@@ -37,5 +37,9 @@ class UserAuthorizationPolicy:
         return actor_type == "admin"
 
     @classmethod
+    def can_access_session(cls, actor_type: str | None) -> bool:
+        return actor_type in {"admin", "agent"}
+
+    @classmethod
     def can_access_agent(cls, actor_type: str | None) -> bool:
         return actor_type in cls._AGENT_USER_TYPES

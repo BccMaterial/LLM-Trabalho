@@ -10,6 +10,7 @@ def test_migrations_get_lists_pending_migrations(migration_client, migration_cou
         "20261112_01",
         "20261114_01",
         "20261114_02",
+        "20261116_01",
     }
 
 
