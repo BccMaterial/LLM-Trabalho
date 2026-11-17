@@ -69,7 +69,7 @@ def _response(message):
 
 def test_scheduling_graph_returns_model_answer(monkeypatch):
     monkeypatch.setattr(
-        "agent.app._request_llm_with_retry",
+        "agent.app.llm.request_with_retry",
         lambda client, messages: _response(FakeMessage("Olá, como posso ajudar?")),
     )
     graph = build_scheduling_graph(object(), FakeApiClient())
@@ -89,7 +89,7 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
         ]
     )
     monkeypatch.setattr(
-        "agent.app._request_llm_with_retry",
+        "agent.app.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
@@ -136,7 +136,7 @@ def test_scheduling_graph_requires_explicit_approval_before_booking(monkeypatch)
         ]
     )
     monkeypatch.setattr(
-        "agent.app._request_llm_with_retry",
+        "agent.app.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
@@ -192,7 +192,7 @@ def test_scheduling_graph_cancels_booking_on_explicit_rejection(monkeypatch):
         ]
     )
     monkeypatch.setattr(
-        "agent.app._request_llm_with_retry",
+        "agent.app.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
@@ -232,7 +232,7 @@ def test_scheduling_graph_does_not_infer_approval_from_ambiguous_reply(monkeypat
         ]
     )
     monkeypatch.setattr(
-        "agent.app._request_llm_with_retry",
+        "agent.app.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
