@@ -2,12 +2,14 @@ import json
 import os
 import time
 from http.cookies import SimpleCookie
+from typing import Any, TypedDict
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, build_opener
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from dotenv import load_dotenv
+from langgraph.graph import END, START, StateGraph
 from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
 from src.prompts import load_prompt
@@ -84,6 +86,16 @@ TOOLS = [
         },
     },
 ]
+
+
+class SchedulingState(TypedDict):
+    messages: list[dict]
+    conversation_id: str
+    round_count: int
+    pending_action: list[dict] | None
+    approval_result: bool | None
+    tool_results: list[dict[str, Any]]
+    answer: str | None
 
 
 class ApiClient:
@@ -169,6 +181,83 @@ def execute_tool(client: ApiClient, name: str, arguments: dict) -> dict:
     raise ValueError(f"Ferramenta desconhecida: {name}")
 
 
+def build_scheduling_graph(llm_client: OpenAI, api_client: ApiClient):
+    def call_model(state: SchedulingState) -> dict:
+        response = _request_llm_with_retry(llm_client, state["messages"])
+        message = response.choices[0].message
+        tool_calls = message.tool_calls or []
+        return {
+            "messages": state["messages"] + [message.model_dump(exclude_none=True)],
+            "round_count": state["round_count"] + 1,
+            "pending_action": [
+                tool_call.model_dump(exclude_none=True) for tool_call in tool_calls
+            ]
+            or None,
+            "answer": None if tool_calls else message.content or "",
+        }
+
+    def route_after_model(state: SchedulingState) -> str:
+        return "dispatch_tools" if state["pending_action"] else "end"
+
+    def dispatch_tools(state: SchedulingState) -> dict:
+        messages = list(state["messages"])
+        tool_results = list(state["tool_results"])
+        for tool_call in state["pending_action"] or []:
+            name = tool_call["function"]["name"]
+            arguments = json.loads(tool_call["function"]["arguments"])
+            print(
+                f"Chamada de função: {name}"
+                f"({json.dumps(arguments, ensure_ascii=False)})"
+            )
+            result = execute_tool(api_client, name, arguments)
+            print(f"Resposta da função: {json.dumps(result, ensure_ascii=False)}")
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call["id"],
+                    "name": name,
+                    "content": json.dumps(result, ensure_ascii=False),
+                }
+            )
+            tool_results.append({"name": name, "result": result})
+        return {
+            "messages": messages,
+            "pending_action": None,
+            "tool_results": tool_results,
+        }
+
+    def route_after_tools(state: SchedulingState) -> str:
+        return (
+            "limit_reached" if state["round_count"] >= MAX_TOOL_ROUNDS else "call_model"
+        )
+
+    def limit_reached(_: SchedulingState) -> dict:
+        return {
+            "answer": (
+                "Não foi possível concluir o atendimento dentro do limite "
+                "da demonstração."
+            )
+        }
+
+    builder = StateGraph(SchedulingState)
+    builder.add_node("call_model", call_model)
+    builder.add_node("dispatch_tools", dispatch_tools)
+    builder.add_node("limit_reached", limit_reached)
+    builder.add_edge(START, "call_model")
+    builder.add_conditional_edges(
+        "call_model",
+        route_after_model,
+        {"dispatch_tools": "dispatch_tools", "end": END},
+    )
+    builder.add_conditional_edges(
+        "dispatch_tools",
+        route_after_tools,
+        {"call_model": "call_model", "limit_reached": "limit_reached"},
+    )
+    builder.add_edge("limit_reached", END)
+    return builder.compile()
+
+
 def run_scheduling_flow(
     user_message: str = DEMO_MESSAGE, interactive: bool = True
 ) -> str:
@@ -178,51 +267,25 @@ def run_scheduling_flow(
         base_url=os.environ["LLM_BASE_URL"],
         api_key=os.environ["OPENAI_API_KEY"],
     )
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-    ]
+    graph = build_scheduling_graph(llm_client, api_client)
+    state: SchedulingState = {
+        "messages": [{"role": "system", "content": SYSTEM_PROMPT}],
+        "conversation_id": str(uuid4()),
+        "round_count": 0,
+        "pending_action": None,
+        "approval_result": None,
+        "tool_results": [],
+        "answer": None,
+    }
 
     while True:
-        messages.append({"role": "user", "content": user_message})
+        state["messages"].append({"role": "user", "content": user_message})
+        state["round_count"] = 0
+        state["pending_action"] = None
         print(f"\nPaciente: {user_message}")
-
-        for _ in range(MAX_TOOL_ROUNDS):
-            response = _request_llm_with_retry(llm_client, messages)
-            message = response.choices[0].message
-            messages.append(message.model_dump(exclude_none=True))
-
-            if not message.tool_calls:
-                answer = message.content or ""
-                print(f"Agente: {answer}")
-                break
-
-            for tool_call in message.tool_calls:
-                arguments = json.loads(tool_call.function.arguments)
-                print(
-                    f"Chamada de função: {tool_call.function.name}"
-                    f"({json.dumps(arguments, ensure_ascii=False)})"
-                )
-                result = execute_tool(
-                    api_client,
-                    tool_call.function.name,
-                    arguments,
-                )
-                print(f"Resposta da função: {json.dumps(result, ensure_ascii=False)}")
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": tool_call.function.name,
-                        "content": json.dumps(result, ensure_ascii=False),
-                    }
-                )
-
-        else:
-            answer = (
-                "Não foi possível concluir o atendimento dentro do limite "
-                "da demonstração."
-            )
-            print(f"Agente: {answer}")
+        state = graph.invoke(state)
+        answer = state["answer"] or ""
+        print(f"Agente: {answer}")
 
         if not interactive:
             return answer
