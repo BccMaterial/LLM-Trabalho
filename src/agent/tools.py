@@ -177,10 +177,7 @@ def execute_tool(
 ) -> dict:
     """Executa somente as ferramentas expostas ao modelo."""
     if name == "consultar_disponibilidade":
-        patient_id = None
-        if authenticated_user:
-            patient_id = authenticated_user["id"]
-        return client.consultar_agendamentos(patient_id=patient_id)
+        return client.consultar_agendamentos()
     if name == "confirmar_agendamento":
         if not authenticated_user or not authenticated_user.get("id"):
             return {

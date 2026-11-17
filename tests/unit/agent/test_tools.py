@@ -73,6 +73,21 @@ def test_booking_uses_authenticated_identity_instead_of_model_id():
     assert result["patient_id"] == "authenticated-patient"
 
 
+def test_availability_lists_all_appointments_with_authenticated_user():
+    class FakeClient:
+        def consultar_agendamentos(self, patient_id=None):
+            return {"patient_id": patient_id}
+
+    result = tools.execute_tool(
+        FakeClient(),
+        "consultar_disponibilidade",
+        {},
+        authenticated_user={"id": "authenticated-patient"},
+    )
+
+    assert result == {"patient_id": None}
+
+
 def test_booking_is_blocked_without_authenticated_identity():
     class FakeClient:
         def criar_agendamento(self, **fields):

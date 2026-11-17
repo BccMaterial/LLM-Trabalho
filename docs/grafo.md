@@ -13,7 +13,8 @@ durante o processo. A cada rodada, envia as mensagens e as ferramentas ao LLM.
 O terminal inicia em modo convidado e aceita `/login`, `/help` e `/sair`.
 Uma sessão técnica separada autentica as chamadas do agente à API; os dados da
 conta do usuário autenticado ficam em estado separado e nunca são enviados ao
-LLM como texto ou credencial.
+LLM como texto ou credencial. O login identifica o usuário para operações de
+agendamento, mas não filtra a consulta de agendamentos por paciente.
 Se o modelo pedir uma ferramenta, o código a executa, acrescenta o resultado à
 conversa e chama o modelo novamente. Se não pedir ferramenta, mostra a resposta
 e, no modo interativo, aguarda outra mensagem do paciente.
