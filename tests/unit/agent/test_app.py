@@ -1,7 +1,10 @@
 import json
 from types import SimpleNamespace
 
+import pytest
+
 from agent.app import build_scheduling_graph
+from agent.output_contract import InvalidAgentOutputError
 
 
 class FakeMessage:
@@ -65,12 +68,40 @@ def _state():
         "pending_message": None,
         "approval_result": None,
         "tool_results": [],
+        "structured_response": None,
         "answer": None,
         "authenticated_user": {
             "id": "authenticated-patient",
             "email": "patient@example.test",
         },
     }
+
+
+def _output(
+    message,
+    status="informacao_insuficiente",
+    action="aguarda_confirmacao",
+    sources=None,
+    sufficiency="insuficiente",
+):
+    return json.dumps(
+        {
+            "resultado": {
+                "status": status,
+                "mensagem": message,
+                "acao": action,
+            },
+            "fonte": sources
+            or [
+                {
+                    "tipo": "pedido_de_clarificacao",
+                    "referencia": "mensagem_do_paciente",
+                }
+            ],
+            "suficiencia": sufficiency,
+        },
+        ensure_ascii=False,
+    )
 
 
 def _response(message):
@@ -80,7 +111,9 @@ def _response(message):
 def test_scheduling_graph_returns_model_answer(monkeypatch):
     monkeypatch.setattr(
         "agent.app.llm.request_with_retry",
-        lambda client, messages: _response(FakeMessage("Olá, como posso ajudar?")),
+        lambda client, messages: _response(
+            FakeMessage(_output("Olá, como posso ajudar?"))
+        ),
     )
     graph = build_scheduling_graph(object(), FakeApiClient())
 
@@ -88,14 +121,14 @@ def test_scheduling_graph_returns_model_answer(monkeypatch):
 
     assert result["answer"] == "Olá, como posso ajudar?"
     assert result["round_count"] == 1
-    assert result["messages"][-1]["content"] == "Olá, como posso ajudar?"
+    assert result["structured_response"]["resultado"]["mensagem"] == result["answer"]
 
 
 def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, capsys):
     responses = iter(
         [
             _response(FakeMessage(tool_calls=[FakeToolCall()])),
-            _response(FakeMessage("Encontrei um agendamento.")),
+            _response(FakeMessage(_output("Encontrei um agendamento."))),
         ]
     )
     monkeypatch.setattr(
@@ -142,7 +175,22 @@ def test_scheduling_graph_requires_explicit_approval_before_booking(monkeypatch)
                     ]
                 )
             ),
-            _response(FakeMessage("O agendamento foi confirmado.")),
+            _response(
+                FakeMessage(
+                    _output(
+                        "O agendamento foi confirmado.",
+                        status="agendamento_confirmado",
+                        action="concluida",
+                        sources=[
+                            {
+                                "tipo": "api",
+                                "referencia": "confirmar_agendamento",
+                            }
+                        ],
+                        sufficiency="suficiente",
+                    )
+                )
+            ),
         ]
     )
     monkeypatch.setattr(
@@ -198,7 +246,7 @@ def test_scheduling_graph_cancels_booking_on_explicit_rejection(monkeypatch):
                     ]
                 )
             ),
-            _response(FakeMessage("Tudo bem, não farei o agendamento.")),
+            _response(FakeMessage(_output("Tudo bem, não farei o agendamento."))),
         ]
     )
     monkeypatch.setattr(
@@ -294,3 +342,14 @@ def test_scheduling_graph_requires_login_before_booking(monkeypatch):
     assert api_client.appointments == []
     assert result["pending_action"] is None
     assert "/login" in result["answer"]
+
+
+def test_scheduling_graph_rejects_invalid_final_output(monkeypatch):
+    monkeypatch.setattr(
+        "agent.app.llm.request_with_retry",
+        lambda client, messages: _response(FakeMessage("resposta sem JSON")),
+    )
+    graph = build_scheduling_graph(object(), FakeApiClient())
+
+    with pytest.raises(InvalidAgentOutputError, match="contrato de saída"):
+        graph.invoke(_state())
