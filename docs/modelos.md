@@ -47,7 +47,7 @@ Antes de rodar:
 - aprovar a política de prioridade e a referência de avaliação com a clínica;
 - preparar casos autorizados e minimizados; registrar sua origem e versão sem armazenar dados identificáveis no repositório;
 - configurar o endpoint e preços atuais;
-- escolher o mesmo prompt versionado (`prompts/*_v1.txt`), schema e parâmetros para cada candidato;
+- escolher o mesmo prompt versionado (`src/prompts/*_v1.txt`), schema e parâmetros para cada candidato;
 - fixar o orçamento e repetir cada caso com quantidade igual de execuções.
 
 Por execução, guardar `run_id`, data, caso, provedor/modelo/versão, versão/hash do prompt, parâmetros, chamadas de ferramenta e argumentos, validações, resultado, fonte, suficiência, tokens de entrada/saída, latência, custo e ocorrência de escalonamento. Remover conteúdo pessoal dos logs; nunca incluir laudos ou segredos.

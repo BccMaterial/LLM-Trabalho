@@ -2,7 +2,6 @@ import json
 import os
 import time
 from http.cookies import SimpleCookie
-from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, build_opener
@@ -11,12 +10,14 @@ from uuid import UUID
 from dotenv import load_dotenv
 from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
+from src.prompts import load_prompt
+
 from .demo_data import populate_example_data
 
 load_dotenv()
 
-PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "atendente_v1.txt"
-SYSTEM_PROMPT = PROMPT_PATH.read_text(encoding="utf-8")
+ATENDENTE_PROMPT = load_prompt("atendente_v1")
+SYSTEM_PROMPT = ATENDENTE_PROMPT.content
 DEMO_MESSAGE = "Quero agendar uma avaliação neuropsicológica para a manhã."
 MAX_TOOL_ROUNDS = 5
 MAX_LLM_RETRIES = 5
