@@ -22,7 +22,7 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from .app import SYSTEM_PROMPT, TOOLS
+from .app import TOOLS
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = ROOT / "benchmarks" / "modelos.toml"
@@ -56,17 +56,6 @@ def _read_config() -> tuple[dict[str, Any], list[dict[str, Any]], dict, list]:
     benchmark["schema_sha256"] = _sha256(schema_path.read_bytes())
     benchmark["cases_sha256"] = _sha256(cases_path.read_bytes())
     return benchmark, config["models"], schema, cases
-
-
-def _response_format(schema: dict) -> dict:
-    return {
-        "type": "json_schema",
-        "json_schema": {
-            "name": "resposta_atendimento",
-            "strict": True,
-            "schema": schema,
-        },
-    }
 
 
 def _valid_response(data: Any, schema: dict) -> bool:
@@ -250,7 +239,16 @@ def _run_case(
             max_retries=0,
         )
         messages = [
-            {"role": "system", "content": benchmark["prompt_text"]},
+            {
+                "role": "system",
+                "content": (
+                    benchmark["prompt_text"]
+                    + "\n\nNa resposta final, retorne somente um objeto JSON que siga "
+                    + "este schema. Chamadas de ferramenta continuam seguindo os "
+                    + "schemas próprios de cada ferramenta.\n"
+                    + json.dumps(schema, ensure_ascii=False)
+                ),
+            },
             {
                 "role": "user",
                 "content": (
@@ -292,7 +290,6 @@ def _run_case(
                 messages=messages,
                 tools=TOOLS,
                 tool_choice="auto",
-                response_format=_response_format(schema),
                 temperature=benchmark["temperature"],
                 max_tokens=min(benchmark["max_output_tokens"], remaining_tokens),
                 timeout=max(
