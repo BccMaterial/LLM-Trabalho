@@ -3,7 +3,15 @@ from api.policies.professional_authorization_policy import (
 )
 
 
-def test_only_admin_and_manager_can_manage_professionals():
+def test_agent_can_read_and_manage_professionals():
+    assert ProfessionalAuthorizationPolicy.can_list_professionals("agent")
+    assert ProfessionalAuthorizationPolicy.can_read_professional("agent")
+    assert ProfessionalAuthorizationPolicy.can_create_professional("agent")
+    assert ProfessionalAuthorizationPolicy.can_update_professional("agent")
+    assert ProfessionalAuthorizationPolicy.can_deactivate_professional("agent")
+
+
+def test_only_admin_and_manager_keep_existing_professional_permissions():
     policy_checks = (
         ProfessionalAuthorizationPolicy.can_create_professional,
         ProfessionalAuthorizationPolicy.can_list_professionals,

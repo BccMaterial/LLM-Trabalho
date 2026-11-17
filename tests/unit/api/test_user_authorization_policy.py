@@ -7,6 +7,10 @@ def test_only_admin_can_create_list_read_or_deactivate_users():
     assert UserAuthorizationPolicy.can_read_user("admin")
     assert UserAuthorizationPolicy.can_deactivate_user("admin")
     assert not UserAuthorizationPolicy.can_create_user("patient")
+    assert UserAuthorizationPolicy.can_list_users("agent")
+    assert UserAuthorizationPolicy.can_read_user("agent")
+    assert not UserAuthorizationPolicy.can_create_user("agent")
+    assert not UserAuthorizationPolicy.can_deactivate_user("agent")
     assert not UserAuthorizationPolicy.can_list_users(None)
     assert not UserAuthorizationPolicy.can_read_user("manager")
     assert not UserAuthorizationPolicy.can_deactivate_user("secretary")
@@ -17,6 +21,11 @@ def test_only_admin_can_create_list_read_or_deactivate_users():
 
 
 def test_non_admin_can_only_update_self_without_type_or_status():
+    assert not UserAuthorizationPolicy.can_update_user(
+        "agent",
+        is_self=True,
+        fields={"nome"},
+    )
     assert UserAuthorizationPolicy.can_update_user(
         "patient",
         is_self=True,

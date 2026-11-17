@@ -13,11 +13,11 @@ class UserAuthorizationPolicy:
 
     @staticmethod
     def can_list_users(actor_type: str | None) -> bool:
-        return actor_type == "admin"
+        return actor_type in {"admin", "agent"}
 
     @staticmethod
     def can_read_user(actor_type: str | None) -> bool:
-        return actor_type == "admin"
+        return actor_type in {"admin", "agent"}
 
     @classmethod
     def can_update_user(
@@ -28,6 +28,8 @@ class UserAuthorizationPolicy:
     ) -> bool:
         if actor_type == "admin":
             return True
+        if actor_type == "agent":
+            return False
         return is_self and not cls._ADMIN_ONLY_FIELDS.intersection(fields)
 
     @staticmethod

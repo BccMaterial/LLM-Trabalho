@@ -25,7 +25,9 @@ from ..views import error_view, user_view
 
 user_controller = Blueprint("user_controller", __name__)
 
-USER_TYPES = frozenset({"patient", "manager", "secretary", "policy_approver", "admin"})
+USER_TYPES = frozenset(
+    {"patient", "manager", "secretary", "policy_approver", "agent", "admin"}
+)
 
 
 class UserCreateFields(TypedDict):
