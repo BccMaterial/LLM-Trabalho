@@ -6,6 +6,11 @@ from langgraph.types import Command
 
 from .integrations import llm
 from .integrations.api import ApiClient
+from .workflows.execution import (
+    LANGGRAPH_RECURSION_LIMIT,
+    TerminationReason,
+    new_execution_deadline,
+)
 from .workflows.scheduling import (
     STOP_COMMANDS,
     SYSTEM_PROMPT,
@@ -40,6 +45,17 @@ def run_scheduling_flow(
         "proposal_version": 0,
         "approved_action_key": None,
         "completed_action_keys": [],
+        "completed_actions": {},
+        "approval_expires_at": None,
+        "professional_name": None,
+        "professional_validated": False,
+        "execution_deadline": None,
+        "workflow_step_count": 0,
+        "external_call_count": 0,
+        "total_model_tokens": 0,
+        "tool_call_counts": {},
+        "termination_reason": None,
+        "error_class": None,
     }
 
     if interactive:
@@ -51,6 +67,7 @@ def run_scheduling_flow(
                 user_message = input("\nPaciente (ou 'sair'): ").strip()
             except EOFError:
                 print("\nAtendimento encerrado.")
+                state["termination_reason"] = TerminationReason.USER_EXIT.value
                 return ""
             command = user_message.casefold()
             if command == "/help":
@@ -73,6 +90,7 @@ def run_scheduling_flow(
                 continue
             if command == "/sair" or command in STOP_COMMANDS:
                 print("Atendimento encerrado.")
+                state["termination_reason"] = TerminationReason.USER_EXIT.value
                 return ""
             if not user_message:
                 print("Digite uma mensagem para continuar o atendimento.")
@@ -82,9 +100,20 @@ def run_scheduling_flow(
         state["messages"].append({"role": "user", "content": user_message})
         state["round_count"] = 0
         state["tool_results"] = []
+        state["workflow_step_count"] = 0
+        state["external_call_count"] = 0
+        state["total_model_tokens"] = 0
+        state["tool_call_counts"] = {}
+        state["termination_reason"] = None
+        state["error_class"] = None
+        state["execution_deadline"] = new_execution_deadline()
+        api_client.set_execution_deadline(state["execution_deadline"])
         if not state["pending_action"]:
             state["approval_result"] = None
-        config = {"configurable": {"thread_id": state["conversation_id"]}}
+        config = {
+            "configurable": {"thread_id": state["conversation_id"]},
+            "recursion_limit": LANGGRAPH_RECURSION_LIMIT,
+        }
         result = graph.invoke(state, config)
         interrupts = result.get("__interrupt__") if isinstance(result, dict) else None
         while interrupts:
@@ -110,6 +139,7 @@ def run_scheduling_flow(
                 resume_text = input("Ação (aprovar/rejeitar/editar [JSON]): ").strip()
             except EOFError:
                 print("\nAtendimento encerrado.")
+                state["termination_reason"] = TerminationReason.USER_EXIT.value
                 return ""
             normalized = resume_text.casefold()
             if normalized.startswith("aprovar"):

@@ -7,6 +7,11 @@ from typing import Any
 from langgraph.types import interrupt
 
 from .output_contract import insufficient_response
+from .workflows.execution import (
+    TerminationReason,
+    deadline_expired,
+    new_approval_deadline,
+)
 
 AFFIRMATIVE_APPROVALS = {
     "confirmo",
@@ -55,12 +60,19 @@ def parse_approval_response(message: str) -> bool | None:
     return None
 
 
-def approved_action_key(conversation_id: str, tool_call: dict) -> str:
+def approved_action_key(
+    conversation_id: str,
+    tool_call: dict,
+    authenticated_user: dict | None = None,
+) -> str:
+    arguments = json.loads(tool_call["function"]["arguments"])
+    if authenticated_user and authenticated_user.get("id"):
+        arguments["patient_id"] = authenticated_user["id"]
     canonical = json.dumps(
         {
             "conversation_id": conversation_id,
             "action": tool_call["function"]["name"],
-            "arguments": json.loads(tool_call["function"]["arguments"]),
+            "arguments": arguments,
         },
         sort_keys=True,
         ensure_ascii=False,
@@ -121,6 +133,7 @@ def request_appointment_approval(state: dict) -> dict:
                 "proposal_version": state["proposal_version"],
                 "arguments": arguments,
                 "professional_name": state.get("professional_name"),
+                "expires_at": state.get("approval_expires_at"),
                 "prompt": (
                     "Antes de registrar, confirme o profissional e o horário "
                     f"exatos: {professional_name} em {start} a {end}. "
@@ -130,11 +143,31 @@ def request_appointment_approval(state: dict) -> dict:
         )
     )
 
+    if deadline_expired(state.get("approval_expires_at")):
+        answer = (
+            "A aprovação expirou. Nenhum agendamento foi criado; "
+            "solicite uma nova proposta para continuar."
+        )
+        output = insufficient_response(answer, "aprovacao_expirada")
+        return {
+            "messages": state["messages"] + [{"role": "assistant", "content": answer}],
+            "pending_action": None,
+            "pending_message": None,
+            "approval_result": False,
+            "approval_decision": "expired",
+            "approved_action_key": None,
+            "approval_expires_at": None,
+            "termination_reason": TerminationReason.APPROVAL_EXPIRED.value,
+            "structured_response": output.model_dump(mode="json"),
+            "answer": answer,
+        }
+
     decision = resume.get("decision")
     if decision == "approve":
         approved_key = approved_action_key(
             state["conversation_id"],
             confirmation_call,
+            state.get("authenticated_user"),
         )
         answer = f"O horário {start} a {end} foi aprovado explicitamente."
         output = insufficient_response(answer, "confirmacao_de_horario")
@@ -143,6 +176,8 @@ def request_appointment_approval(state: dict) -> dict:
             "approval_result": True,
             "approval_decision": "approve",
             "approved_action_key": approved_key,
+            "approval_expires_at": None,
+            "termination_reason": None,
             "structured_response": output.model_dump(mode="json"),
             "answer": None,
         }
@@ -173,6 +208,8 @@ def request_appointment_approval(state: dict) -> dict:
             "approval_result": False,
             "approval_decision": "reject",
             "structured_response": output.model_dump(mode="json"),
+            "approval_expires_at": None,
+            "termination_reason": TerminationReason.ACTION_REJECTED.value,
             "answer": answer,
         }
 
@@ -192,6 +229,10 @@ def request_appointment_approval(state: dict) -> dict:
                 "approval_result": None,
                 "approval_decision": None,
                 "approved_action_key": None,
+                "approval_expires_at": new_approval_deadline(),
+                "professional_name": None,
+                "professional_validated": False,
+                "termination_reason": None,
             }
         answer = invalid_reason
     else:
@@ -203,6 +244,7 @@ def request_appointment_approval(state: dict) -> dict:
         "pending_action": pending_actions,
         "approval_result": None,
         "approval_decision": "invalid",
+        "termination_reason": None,
         "structured_response": output.model_dump(mode="json"),
         "answer": answer,
     }

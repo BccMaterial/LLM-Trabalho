@@ -8,6 +8,8 @@ from urllib.request import Request, build_opener
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from ..workflows.execution import remaining_seconds
+
 LOCAL_TIMEZONE = ZoneInfo("America/Sao_Paulo")
 
 
@@ -18,6 +20,7 @@ class ApiClient:
         self.session_cookie = ""
         self.user_session_cookie = ""
         self.authenticated_user: dict | None = None
+        self.execution_deadline: str | None = None
         self.base_url = os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
         agent_email = os.getenv("API_AGENT_USER") or os.environ["API_USER"]
         agent_password = os.getenv("API_AGENT_PASSWORD") or os.environ["API_PASSWORD"]
@@ -54,7 +57,10 @@ class ApiClient:
             method=method,
         )
         try:
-            with self.opener.open(request) as response:
+            timeout = remaining_seconds(self.execution_deadline)
+            if timeout <= 0:
+                raise TimeoutError("API excedeu o tempo máximo da execução.")
+            with self.opener.open(request, timeout=timeout) as response:
                 cookie = SimpleCookie(response.headers.get("Set-Cookie"))
                 if "session_id" in cookie:
                     session_cookie = f"session_id={cookie['session_id'].value}"
@@ -69,6 +75,9 @@ class ApiClient:
                 error.read().decode() if isinstance(error, HTTPError) else str(error)
             )
             raise RuntimeError(f"API indisponível ({path}): {detail}") from error
+
+    def set_execution_deadline(self, deadline: str | None) -> None:
+        self.execution_deadline = deadline
 
     def login_user(self, email: str, password: str) -> dict:
         result = self._request(

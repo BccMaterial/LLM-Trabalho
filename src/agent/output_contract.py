@@ -207,17 +207,23 @@ def booking_result_response(
         return None
 
     result = booking_tool_result["result"]
-    if not isinstance(result, dict) or result.get("idempotent"):
+    if not isinstance(result, dict):
         return None
 
     if result.get("id"):
         start = result.get("agenda_inicio")
         end = result.get("agenda_fim")
-        message = (
-            f"O agendamento foi confirmado para {start} a {end}."
-            if start and end
-            else "O agendamento foi confirmado."
-        )
+        if result.get("idempotent"):
+            message = (
+                "Esta ação já havia sido executada; o agendamento existente "
+                "foi mantido."
+            )
+        else:
+            message = (
+                f"O agendamento foi confirmado para {start} a {end}."
+                if start and end
+                else "O agendamento foi confirmado."
+            )
         status = OutputStatus.APPOINTMENT_CONFIRMED
         action = OutputAction.COMPLETED
         sufficiency = Sufficiency.SUFFICIENT
