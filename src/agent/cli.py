@@ -11,13 +11,14 @@ from .workflows.scheduling import (
     build_scheduling_graph,
 )
 
-DEMO_MESSAGE = "Quero agendar uma avaliação neuropsicológica para a manhã."
-
 
 def run_scheduling_flow(
-    user_message: str = DEMO_MESSAGE, interactive: bool = True
+    user_message: str | None = None, interactive: bool = True
 ) -> str:
-    """Executa a demonstração em turnos até o paciente encerrar."""
+    """Executa o atendimento em turnos até o paciente encerrar."""
+    if not interactive and user_message is None:
+        raise ValueError("Informe user_message quando interactive for False.")
+
     api_client = ApiClient()
     llm_client = llm.create_client()
     graph = build_scheduling_graph(llm_client, api_client)
@@ -38,6 +39,39 @@ def run_scheduling_flow(
         print("Modo convidado ativo. Use /login para autenticar ou /help.")
 
     while True:
+        if user_message is None:
+            try:
+                user_message = input("\nPaciente (ou 'sair'): ").strip()
+            except EOFError:
+                print("\nAtendimento encerrado.")
+                return ""
+            command = user_message.casefold()
+            if command == "/help":
+                print(TERMINAL_HELP)
+                user_message = None
+                continue
+            if command == "/login":
+                email = input("\nE-mail: ").strip()
+                password = getpass.getpass("Senha: ")
+                if not email or not password:
+                    print("Informe o e-mail e a senha.")
+                    user_message = None
+                    continue
+                try:
+                    state["authenticated_user"] = api_client.login_user(email, password)
+                    print("Login realizado.")
+                except RuntimeError as error:
+                    print(f"Não foi possível fazer login: {error}")
+                user_message = None
+                continue
+            if command == "/sair" or command in STOP_COMMANDS:
+                print("Atendimento encerrado.")
+                return ""
+            if not user_message:
+                print("Digite uma mensagem para continuar o atendimento.")
+                user_message = None
+                continue
+
         state["messages"].append({"role": "user", "content": user_message})
         state["round_count"] = 0
         if not state["pending_action"]:
@@ -49,30 +83,4 @@ def run_scheduling_flow(
         if not interactive:
             return answer
 
-        try:
-            user_message = input("\nPaciente (ou 'sair'): ").strip()
-        except EOFError:
-            print("\nAtendimento encerrado.")
-            return answer
-        command = user_message.casefold()
-        if command == "/help":
-            print(TERMINAL_HELP)
-            continue
-        if command == "/login":
-            email = input("\nE-mail: ").strip()
-            password = getpass.getpass("Senha: ")
-            if not email or not password:
-                print("Informe o e-mail e a senha.")
-                continue
-            try:
-                state["authenticated_user"] = api_client.login_user(email, password)
-                print("Login realizado.")
-            except RuntimeError as error:
-                print(f"Não foi possível fazer login: {error}")
-            continue
-        if command == "/sair" or command in STOP_COMMANDS:
-            print("Atendimento encerrado.")
-            return answer
-        if not user_message:
-            print("Digite uma mensagem para continuar o atendimento.")
-            continue
+        user_message = None
