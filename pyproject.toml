@@ -36,6 +36,14 @@ profile = "black"
 [tool.poetry]
 package-mode = false
 
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[tool.poetry.dependencies]
+torch = { source = "pytorch-cpu" }
+
 [tool.taskipy.tasks]
 "dev" = "docker compose --env-file .env -f infra/compose.yaml up --build -d && poetry run task migrations:up"
 "dev:api" = "python -m src.api.app"
