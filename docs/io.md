@@ -176,7 +176,4 @@ Se a política da clínica não trouxer critérios vigentes e versionados, o ges
 
 ## Verificação
 
-Cada resposta final deve passar por validação do schema antes de ser exibida.
-Uma resposta inválida gera erro explícito e não é apresentada como confirmada.
-Esses exemplos ainda não são logs de execução; evidências reais devem ser
-registradas em `logs/` quando o agente e as ferramentas forem implementados.
+Cada resposta deve passar por validação do schema e por regras determinísticas: fonte presente, status permitido, coerência entre ação e confirmação, e correspondência com o retorno da API. O benchmark em `logs/model-benchmark/` guarda trajetórias sintéticas com ferramentas simuladas; não é log de integração do agente com a API. Quatro execuções de integração separadas ainda precisam ser registradas antes de apresentar o protótipo como demonstrado de ponta a ponta.

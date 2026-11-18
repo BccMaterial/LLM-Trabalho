@@ -4,7 +4,7 @@
 
 **Nome:** Atendente e apoio operacional para avaliações neuropsicológicas.  
 **Versão documental:** desenho-alvo dos agentes Atendente, Gestor e Secretária.  
-**Estado:** protótipo atual não implementa esse desenho; ver `README.md` e `docs/case.md`.
+**Estado:** há um protótipo de agente Atendente com API local; o desenho de três agentes, o verificador completo e as proteções de produção ainda não estão implementados. Ver `README.md` e `docs/case.md`.
 
 ## Finalidade e usuários
 
@@ -26,9 +26,9 @@ O modelo pode classificar intenção, solicitar dados, resumir resultados autori
 
 | Integração | Agente usuário | Permissão proposta | Estado |
 |---|---|---|---|
-| API de cadastro/encaminhamento | Atendente, Secretária | Consulta autorizada; tarefas administrativas limitadas | Não integrada ao agente |
-| API de fila/agenda | Atendente, Gestor | Consulta de estado e disponibilidade | Não há endpoint de agenda no código atual |
-| API de agendamento | Controlador após confirmação | Gravação validada, idempotente e auditada | Não implementada |
+| API de cadastro/encaminhamento | Atendente, Secretária | Consulta autorizada; tarefas administrativas limitadas | API local tem usuários; encaminhamento clínico não está modelado |
+| API de fila/agenda | Atendente, Gestor | Consulta de estado e disponibilidade | A API local lista agendamentos, mas não calcula horários livres nem tem fila clínica |
+| API de agendamento | Controlador após confirmação | Gravação validada, idempotente e auditada | API local grava agendamentos; confirmação determinística e idempotência do agente ainda pendentes |
 | Base de políticas oficiais | Secretária, Atendente, Gestor | Consulta somente leitura | RAG descrito como proposta, sem índice no código |
 | Verificador determinístico | Controlador | Validação independente do modelo | Não implementado |
 
@@ -38,7 +38,7 @@ Podem existir dados de saúde sensíveis, incluindo suspeita, laudo, encaminhame
 
 ## Avaliação e critério de sucesso
 
-Avaliar separadamente: (1) validade de tool calls e schemas; (2) correção da fonte; (3) concordância com critérios de prioridade aprovados; (4) disponibilidade/consistência das opções; (5) confirmações antes de escrita; (6) tratamento de insuficiência e escalonamento. Meta de 100% para gravações confirmadas e compatíveis com a API, medida sobre todas as tentativas de gravação. Benchmark e verificador ainda não foram executados/implementados.
+Avaliar separadamente: (1) validade de tool calls e schemas; (2) correção da fonte; (3) concordância com critérios de prioridade aprovados; (4) disponibilidade/consistência das opções; (5) confirmações antes de escrita; (6) tratamento de insuficiência e escalonamento. O benchmark sintético foi executado em sete casos por modelo; os resultados estão em `docs/modelos.md` e `logs/model-benchmark/`. O verificador completo na aplicação ainda não está implementado.
 
 ## Riscos e mitigação
 
@@ -56,4 +56,4 @@ Pessoas autorizadas da clínica podem revisar a fonte, a regra aplicada, os resu
 
 ## Limites conhecidos
 
-O modelo candidato ainda não foi escolhido. A comparação de modelos não foi executada. O agente atual carrega o prompt versionado do Atendente, mas envia uma mensagem fixa, não chama ferramentas, não mantém laço e não registra os quatro casos com logs.
+Nenhum modelo foi aprovado para uso com pacientes; Gemini 3.5 Flash-Lite é candidato provisório para novos testes. O agente inicia com mensagem demonstrativa, mantém turnos e chama ferramentas pela API local. Ainda falta registrar quatro execuções de integração do agente como logs separados e validar em código toda escrita; o JSON do benchmark registra trajetórias distintas, mas usa ferramentas simuladas no próprio processo.

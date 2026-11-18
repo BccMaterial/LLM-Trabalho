@@ -119,6 +119,14 @@ def _mock_tool(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Retorna fixtures sintéticas e bloqueia qualquer escrita não autorizada."""
     if name == "consultar_disponibilidade":
+        if arguments.get("patient_id") not in (None, SYNTHETIC_PATIENT_ID):
+            return (
+                {
+                    "simulado": True,
+                    "erro": "Paciente não encontrado na API de demonstração.",
+                },
+                {"tipo": "api", "referencia": "cadastro_nao_encontrado_demo"},
+            )
         return (
             {
                 "simulado": True,
@@ -236,16 +244,18 @@ def _run_case(
             api_key=os.environ[model["api_key_env"]],
             base_url=model["base_url"],
             timeout=benchmark["timeout_seconds"],
-            max_retries=0,
+            max_retries=3,
         )
         messages = [
             {
                 "role": "system",
                 "content": (
                     benchmark["prompt_text"]
-                    + "\n\nNa resposta final, retorne somente um objeto JSON que siga "
-                    + "este schema. Chamadas de ferramenta continuam seguindo os "
-                    + "schemas próprios de cada ferramenta.\n"
+                    + "\n\nNa resposta final, retorne somente um objeto JSON puro que "
+                    + "siga este schema: sem bloco de código Markdown, sem crases, "
+                    + "sem introdução e sem texto após o objeto. Use literalmente "
+                    + "os nomes de propriedades do schema. Chamadas de ferramenta "
+                    + "continuam seguindo os schemas próprios de cada ferramenta.\n"
                     + json.dumps(schema, ensure_ascii=False)
                 ),
             },
@@ -253,7 +263,10 @@ def _run_case(
                 "role": "user",
                 "content": (
                     f"Contexto do caso de teste: {case['context']}\n\n"
-                    f"IDs de fontes disponíveis no contexto: {', '.join(case['context_sources'])}.\n"
+                    "Fontes permitidas para citar (cada referência só pode ser usada "
+                    "com o tipo correspondente): "
+                    f"{json.dumps(case['allowed_sources'], ensure_ascii=False)}\n"
+                    f"IDs de fontes presentes no contexto: {', '.join(case['context_sources'])}.\n"
                     f"Mensagem do paciente: {case['input']}\n\n"
                     "Use somente os IDs de fonte apresentados no contexto ou devolvidos por ferramenta. "
                     "Os dados são fictícios e as ferramentas, "
