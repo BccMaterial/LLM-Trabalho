@@ -2,6 +2,7 @@ import json
 from types import SimpleNamespace
 
 import pytest
+from langgraph.types import Command
 
 from src.agent.output_contract import InvalidAgentOutputError
 from src.agent.workflows.scheduling import build_scheduling_graph
@@ -52,6 +53,11 @@ class FakeApiClient:
         agenda_fim=None,
     ):
         self.calls.append(patient_id)
+        if agenda_inicio and agenda_fim:
+            return {
+                "disponibilidade": "disponivel",
+                "value": [],
+            }
         return {"value": [{"id": "appointment-1"}]}
 
     def criar_agendamento(self, **fields):
@@ -74,7 +80,15 @@ def _state():
             "id": "authenticated-patient",
             "email": "patient@example.test",
         },
+        "approval_decision": None,
+        "proposal_version": 0,
+        "approved_action_key": None,
+        "completed_action_keys": [],
     }
+
+
+def _config():
+    return {"configurable": {"thread_id": "conversation-1"}}
 
 
 def _output(
@@ -117,7 +131,7 @@ def test_scheduling_graph_returns_model_answer(monkeypatch):
     )
     graph = build_scheduling_graph(object(), FakeApiClient())
 
-    result = graph.invoke(_state())
+    result = graph.invoke(_state(), _config())
 
     assert result["answer"] == "Olá, como posso ajudar?"
     assert result["round_count"] == 1
@@ -138,7 +152,7 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
     api_client = FakeApiClient()
     graph = build_scheduling_graph(object(), api_client)
 
-    result = graph.invoke(_state())
+    result = graph.invoke(_state(), _config())
 
     assert api_client.calls == ["paciente-demo"]
     assert result["answer"] == "Encontrei um agendamento."
@@ -202,18 +216,18 @@ def test_scheduling_graph_requires_explicit_approval_before_booking(monkeypatch)
     state = _state()
     state["messages"].append({"role": "user", "content": "Quero agendar."})
 
-    pending = graph.invoke(state)
+    pending = graph.invoke(state, _config())
 
     assert api_client.appointments == []
     assert pending["approval_result"] is None
     assert pending["pending_action"]
-    assert start in pending["answer"]
-    assert end in pending["answer"]
+    interrupt_payload = pending["__interrupt__"][0].value
+    assert start in interrupt_payload["arguments"]["agenda_inicio"]
+    assert end in interrupt_payload["arguments"]["agenda_fim"]
     assert not any(message.get("tool_calls") for message in pending["messages"])
 
-    pending["messages"].append({"role": "user", "content": "Sim, confirmo."})
     pending["round_count"] = 0
-    result = graph.invoke(pending)
+    result = graph.invoke(Command(resume={"decision": "approve"}), _config())
 
     assert api_client.appointments == [
         {
@@ -257,15 +271,14 @@ def test_scheduling_graph_cancels_booking_on_explicit_rejection(monkeypatch):
     graph = build_scheduling_graph(object(), api_client)
     state = _state()
     state["messages"].append({"role": "user", "content": "Quero agendar."})
-    pending = graph.invoke(state)
-    pending["messages"].append({"role": "user", "content": "Não."})
+    pending = graph.invoke(state, _config())
     pending["round_count"] = 0
 
-    result = graph.invoke(pending)
+    result = graph.invoke(Command(resume={"decision": "reject"}), _config())
 
     assert api_client.appointments == []
     assert result["pending_action"] is None
-    assert result["answer"] == "Tudo bem, não farei o agendamento."
+    assert "recusou" in result["answer"]
 
 
 def test_scheduling_graph_does_not_infer_approval_from_ambiguous_reply(monkeypatch):
@@ -297,16 +310,148 @@ def test_scheduling_graph_does_not_infer_approval_from_ambiguous_reply(monkeypat
     graph = build_scheduling_graph(object(), api_client)
     state = _state()
     state["messages"].append({"role": "user", "content": "Quero agendar."})
-    pending = graph.invoke(state)
-    pending["messages"].append({"role": "user", "content": "Talvez, preciso pensar."})
+    pending = graph.invoke(state, _config())
     pending["round_count"] = 0
 
-    result = graph.invoke(pending)
+    result = graph.invoke(Command(resume={"decision": "invalid"}), _config())
 
     assert api_client.appointments == []
     assert result["pending_action"] is not None
     assert result["approval_result"] is None
-    assert "Não consegui identificar" in result["answer"]
+    assert "Resposta inválida" in result["answer"]
+
+
+def test_scheduling_graph_edits_and_repauses_before_booking(monkeypatch):
+    original_start = "2027-01-15T10:00:00-03:00"
+    original_end = "2027-01-15T11:00:00-03:00"
+    edited_start = "2027-01-15T14:00:00-03:00"
+    edited_end = "2027-01-15T15:00:00-03:00"
+    responses = iter(
+        [
+            _response(
+                FakeMessage(
+                    tool_calls=[
+                        FakeToolCall(
+                            "confirmar_agendamento",
+                            {
+                                "professional_id": "professional-1",
+                                "agenda_inicio": original_start,
+                                "agenda_fim": original_end,
+                                "suspeita_paciente": "Avaliação",
+                            },
+                        )
+                    ]
+                )
+            ),
+            _response(
+                FakeMessage(
+                    _output(
+                        "O agendamento editado foi confirmado.",
+                        status="agendamento_confirmado",
+                        action="concluida",
+                        sources=[
+                            {"tipo": "api", "referencia": "confirmar_agendamento"}
+                        ],
+                        sufficiency="suficiente",
+                    )
+                )
+            ),
+        ]
+    )
+    monkeypatch.setattr(
+        "src.agent.workflows.scheduling.llm.request_with_retry",
+        lambda client, messages: next(responses),
+    )
+    api_client = FakeApiClient()
+    graph = build_scheduling_graph(object(), api_client)
+    state = _state()
+    state["messages"].append({"role": "user", "content": "Quero agendar."})
+
+    pending = graph.invoke(state, _config())
+    edited = graph.invoke(
+        Command(
+            resume={
+                "decision": "edit",
+                "arguments": {
+                    "professional_id": "professional-1",
+                    "agenda_inicio": edited_start,
+                    "agenda_fim": edited_end,
+                    "suspeita_paciente": "Avaliação atualizada",
+                },
+            }
+        ),
+        _config(),
+    )
+
+    assert api_client.appointments == []
+    interrupt_payload = edited["__interrupt__"][0].value
+    assert interrupt_payload["proposal_version"] == 2
+    assert interrupt_payload["arguments"]["agenda_inicio"] == edited_start
+
+    result = graph.invoke(
+        Command(resume={"decision": "approve"}),
+        _config(),
+    )
+
+    assert api_client.appointments == [
+        {
+            "patient_id": "authenticated-patient",
+            "professional_id": "professional-1",
+            "agenda_inicio": edited_start,
+            "agenda_fim": edited_end,
+            "suspeita_paciente": "Avaliação atualizada",
+        }
+    ]
+
+
+def test_scheduling_graph_revalidates_availability_before_booking(monkeypatch):
+    start = "2027-01-15T10:00:00-03:00"
+    end = "2027-01-15T11:00:00-03:00"
+    monkeypatch.setattr(
+        "src.agent.workflows.scheduling.llm.request_with_retry",
+        lambda client, messages: _response(
+            FakeMessage(
+                tool_calls=[
+                    FakeToolCall(
+                        "confirmar_agendamento",
+                        {
+                            "professional_id": "professional-1",
+                            "agenda_inicio": start,
+                            "agenda_fim": end,
+                            "suspeita_paciente": "Avaliação",
+                        },
+                    )
+                ]
+            )
+        ),
+    )
+
+    class UnavailableApiClient(FakeApiClient):
+        def consultar_agendamentos(
+            self,
+            patient_id=None,
+            professional_id=None,
+            agenda_inicio=None,
+            agenda_fim=None,
+        ):
+            return {
+                "disponibilidade": "indisponivel",
+                "motivo": "O horário acabou de ser ocupado.",
+            }
+
+    api_client = UnavailableApiClient()
+    graph = build_scheduling_graph(object(), api_client)
+    state = _state()
+    state["messages"].append({"role": "user", "content": "Quero agendar."})
+    graph.invoke(state, _config())
+
+    result = graph.invoke(
+        Command(resume={"decision": "approve"}),
+        _config(),
+    )
+
+    assert api_client.appointments == []
+    assert "deixou de estar disponível" in result["answer"]
 
 
 def test_scheduling_graph_requires_login_before_booking(monkeypatch):
@@ -337,7 +482,7 @@ def test_scheduling_graph_requires_login_before_booking(monkeypatch):
     state["authenticated_user"] = None
     state["messages"].append({"role": "user", "content": "Quero agendar."})
 
-    result = graph.invoke(state)
+    result = graph.invoke(state, _config())
 
     assert api_client.appointments == []
     assert result["pending_action"] is None
@@ -352,4 +497,4 @@ def test_scheduling_graph_rejects_invalid_final_output(monkeypatch):
     graph = build_scheduling_graph(object(), FakeApiClient())
 
     with pytest.raises(InvalidAgentOutputError, match="contrato de saída"):
-        graph.invoke(_state())
+        graph.invoke(_state(), _config())

@@ -1,10 +1,7 @@
 # Grafo do agente
 
-> **Esboço de projeto:** o código atual executa um laço Python com chamadas de
-> ferramentas, mas ainda não usa LangGraph. Este documento separa o fluxo
-> implementado hoje do grafo proposto para a entrega. Os nós de aprovação,
-> RAG e Gestor abaixo não devem ser descritos como implementados até existirem
-> no código.
+> O fluxo de agendamento já usa `StateGraph` e LangGraph checkpointing em
+> memória. Os nós de RAG e Gestor continuam como proposta até serem implementados.
 
 ## 1. O que roda hoje
 
@@ -53,11 +50,11 @@ tempo ou tokens declarado no código.
 | `responder_ou_limitar` | Mostra resposta final ou informa que o limite de rodadas foi atingido | Não | Código | Texto da resposta |
 
 As arestas para as duas ferramentas são escolhidas pelo modelo a partir das
-tool calls. O código faz o despacho pelo nome da ferramenta, mas ainda não
-aplica uma pausa independente antes de `confirmar_agendamento`. A instrução na
-descrição da ferramenta, por si só, não garante que a gravação só ocorra após
-confirmação. Ver os pontos de aprovação e o fluxo esperado em
-[`humano.md`](./humano.md).
+tool calls. Antes de `confirmar_agendamento`, o nó `request_approval` usa
+`interrupt`, associado ao `thread_id` da conversa e ao checkpointer em memória.
+A aprovação, rejeição ou edição é retomada por `Command(resume=...)`. Após
+aprovação, o grafo reconsulta a disponibilidade antes do despacho da escrita.
+Ver os pontos de aprovação e o fluxo esperado em [`humano.md`](./humano.md).
 
 ## 2. Grafo proposto para LangGraph
 
@@ -154,11 +151,10 @@ si só, detector de laço improdutivo.
 
 ## 6. Conferência entre desenho e implementação
 
-**Pendente:** implementar e compilar um único `StateGraph` no módulo do agente.
-Depois, criar `conferir_grafo.py` para importar esse mesmo objeto e imprimir
-os nós e as arestas, marcando as condicionais. Colar aqui o comando e a saída
-do script. Se a saída divergir do diagrama, corrigir a documentação ou o
-código.
+O grafo de agendamento é compilado em
+`src/agent/workflows/scheduling.py::build_scheduling_graph` com
+`MemorySaver`. O CLI fornece um `thread_id` estável por conversa e envia
+`Command(resume=...)` para retomar uma proposta interrompida.
 
 O comportamento de confirmação, edição, rejeição, expiração e repetição deve
 ser conferido com execuções registradas em `logs/`; detalhes dos responsáveis e
