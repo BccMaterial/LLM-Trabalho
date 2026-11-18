@@ -30,3 +30,11 @@ def test_load_prompt_supports_prompts_not_yet_integrated():
 def test_load_prompt_rejects_unknown_prompt():
     with pytest.raises(ValueError, match="Prompt desconhecido"):
         load_prompt("inexistente_v1")
+
+
+def test_atendente_prompt_blocks_exposing_appointments():
+    prompt = load_prompt("atendente_v1")
+
+    assert "nunca devem ser expostos ao usuário" in prompt.content
+    assert "exclusivamente para avaliar disponibilidade" in prompt.content
+    assert "Não transcreva nem resuma registros da agenda" in prompt.content
