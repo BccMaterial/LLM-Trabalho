@@ -4,6 +4,7 @@ import time
 from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
 from ..tools import TOOLS
+from ..workflows.execution import MAX_EXTERNAL_CALL_SECONDS
 
 MAX_LLM_RETRIES = 5
 RETRY_BACKOFF_SECONDS = 5
@@ -13,16 +14,30 @@ def create_client() -> OpenAI:
     return OpenAI(
         base_url=os.environ["LLM_BASE_URL"],
         api_key=os.environ["OPENAI_API_KEY"],
+        timeout=MAX_EXTERNAL_CALL_SECONDS,
+        max_retries=0,
     )
 
 
-def request_with_retry(llm_client: OpenAI, messages: list[dict]):
+def request_with_retry(
+    llm_client: OpenAI,
+    messages: list[dict],
+    max_tokens: int | None = None,
+    timeout_seconds: float = MAX_EXTERNAL_CALL_SECONDS,
+):
+    deadline = time.monotonic() + timeout_seconds
     for attempt in range(MAX_LLM_RETRIES):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError("LLM excedeu o tempo máximo da execução.")
         try:
-            return llm_client.chat.completions.create(
+            request_options = {"max_tokens": max_tokens} if max_tokens else {}
+            request_client = llm_client.with_options(timeout=remaining)
+            return request_client.chat.completions.create(
                 model=os.environ["LLM_MODEL"],
                 messages=messages,
                 tools=TOOLS,
+                **request_options,
             )
         except RateLimitError as error:
             if attempt == MAX_LLM_RETRIES - 1:
@@ -37,6 +52,10 @@ def request_with_retry(llm_client: OpenAI, messages: list[dict]):
             except ValueError:
                 delay = 0
             delay = max(delay, RETRY_BACKOFF_SECONDS * (2**attempt))
+            if delay >= deadline - time.monotonic():
+                raise RuntimeError(
+                    "LLM continuou limitado e o tempo máximo da execução foi atingido."
+                ) from error
             print(
                 f"Limite do LLM atingido. Tentando novamente em {delay:g}s "
                 f"({attempt + 1}/{MAX_LLM_RETRIES})..."

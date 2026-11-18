@@ -1,7 +1,9 @@
 import json
+from datetime import datetime, timedelta, timezone
 
 from src.agent import tools
 from src.agent.integrations import api
+from src.agent.workflows.execution import MAX_EXTERNAL_CALL_SECONDS
 
 
 class FakeResponse:
@@ -22,9 +24,11 @@ class FakeResponse:
 class FakeOpener:
     def __init__(self):
         self.requests = []
+        self.timeouts = []
 
-    def open(self, request):
+    def open(self, request, timeout=None):
         self.requests.append(request)
+        self.timeouts.append(timeout)
         if len(self.requests) == 1:
             return FakeResponse({}, "agent-session")
         return FakeResponse(
@@ -51,6 +55,22 @@ def test_api_client_keeps_agent_and_user_sessions_separate(monkeypatch):
     assert client.agent_session_cookie == "session_id=agent-session"
     assert client.user_session_cookie == "session_id=user-session"
     assert opener.requests[0].headers["Cookie"] == ""
+    assert all(0 < timeout <= MAX_EXTERNAL_CALL_SECONDS for timeout in opener.timeouts)
+
+
+def test_api_requests_use_remaining_execution_time(monkeypatch):
+    opener = FakeOpener()
+    monkeypatch.setattr(api, "build_opener", lambda: opener)
+    monkeypatch.setenv("API_USER", "agent@example.test")
+    monkeypatch.setenv("API_PASSWORD", "agent-secret")
+    client = api.ApiClient()
+    client.set_execution_deadline(
+        (datetime.now(timezone.utc) + timedelta(seconds=5)).isoformat()
+    )
+
+    client._request("/api/test")
+
+    assert 0 < opener.timeouts[-1] <= 5
 
 
 def test_booking_uses_authenticated_identity_instead_of_model_id():
