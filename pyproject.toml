@@ -46,7 +46,7 @@ test = "python -m pytest"
 "lint:check" = "isort --check-only . && black --check ."
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 testpaths = ["tests"]
 
 [build-system]

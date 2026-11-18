@@ -3,8 +3,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from agent.app import build_scheduling_graph
-from agent.output_contract import InvalidAgentOutputError
+from src.agent.output_contract import InvalidAgentOutputError
+from src.agent.workflows.scheduling import build_scheduling_graph
 
 
 class FakeMessage:
@@ -110,7 +110,7 @@ def _response(message):
 
 def test_scheduling_graph_returns_model_answer(monkeypatch):
     monkeypatch.setattr(
-        "agent.app.llm.request_with_retry",
+        "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: _response(
             FakeMessage(_output("Olá, como posso ajudar?"))
         ),
@@ -132,7 +132,7 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
         ]
     )
     monkeypatch.setattr(
-        "agent.app.llm.request_with_retry",
+        "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
@@ -194,7 +194,7 @@ def test_scheduling_graph_requires_explicit_approval_before_booking(monkeypatch)
         ]
     )
     monkeypatch.setattr(
-        "agent.app.llm.request_with_retry",
+        "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
@@ -250,7 +250,7 @@ def test_scheduling_graph_cancels_booking_on_explicit_rejection(monkeypatch):
         ]
     )
     monkeypatch.setattr(
-        "agent.app.llm.request_with_retry",
+        "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
@@ -290,7 +290,7 @@ def test_scheduling_graph_does_not_infer_approval_from_ambiguous_reply(monkeypat
         ]
     )
     monkeypatch.setattr(
-        "agent.app.llm.request_with_retry",
+        "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: next(responses),
     )
     api_client = FakeApiClient()
@@ -313,7 +313,7 @@ def test_scheduling_graph_requires_login_before_booking(monkeypatch):
     start = "2027-01-15T10:00:00-03:00"
     end = "2027-01-15T11:00:00-03:00"
     monkeypatch.setattr(
-        "agent.app.llm.request_with_retry",
+        "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: _response(
             FakeMessage(
                 tool_calls=[
@@ -346,7 +346,7 @@ def test_scheduling_graph_requires_login_before_booking(monkeypatch):
 
 def test_scheduling_graph_rejects_invalid_final_output(monkeypatch):
     monkeypatch.setattr(
-        "agent.app.llm.request_with_retry",
+        "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: _response(FakeMessage("resposta sem JSON")),
     )
     graph = build_scheduling_graph(object(), FakeApiClient())

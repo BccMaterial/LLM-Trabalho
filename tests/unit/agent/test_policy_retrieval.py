@@ -5,7 +5,7 @@ import chromadb
 import pytest
 from chromadb.api.types import Documents, Embeddings
 
-from agent.policy_retrieval import (
+from src.agent.policy_retrieval import (
     PolicyChunk,
     PolicyRetriever,
     PolicyStatus,
