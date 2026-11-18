@@ -14,7 +14,15 @@ TOOLS = [
             "description": "Consulta os agendamentos existentes na API da clínica.",
             "parameters": {
                 "type": "object",
-                "properties": {},
+                "properties": {
+                    "patient_id": {
+                        "type": "string",
+                        "description": (
+                            "ID, nome, username ou e-mail do paciente para "
+                            "filtrar a consulta. Opcional."
+                        ),
+                    },
+                },
                 "additionalProperties": False,
             },
         },
@@ -27,6 +35,13 @@ TOOLS = [
             "parameters": {
                 "type": "object",
                 "properties": {
+                    "patient_id": {
+                        "type": "string",
+                        "description": (
+                            "Identificador opcional do paciente. A execução "
+                            "usa a identidade autenticada confiável."
+                        ),
+                    },
                     "professional_id": {
                         "type": "string",
                         "description": "UUID do profissional.",
@@ -177,7 +192,7 @@ def execute_tool(
 ) -> dict:
     """Executa somente as ferramentas expostas ao modelo."""
     if name == "consultar_disponibilidade":
-        return client.consultar_agendamentos()
+        return client.consultar_agendamentos(patient_id=arguments.get("patient_id"))
     if name == "confirmar_agendamento":
         if not authenticated_user or not authenticated_user.get("id"):
             return {
