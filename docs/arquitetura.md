@@ -1,6 +1,6 @@
 # Arquitetura-alvo
 
-> Este documento descreve o desenho proposto. A integração de agenda e os três agentes ainda não estão implementados no repositório.
+> Este documento descreve o desenho-alvo. O repositório tem uma API local de usuários/agendamentos e um Atendente com ferramentas HTTP básicas; não há integração com clínica real, consulta de horários livres, nem os três agentes especializados.
 
 ## Resumo do sistema
 
@@ -45,7 +45,7 @@ O roteador identifica uma destas intenções: **agendamento**, **consulta de dad
 
 ## Ferramentas e fronteiras
 
-As ferramentas abaixo são contratos propostos. A API atual do repositório não oferece recursos de agendamento ou pacientes, portanto essas integrações ainda precisam ser implementadas.
+As ferramentas abaixo são contratos propostos para o desenho completo. A API local implementa usuários e registros de agendamento, mas não modela encaminhamento clínico, fila ou consulta de horários livres. O Atendente tem apenas consulta e gravação básica; os demais contratos e verificações ainda precisam ser implementados.
 
 | Ferramenta | Finalidade | Leitura/escrita | Reversibilidade e confirmação | Interface/fonte |
 |---|---|---|---|---|

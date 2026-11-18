@@ -20,9 +20,9 @@ O paciente ou responsável inicia o contato por mensagem. O sistema interpreta a
 
 ### Processo atual e lacunas de informação
 
-O material do case descreve a organização atual da fila como arbitrária, mas não informa qual ferramenta a equipe usa hoje, quem define a ordem, quanto tempo leva um atendimento, nem o tempo médio de espera. Este trabalho é um estudo acadêmico baseado no material público disponível; não pressupõe contato, parceria, acesso a dados ou validação pela clínica. Por isso, não atribui à clínica números, procedimentos internos ou resultados que não estejam documentados.
+O material público usado no case descreve a organização atual da fila como arbitrária, mas não informa qual ferramenta a equipe usa hoje, quem define a ordem, quanto tempo leva um atendimento, nem o tempo médio de espera. Esses dados não estão disponíveis e não serão solicitados como condição do trabalho. Não vamos inventar números nem apresentar uma comparação de impacto real.
 
-Também faltam políticas oficiais para calcular prioridade, cancelar ou remarcar, e para determinar quais documentos são obrigatórios além do encaminhamento. Até essas regras serem aprovadas pela clínica, o agente deve expor a insuficiência da informação e encaminhar a decisão a uma pessoa autorizada. O sistema não usará simulações de exames nem estimará prazo de diagnóstico.
+Não temos políticas oficiais para calcular prioridade, cancelar ou remarcar, nem para determinar quais documentos são obrigatórios além do encaminhamento. O protótipo não depende de obtê-las: seus casos usam regras e registros sintéticos explicitamente identificados; fora deles, o agente deve indicar que a informação falta e não executar a ação. O sistema não usará simulações de exames nem estimará prazo de diagnóstico.
 
 ### Regras de domínio já documentadas
 
@@ -59,7 +59,7 @@ O benefício esperado para quem procura atendimento é ter uma conversa mais cla
 
 ## 3. Finalidade e limites
 
-O sistema apoia o atendimento administrativo de pacientes e responsáveis, a organização operacional da fila e da agenda e a conferência de pendências documentais. Ele não realiza diagnóstico, não recomenda tratamento e não deduz gravidade clínica a partir de texto livre. A priorização só pode usar critérios formalizados e aprovados pela clínica; sem esses critérios, o gestor prepara os dados e solicita revisão humana.
+O sistema foi proposto para apoiar o atendimento administrativo de pacientes e responsáveis, a organização operacional da fila e da agenda e a conferência de pendências documentais. Ele não realiza diagnóstico, não recomenda tratamento e não deduz gravidade clínica a partir de texto livre. Como não temos critérios oficiais de prioridade, esta entrega não calcula nem simula prioridade clínica; o tema fica descrito como limite e não como dependência para concluir o protótipo.
 
 ## 4. Usuários e aprovações
 
@@ -111,11 +111,9 @@ O modelo não verifica a própria resposta. Um verificador determinístico, sepa
 3. se o resultado de prioridade respeita o schema, a versão da regra aprovada e os dados consultados; se a regra estiver ausente ou os dados forem insuficientes, deve bloquear a decisão e pedir revisão humana;
 4. se a resposta identifica fonte e suficiência e não afirma dado ausente.
 
-**Critério técnico do protótipo, ainda não testado:** em casos controlados, toda gravação simulada deve exigir confirmação explícita e corresponder a um horário que a API de teste indicou como disponível. O denominador seria o total de tentativas de gravação nesses casos. Este critério verifica a regra do software; não mede organização da clínica, tempo dos profissionais, espera, experiência do paciente ou qualidade do cuidado. Não há testes desses resultados no repositório.
+**Critério técnico no conjunto sintético:** todas as tentativas de escrita devem decorrer de confirmação explícita para a opção exata retornada no caso, e nenhuma resposta pode afirmar sucesso sem retorno de gravação. Denominador: tentativas de escrita nos cenários sintéticos. O benchmark verifica parte disso em mocks. Esse critério não mede impacto na clínica nem efeito humano; não há referência rotulada de prioridade porque a prioridade não faz parte do protótipo executável.
 
-Não há conjunto de referência humana rotulado para avaliar prioridade, e este trabalho não apresenta uma meta clínica nem uma taxa de sucesso desse tipo.
-
-Os casos de avaliação devem usar dados autorizados e minimizados, com identificadores removidos ou pseudonimizados. Nenhum caso clínico real será incluído no repositório. Até a clínica fornecer dados e política aprovados, os casos descritos em `docs/io.md` são cenários de fluxo, não resultados de avaliação.
+Os casos de avaliação são sintéticos e usam identificadores fictícios; nenhum dado de paciente ou política interna é necessário ou incluído. Os casos em `docs/io.md` e `benchmarks/casos.json` avaliam fluxos e limites do software, não desempenho ou resultado de pessoas reais.
 
 ## 8. Dados e risco
 
@@ -125,4 +123,44 @@ Suspeita diagnóstica, laudos, histórico e encaminhamento podem conter dados de
 
 ## 9. Estado de implementação
 
-O repositório tem uma API Flask com recursos de profissionais e um protótipo de agente que envia uma mensagem fixa ao modelo. Ainda não há integração de agendamentos, ferramenta de priorização, secretária digital, verificador, laço conversacional ou benchmark executado. A arquitetura deste documento é o desenho-alvo, não uma descrição do que já está funcionando.
+O repositório contém API Flask com autenticação, usuários, profissionais e operações de agenda; o agente Python usa a biblioteca `openai`, consulta e grava pela API, mantém a conversa em turnos e oferece duas ferramentas. O benchmark separado exercita sete cenários sintéticos com ferramentas simuladas. A agenda de demonstração não representa uma clínica real. Ainda não estão implementados os três agentes especializados, a priorização com regra aprovada, RAG, MCP, LangGraph nem um verificador determinístico completo para proteger as escritas do agente interativo. O benchmark tem verificações automáticas próprias e não substitui esse verificador de aplicação.
+
+## 10. Workflow da entrega 1
+
+1. **Receber a mensagem** do paciente/responsável no chat — o modelo classifica a intenção; o código mantém o turno e limita o laço.
+2. **Identificar o dado que falta** — o modelo pergunta quando a mensagem é ambígua; o código exige identidade autenticada antes de revelar registro.
+3. **Consultar cadastro/agenda** — o código chama a API por HTTP; a API é fonte dos registros; erros e ausência de registro devem voltar como resultado explícito.
+4. **Interpretar o retorno** — o modelo explica opções retornadas ou a insuficiência; o código limita respostas aos dados recebidos e ao contrato de saída.
+5. **Lidar com divergência ou ausência de regra** — o modelo pede esclarecimento ou encaminha; não calcula prioridade sem regra aprovada nem inventa política.
+6. **Pedir confirmação inequívoca** para a opção exata — o paciente decide; o silêncio, preferência ou ambiguidade não são confirmação.
+7. **Gravar somente após confirmação** — escrita pela API; o paciente confirma a ação reversível por procedimento posterior e a equipe pode revisar. A confirmação deve ser validada também em código antes da chamada da ferramenta.
+8. **Informar resultado e encerrar** — resposta em português com fonte e suficiência; o código encerra por sucesso, encaminhamento, erro persistente, desistência ou limite.
+
+As decisões em linguagem livre e a interpretação de contradições justificam o uso restrito do modelo. Identidade, autorização, limites, validação da disponibilidade, confirmação de escrita e término pertencem ao código. A versão interativa ainda precisa tornar o estado e o bloqueio de escrita mais explícitos; os casos do benchmark já verificam parte desse contrato em ambiente simulado.
+
+## 11. Sistema, autonomia e fronteiras
+
+O sistema recebe texto, consulta a API da aplicação por HTTP, prepara uma resposta estruturada e, no caso de agendamento, pode gravar após confirmação. Nesta primeira entrega há um agente Atendente; Gestor e Secretária são papéis futuros da mesma arquitetura, não agentes já executáveis. A autonomia é de **agente com workflow sequencial limitado**: um FAQ não consegue resolver pedidos em linguagem natural com dados incompletos, consultar informação atual nem conduzir uma confirmação em turnos; planejamento aberto e decisão clínica não são autorizados.
+
+| Ferramenta | Ação | Leitura/escrita | Reversível? | Integração |
+|---|---|---|---|---|
+| `consultar_disponibilidade` | Consultar agendamentos do paciente | Leitura | Sim, sem alterar estado | HTTP `GET /api/appointments` na API Flask; hoje lista registros existentes, não calcula horários livres |
+| `confirmar_agendamento` | Registrar a opção informada | Escrita | Alteração posterior segue operação separada; deve requerer confirmação explícita | HTTP `POST /api/appointments` na API Flask; falta uma barreira determinística no agente antes da escrita |
+
+Essa API própria é software tradicional separado do processo do agente. A demonstração usa registros de exemplo e não se conecta à clínica nem à agenda real. O nome da ferramenta de consulta sugere disponibilidade, mas a API atual não oferece esse dado; por isso as opções de disponibilidade nos casos do benchmark são fixtures locais, e não saída real dessa integração.
+
+## 12. Justificativa de negócio e limites da evidência
+
+O valor esperado é ajudar a equipe a manter pedidos, pendências e opções de agenda organizados; reduzir repetição de informação para pacientes/responsáveis; e responder com clareza quando há conflito ou mudança de última hora. A hipótese é melhorar a organização do processo como um todo e a experiência humana, sem prometer ganho clínico, diagnóstico ou aumento de capacidade.
+
+O agente é adequado apenas para a parte em que a mensagem pode vir incompleta, misturar pedidos ou contradizer o registro, exigindo esclarecimento em tempo de execução e consulta a uma fonte atual. Um formulário e regras fixas resolvem campos conhecidos, mas não conduzem por si só essa conversa; o agente permanece limitado a interpretar e redigir, enquanto código e API autorizam e executam operações.
+
+Não há contato, observação do processo ou dados operacionais da clínica disponíveis ao grupo. Portanto não existe linha de base, volume ou denominador defensável para calcular redução percentual, tempo economizado, produtividade ou retorno financeiro. Não atribuímos um percentual hipotético — inclusive 10% — porque pareceria resultado medido sem evidência. A justificativa é uma hipótese qualitativa de organização e experiência a ser discutida, não uma alegação comprovada nem dependente de obter acesso da clínica para concluir o protótipo. Os casos artificiais avaliam regras do software, não efeitos sobre pessoas. Um número de impacto real exigiria estudo autorizado com medidas humanas adequadas, e está fora do que estes dados permitem afirmar.
+
+O custo de inferência observado e a conta por 100 casos estão em [`docs/modelos.md`](modelos.md); custo semestral não é estimado porque não há volume diário. O custo de desenvolvimento é o trabalho acadêmico do grupo e não foi convertido em dinheiro. O principal custo de erro é uma informação administrativa incorreta ou uma gravação indevida; por isso o protótipo não deve ser apresentado como serviço clínico, e a confirmação/escrita precisa de barreira determinística antes de qualquer uso real.
+
+## 13. Verificador, dados e expansão
+
+Para esta etapa, o benchmark versiona casos, fontes, ferramentas simuladas, orçamento e validações estruturais. Os sete casos atuais incluem resposta sem política, paciente inexistente, divergência com encaminhamento, consulta de horário, ausência de confirmação, escrita após confirmação e cancelamento sem política. O caso que não deve disparar a ação principal é a preferência ainda não confirmada; todos os exemplos usam identificadores e registros fictícios. O verificador de benchmark não comprova correção humana ou de clínica.
+
+Para as etapas seguintes, a proposta é: RAG apenas sobre políticas sintéticas/publicamente disponíveis para exercitar recuperação, deixando claro que não são regras da clínica; MCP como fronteira de serviço para a API local de agenda; LangGraph para representar e comparar o workflow com estado explícito; e, na Parte 3, separar Atendente, Gestor e Secretária quando houver tarefas realmente distintas. Nenhuma dessas propostas presume acesso futuro à clínica. O maior risco é o modelo transformar ausência/contradição de informação em certeza e iniciar uma escrita incorreta; o plano B é bloquear a ferramenta em código, apresentar a insuficiência e terminar em revisão humana.

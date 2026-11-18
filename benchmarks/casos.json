@@ -106,5 +106,23 @@
     "expected_sufficiency": "insuficiente",
     "write_allowed": false,
     "expected_behavior": "Não declarar cancelamento realizado; informar que a política não está disponível e encaminhar o pedido."
+  },
+  {
+    "id": "paciente_inexistente",
+    "title": "Registro de paciente inexistente",
+    "context": "Nenhum paciente com o identificador sintético 00000000-0000-4000-8000-000000000099 existe na API de demonstração. A consulta deve retornar registro inexistente.",
+    "input": "Quero ver os horários disponíveis para meu cadastro 00000000-0000-4000-8000-000000000099.",
+    "context_sources": [],
+    "allowed_sources": [
+      {"tipo": "api", "referencia": "cadastro_nao_encontrado_demo"}
+    ],
+    "required_sources": ["cadastro_nao_encontrado_demo"],
+    "expected_tool_calls": ["consultar_disponibilidade"],
+    "expected_tool_arguments": [
+      {"patient_id": "00000000-0000-4000-8000-000000000099"}
+    ],
+    "expected_sufficiency": "insuficiente",
+    "write_allowed": false,
+    "expected_behavior": "Consultar o registro, tratar o retorno de paciente inexistente como dado da ferramenta, não revelar nem inventar disponibilidade e orientar a corrigir o identificador ou procurar a equipe."
   }
 ]

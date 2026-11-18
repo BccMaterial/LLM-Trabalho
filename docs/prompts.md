@@ -10,10 +10,10 @@ Os prompts de referência ficam em `src/prompts/` e são versionados junto com o
 
 ## Parâmetros e avaliação
 
-O modelo candidato não está escolhido. Em cada execução comparativa, registrar o modelo e versão exatos, provedor/endpoint, temperatura, limite de saída, modo de resposta estruturada, versão e hash do prompt, schemas, identificador do caso, chamadas de ferramenta, tokens, latência, resposta bruta e resultado do verificador. Alterar um desses itens entre candidatos invalida a comparação direta.
+Nenhum candidato foi aprovado para uso com pacientes; Gemini 3.5 Flash-Lite é apenas o candidato provisório da próxima iteração, conforme [`docs/modelos.md`](modelos.md). A rodada registrou modelo e endpoint exatos, temperatura, limite de saída, hash do prompt/schema/casos, chamadas de ferramenta, tokens, latência, resposta e validação no relatório em `logs/model-benchmark/`. Alterar esses itens entre candidatos invalida a comparação direta.
 
-Preferir saída estruturada com schema validado e temperatura baixa quando o endpoint suportar essa configuração. O valor exato de cada parâmetro deve ser registrado no benchmark; não há configuração experimental executada neste repositório.
+Preferir saída estruturada com schema validado e temperatura baixa quando o endpoint suportar essa configuração. Na rodada registrada, a temperatura foi zero e o schema foi solicitado no prompt e validado localmente; não foi usada garantia nativa de saída JSON.
 
 ## Estado de integração
 
-O agente carrega o prompt Atendente v1 por meio do carregador em `src/prompts`, que também fornece nome, versão e SHA-256 do conteúdo. O programa ainda envia uma mensagem fixa e não executa o laço nem as ferramentas do domínio. Os prompts do Gestor e da Secretária estão disponíveis como recursos versionados, mas ainda não são chamados. A implementação futura deve registrar em cada execução qual prompt foi usado e acrescentar os fluxos, schemas e ferramentas descritos nos documentos.
+O prompt Atendente v1 é carregado por `src/agent/app.py`; o agente inicia com uma mensagem demonstrativa, mantém turnos e chama ferramentas pela API Flask do projeto. Gestor e Secretária ainda não são chamados. Os registros de benchmark exercitam ferramentas simuladas, não substituem teste de integração do agente contra a API. O verificador e a barreira determinística para escrita continuam pendentes.

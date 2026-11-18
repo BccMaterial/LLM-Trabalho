@@ -36,16 +36,16 @@ price_checked = "2026-11-17"
 pricing_source = "https://console.groq.com/docs/model/qwen/qwen3.8-27b"
 
 [[models]]
-name = "Gemini 2.5 Flash-Lite"
+name = "Gemini 3.5 Flash-Lite"
 provider = "Gemini API (compatibilidade OpenAI)"
-model_id = "gemini-2.5-flash-lite"
+model_id = "gemini-3.5-flash-lite"
 base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
 api_key_env = "GEMINI_API_KEY"
 currency = "USD"
 # Tarifas da faixa gratuita; o custo estimado não considera limites de uso.
 input_price_per_million = 0.0
 output_price_per_million = 0.0
-paid_input_price_per_million = 0.10
-paid_output_price_per_million = 0.40
-price_checked = "2026-11-14"
+paid_input_price_per_million = 0.30
+paid_output_price_per_million = 2.50
+price_checked = "2026-11-17"
 pricing_source = "https://ai.google.dev/gemini-api/docs/pricing"

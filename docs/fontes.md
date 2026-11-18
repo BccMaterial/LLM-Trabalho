@@ -4,9 +4,10 @@
 
 | Dado/regra | Fonte prevista | Estado |
 |---|---|---|
-| Cadastro, identidade autenticada, encaminhamento, fila e agenda | API oficial da clínica | Fonte de verdade prevista; os endpoints de paciente e agenda ainda não existem neste repositório |
-| Quantidade de quatro a seis exames e exigência de encaminhamento | Regras iniciais registradas em `docs/case.md` | Premissas do case acadêmico; confirmar com a clínica antes de uso real |
-| Critérios de prioridade | Política aprovada e versionada pela clínica | Não fornecida; sem ela, não calcular prioridade |
+| Usuários, profissionais e registros de agendamento da demonstração | API Flask deste repositório | Fonte de verdade apenas para registros fictícios locais; não representa integração com a clínica |
+| Encaminhamento, fila clínica e horários efetivamente livres | Nenhuma integração real | Não modelados na API; o benchmark cobre esses comportamentos somente com fixtures sintéticas |
+| Quantidade de quatro a seis exames e exigência de encaminhamento | Material público e premissas iniciais registradas em `docs/case.md` | Contexto acadêmico, não política operacional verificada; não é necessário obter confirmação da clínica para concluir o protótipo |
+| Critérios de prioridade | Não disponível no material público | Fora do escopo implementado; sem regra, não calcular prioridade |
 | Cancelamento, remarcação e vaga liberada | Política aprovada e versionada pela clínica | Não fornecida; pedido fica pendente e não altera agenda |
 | Checklist documental | Procedimento aprovado pela clínica | Não fornecido; Secretária não presume documentos além do encaminhamento já documentado |
 | Resposta de disponibilidade | API de agenda consultada em tempo de execução | Não usar resposta antiga nem RAG para afirmar disponibilidade |

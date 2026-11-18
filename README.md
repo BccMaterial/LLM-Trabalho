@@ -120,7 +120,30 @@ poetry run task test
 
 ## Estado do projeto
 
-A arquitetura e os contratos estão descritos em [`docs/case.md`](docs/case.md), [`docs/arquitetura.md`](docs/arquitetura.md) e [`docs/io.md`](docs/io.md). O código atual ainda é um protótipo: a API Flask tem recursos de profissionais e o agente envia uma mensagem fixa ao modelo. Ainda não há integração de paciente/agenda, laço conversacional, três agentes, ferramentas do domínio, verificador ou benchmark executado. A documentação distingue o desenho-alvo desses recursos ainda pendentes.
+A API Flask oferece recursos de usuários, profissionais e agendamentos. O agente Python conversa em turnos e consulta/grava pela API HTTP; a demonstração cria registros sintéticos pela API. Isso prova a integração técnica básica, mas não é um sistema pronto para uso por uma clínica: a consulta atual lista agendamentos, não calcula horários livres, e a confirmação de escrita ainda depende do prompt/modelo em vez de uma barreira determinística completa no código. Não use dados reais.
+
+O benchmark comparativo foi executado em sete cenários fictícios por modelo. Os relatórios e a análise estão em [`docs/modelos.md`](docs/modelos.md) e `logs/model-benchmark/`. O resultado não escolheu um modelo apto para pacientes. Gestor e Secretária como agentes, RAG, MCP, LangGraph e o verificador completo continuam como etapas futuras.
+
+### Exemplo observado no benchmark
+
+Entrada sintética: “Quero agendar a avaliação para sexta de manhã. Que horários estão disponíveis?” O Gemini 3.5 Flash-Lite consultou a ferramenta simulada e respondeu:
+
+```json
+{
+  "resultado": {
+    "status": "opcoes_disponiveis",
+    "mensagem": "Encontramos o seguinte horário disponível para sexta-feira de manhã: 19/03/2027 às 09:00. Deseja confirmar este agendamento?",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {"tipo": "api", "referencia": "agenda_disponibilidade_demo"},
+    {"tipo": "api", "referencia": "encaminhamento_demo"}
+  ],
+  "suficiencia": "suficiente"
+}
+```
+
+Essa saída veio do benchmark de sete casos, com fixture local, e não de disponibilidade real. A interação real do agente começa com uma mensagem demonstrativa e continua no terminal; opções e regras não devem ser tratadas como informação da clínica.
 
 ## Autenticação da API
 
