@@ -118,12 +118,28 @@ class AgentOutput(BaseModel):
 
         tool_results = (info.context or {}).get("tool_results", [])
         api_references = _get_api_references(tool_results)
-        if any(
-            source.tipo == SourceType.API and source.referencia not in api_references
-            for source in self.fonte
+        for source in self.fonte:
+            if (
+                source.tipo == SourceType.API
+                and source.referencia not in api_references
+            ):
+                trusted_reference = _get_api_reference_for_status(
+                    status,
+                    tool_results,
+                )
+                if trusted_reference is None:
+                    raise ValueError(
+                        "A fonte da API não corresponde a um resultado disponível."
+                    )
+                source.referencia = trusted_reference
+
+        if (
+            status == OutputStatus.OPTIONS_AVAILABLE
+            and not _has_available_consultation(tool_results)
         ):
             raise ValueError(
-                "A fonte da API não corresponde a um resultado disponível."
+                "Opções disponíveis exigem uma consulta da API "
+                "com disponibilidade confirmada."
             )
 
         if status == OutputStatus.APPOINTMENT_CONFIRMED and not _has_confirmed_booking(
@@ -147,9 +163,15 @@ def validate_agent_output(
             content,
             context={"tool_results": tool_results},
         )
-    except ValidationError:
+    except ValidationError as error:
+        details = "; ".join(
+            f"{'.'.join(str(part) for part in item['loc']) or '$'}: {item['msg']}"
+            for item in error.errors(include_input=False)
+        )
         raise InvalidAgentOutputError(
-            "A resposta do agente não corresponde ao contrato de saída."
+            "A resposta do agente não corresponde ao contrato de saída. "
+            f"Conteúdo retornado pelo LLM: {content!r}. "
+            f"Detalhes da validação: {details}"
         ) from None
 
 
@@ -170,10 +192,79 @@ def insufficient_response(message: str, reference: str) -> AgentOutput:
     )
 
 
+def booking_result_response(
+    tool_results: list[dict[str, Any]],
+) -> AgentOutput | None:
+    booking_tool_result = next(
+        (
+            tool_result
+            for tool_result in reversed(tool_results)
+            if tool_result["name"] == "confirmar_agendamento"
+        ),
+        None,
+    )
+    if booking_tool_result is None:
+        return None
+
+    result = booking_tool_result["result"]
+    if not isinstance(result, dict) or result.get("idempotent"):
+        return None
+
+    if result.get("id"):
+        start = result.get("agenda_inicio")
+        end = result.get("agenda_fim")
+        message = (
+            f"O agendamento foi confirmado para {start} a {end}."
+            if start and end
+            else "O agendamento foi confirmado."
+        )
+        status = OutputStatus.APPOINTMENT_CONFIRMED
+        action = OutputAction.COMPLETED
+        sufficiency = Sufficiency.SUFFICIENT
+    else:
+        if result.get("erro") == "horario_indisponivel":
+            message = (
+                "O horário não está mais disponível. Nenhum agendamento foi "
+                "criado; escolha outro horário para continuar."
+            )
+        elif result.get("erro") == "dados_invalidos":
+            message = (
+                "A API rejeitou os dados do agendamento. Nenhum agendamento "
+                "foi criado; revise os dados com a equipe da clínica."
+            )
+        else:
+            message = (
+                "A API não confirmou o agendamento. Nenhum agendamento foi "
+                "criado; confirme os dados antes de tentar novamente."
+            )
+        status = OutputStatus.APPOINTMENT_NOT_CONFIRMED
+        action = OutputAction.NONE
+        sufficiency = Sufficiency.INSUFFICIENT
+
+    return AgentOutput.model_validate(
+        {
+            "resultado": {
+                "status": status,
+                "mensagem": message,
+                "acao": action,
+            },
+            "fonte": [
+                {
+                    "tipo": SourceType.API,
+                    "referencia": "confirmar_agendamento",
+                }
+            ],
+            "suficiencia": sufficiency,
+        },
+        context={"tool_results": tool_results},
+    )
+
+
 def _get_api_references(tool_results: list[dict[str, Any]]) -> set[str]:
     references = set()
     for tool_result in tool_results:
         if tool_result["name"] not in {
+            "consultar_profissionais",
             "consultar_disponibilidade",
             "confirmar_agendamento",
         }:
@@ -192,6 +283,43 @@ def _get_api_references(tool_results: list[dict[str, Any]]) -> set[str]:
                 if isinstance(record, dict) and record.get("id") is not None
             )
     return references
+
+
+def _has_available_consultation(tool_results: list[dict[str, Any]]) -> bool:
+    return any(
+        tool_result["name"] == "consultar_disponibilidade"
+        and isinstance(tool_result["result"], dict)
+        and tool_result["result"].get("disponibilidade") == "disponivel"
+        for tool_result in tool_results
+    )
+
+
+def _get_api_reference_for_status(
+    status: OutputStatus,
+    tool_results: list[dict[str, Any]],
+) -> str | None:
+    preferred_tool_names = {
+        OutputStatus.OPTIONS_AVAILABLE: ("consultar_disponibilidade",),
+        OutputStatus.APPOINTMENT_CONFIRMED: ("confirmar_agendamento",),
+        OutputStatus.APPOINTMENT_NOT_CONFIRMED: (
+            "confirmar_agendamento",
+            "consultar_disponibilidade",
+        ),
+    }.get(status, ())
+
+    for preferred_name in preferred_tool_names:
+        if any(result["name"] == preferred_name for result in tool_results):
+            return preferred_name
+
+    for tool_result in reversed(tool_results):
+        name = tool_result["name"]
+        if name in {
+            "consultar_profissionais",
+            "consultar_disponibilidade",
+            "confirmar_agendamento",
+        }:
+            return name
+    return None
 
 
 def _has_confirmed_booking(tool_results: list[dict[str, Any]]) -> bool:

@@ -74,6 +74,28 @@ def test_booking_uses_authenticated_identity_instead_of_model_id():
     assert result["patient_id"] == "authenticated-patient"
 
 
+def test_create_appointment_adds_sao_paulo_offset_to_naive_datetimes():
+    client = api.ApiClient.__new__(api.ApiClient)
+    request = {}
+
+    def capture_request(path, method, payload):
+        request.update(path=path, method=method, payload=payload)
+        return payload
+
+    client._request = capture_request
+
+    client.criar_agendamento(
+        patient_id="patient-id",
+        professional_id="professional-id",
+        agenda_inicio="2026-11-19T10:00:00",
+        agenda_fim="2026-11-19T11:00:00",
+        suspeita_paciente="Avaliação",
+    )
+
+    assert request["payload"]["agenda_inicio"] == "2026-11-19T10:00:00-03:00"
+    assert request["payload"]["agenda_fim"] == "2026-11-19T11:00:00-03:00"
+
+
 def test_availability_lists_all_appointments_when_patient_id_is_omitted():
     class FakeClient:
         def consultar_agendamentos(

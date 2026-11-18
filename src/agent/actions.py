@@ -107,6 +107,7 @@ def request_appointment_approval(state: dict) -> dict:
     arguments = json.loads(confirmation_call["function"]["arguments"])
     start = arguments.get("agenda_inicio")
     end = arguments.get("agenda_fim")
+    professional_name = state.get("professional_name") or "profissional"
     if not start or not end:
         raise ValueError(
             "Não é possível pedir confirmação sem o início e o fim do horário."
@@ -119,9 +120,10 @@ def request_appointment_approval(state: dict) -> dict:
                 "action": "confirmar_agendamento",
                 "proposal_version": state["proposal_version"],
                 "arguments": arguments,
+                "professional_name": state.get("professional_name"),
                 "prompt": (
-                    "Antes de registrar, confirme o horário exato: "
-                    f"{start} a {end}. "
+                    "Antes de registrar, confirme o profissional e o horário "
+                    f"exatos: {professional_name} em {start} a {end}. "
                 ),
                 "accepted_responses": ["approve", "reject", "edit"],
             }
