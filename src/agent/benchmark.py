@@ -66,7 +66,9 @@ def _valid_response(data: Any, schema: dict) -> bool:
         definition = schema["properties"][key]
         value = data.get(key)
         if definition["type"] == "string":
-            if not isinstance(value, str) or value not in definition.get("enum", [value]):
+            if not isinstance(value, str) or value not in definition.get(
+                "enum", [value]
+            ):
                 return False
         elif definition["type"] == "object":
             if not isinstance(value, dict) or set(value) != set(definition["required"]):
@@ -82,7 +84,9 @@ def _valid_response(data: Any, schema: dict) -> bool:
                 return False
             item_schema = definition["items"]
             for item in value:
-                if not isinstance(item, dict) or set(item) != set(item_schema["required"]):
+                if not isinstance(item, dict) or set(item) != set(
+                    item_schema["required"]
+                ):
                     return False
                 for child, child_definition in item_schema["properties"].items():
                     child_value = item.get(child)
@@ -150,10 +154,15 @@ def _mock_tool(
             "agenda_inicio": SYNTHETIC_START,
             "agenda_fim": SYNTHETIC_END,
         }
-        arguments_match = all(arguments.get(key) == value for key, value in expected.items())
+        arguments_match = all(
+            arguments.get(key) == value for key, value in expected.items()
+        )
         if not case["write_allowed"] or not arguments_match:
             return (
-                {"simulado": True, "erro": "Escrita de teste bloqueada: confirmação ou opção não confere."},
+                {
+                    "simulado": True,
+                    "erro": "Escrita de teste bloqueada: confirmação ou opção não confere.",
+                },
                 {"tipo": "api", "referencia": "gravacao_agendamento_demo"},
             )
         return (
@@ -186,9 +195,7 @@ def _required_source_check(data: Any, required_sources: list[str]) -> bool:
     if not isinstance(data, dict) or not isinstance(data.get("fonte"), list):
         return False
     returned = {
-        item.get("referencia")
-        for item in data["fonte"]
-        if isinstance(item, dict)
+        item.get("referencia") for item in data["fonte"] if isinstance(item, dict)
     }
     return set(required_sources).issubset(returned)
 
@@ -315,7 +322,9 @@ def _run_case(
             result["model_calls"] = model_calls
             result["total_steps"] = total_steps
             call_latency = time.perf_counter() - call_started
-            result["latency_seconds"] = (result["latency_seconds"] or 0.0) + call_latency
+            result["latency_seconds"] = (
+                result["latency_seconds"] or 0.0
+            ) + call_latency
             usage = response.usage
             prompt_tokens = None
             completion_tokens = None
@@ -323,8 +332,12 @@ def _run_case(
                 prompt_tokens = getattr(usage, "prompt_tokens", None)
                 completion_tokens = getattr(usage, "completion_tokens", None)
                 if prompt_tokens is not None and completion_tokens is not None:
-                    result["input_tokens"] = (result["input_tokens"] or 0) + prompt_tokens
-                    result["output_tokens"] = (result["output_tokens"] or 0) + completion_tokens
+                    result["input_tokens"] = (
+                        result["input_tokens"] or 0
+                    ) + prompt_tokens
+                    result["output_tokens"] = (
+                        result["output_tokens"] or 0
+                    ) + completion_tokens
                     total_tokens += prompt_tokens + completion_tokens
                     if total_tokens > benchmark["max_total_tokens"]:
                         result["token_budget_exceeded"] = True
@@ -362,7 +375,10 @@ def _run_case(
                 break
 
             for tool_call in message.tool_calls:
-                if tool_calls >= benchmark["max_tool_calls"] or total_steps >= benchmark["max_total_steps"]:
+                if (
+                    tool_calls >= benchmark["max_tool_calls"]
+                    or total_steps >= benchmark["max_total_steps"]
+                ):
                     termination = "tool_or_step_limit"
                     break
                 tool_calls += 1
@@ -374,9 +390,15 @@ def _run_case(
                 except json.JSONDecodeError:
                     arguments = None
                 arguments_valid = _valid_tool_arguments(name, arguments)
-                result["tool_arguments_valid"] = result["tool_arguments_valid"] and arguments_valid
+                result["tool_arguments_valid"] = (
+                    result["tool_arguments_valid"] and arguments_valid
+                )
                 result["tool_calls"].append(
-                    {"name": name, "arguments": arguments, "arguments_valid": arguments_valid}
+                    {
+                        "name": name,
+                        "arguments": arguments,
+                        "arguments_valid": arguments_valid,
+                    }
                 )
                 if name == WRITE_TOOL:
                     expected_write_args = next(
@@ -394,14 +416,21 @@ def _run_case(
                         arguments.get(key) == value
                         for key, value in expected_write_args.items()
                     )
-                    if not case["write_allowed"] or not args_match or not arguments_valid:
+                    if (
+                        not case["write_allowed"]
+                        or not args_match
+                        or not arguments_valid
+                    ):
                         result["unsafe_write_attempt"] = True
                 if arguments_valid:
                     tool_result, source = _mock_tool(name, arguments, case)
                     if source:
                         tool_source_pairs.append(source)
                 else:
-                    tool_result = {"simulado": True, "erro": "Argumentos ou ferramenta inválidos."}
+                    tool_result = {
+                        "simulado": True,
+                        "erro": "Argumentos ou ferramenta inválidos.",
+                    }
                 result["tool_results"].append(
                     {
                         "id": tool_call.id,
@@ -440,18 +469,18 @@ def _run_case(
         )
         result["sufficiency_matches"] = (
             isinstance(result["response_json"], dict)
-            and result["response_json"].get("suficiencia") == case["expected_sufficiency"]
+            and result["response_json"].get("suficiencia")
+            == case["expected_sufficiency"]
         )
         actual_tool_names = [item["name"] for item in result["tool_calls"]]
         actual_tool_args = [item.get("arguments") for item in result["tool_calls"]]
         expected_tool_args = case["expected_tool_arguments"]
-        result["tool_arguments_match_expected"] = (
-            len(actual_tool_args) == len(expected_tool_args)
-            and all(
-                isinstance(actual, dict)
-                and all(actual.get(key) == value for key, value in expected.items())
-                for actual, expected in zip(actual_tool_args, expected_tool_args)
-            )
+        result["tool_arguments_match_expected"] = len(actual_tool_args) == len(
+            expected_tool_args
+        ) and all(
+            isinstance(actual, dict)
+            and all(actual.get(key) == value for key, value in expected.items())
+            for actual, expected in zip(actual_tool_args, expected_tool_args)
         )
         result["tool_behavior_matches"] = (
             actual_tool_names == case["expected_tool_calls"]
@@ -473,14 +502,21 @@ def _run_case(
     return result
 
 
-def _summarize(results: list[dict[str, Any]], models: list[dict], daily_volume: int | None) -> list[dict]:
+def _summarize(
+    results: list[dict[str, Any]], models: list[dict], daily_volume: int | None
+) -> list[dict]:
     summary = []
     for model in models:
         rows = [row for row in results if row["model"] == model["name"]]
         completed = [row for row in rows if not row["error"]]
-        latencies = [row["latency_seconds"] for row in completed if row["latency_seconds"] is not None]
+        latencies = [
+            row["latency_seconds"]
+            for row in completed
+            if row["latency_seconds"] is not None
+        ]
         token_rows = [
-            row for row in completed
+            row
+            for row in completed
             if row["input_tokens"] is not None and row["output_tokens"] is not None
         ]
         cost_complete = (
@@ -497,18 +533,42 @@ def _summarize(results: list[dict[str, Any]], models: list[dict], daily_volume: 
                 "runs": len(rows),
                 "errors": sum(bool(row["error"]) for row in rows),
                 "schema_valid": sum(row["schema_valid"] for row in completed),
-                "tools_expected": sum(row["tool_behavior_matches"] for row in completed),
+                "tools_expected": sum(
+                    row["tool_behavior_matches"] for row in completed
+                ),
                 "sources_grounded": sum(row["sources_grounded"] for row in completed),
-                "required_sources_cited": sum(row["required_sources_cited"] for row in completed),
-                "sufficiency_matches": sum(row["sufficiency_matches"] for row in completed),
-                "tool_argument_schema_valid": sum(row["tool_arguments_valid"] for row in completed),
+                "required_sources_cited": sum(
+                    row["required_sources_cited"] for row in completed
+                ),
+                "sufficiency_matches": sum(
+                    row["sufficiency_matches"] for row in completed
+                ),
+                "tool_argument_schema_valid": sum(
+                    row["tool_arguments_valid"] for row in completed
+                ),
                 "unsafe_writes": sum(row["unsafe_write_attempt"] for row in rows),
-                "token_budget_exceeded": sum(row["token_budget_exceeded"] for row in completed),
-                "input_tokens": sum(row["input_tokens"] or 0 for row in token_rows) if token_rows else None,
-                "output_tokens": sum(row["output_tokens"] or 0 for row in token_rows) if token_rows else None,
-                "latency_median_seconds": round(statistics.median(latencies), 4) if latencies else None,
+                "token_budget_exceeded": sum(
+                    row["token_budget_exceeded"] for row in completed
+                ),
+                "input_tokens": (
+                    sum(row["input_tokens"] or 0 for row in token_rows)
+                    if token_rows
+                    else None
+                ),
+                "output_tokens": (
+                    sum(row["output_tokens"] or 0 for row in token_rows)
+                    if token_rows
+                    else None
+                ),
+                "latency_median_seconds": (
+                    round(statistics.median(latencies), 4) if latencies else None
+                ),
                 "cost_total": round(total_cost, 10) if total_cost is not None else None,
-                "cost_per_100_runs": round(total_cost * 100 / len(completed), 8) if total_cost is not None else None,
+                "cost_per_100_runs": (
+                    round(total_cost * 100 / len(completed), 8)
+                    if total_cost is not None
+                    else None
+                ),
                 "cost_semester_projection": (
                     round(total_cost * daily_volume * 182 / len(completed), 8)
                     if total_cost is not None and daily_volume is not None
@@ -530,7 +590,9 @@ def _write_reports(
     daily_volume: int | None,
 ) -> tuple[Path, Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
-    run_id = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S") + "-" + uuid4().hex[:6]
+    run_id = (
+        datetime.now().astimezone().strftime("%Y%m%d-%H%M%S") + "-" + uuid4().hex[:6]
+    )
     json_path = output_dir / f"{run_id}.json"
     csv_path = output_dir / f"{run_id}.csv"
     md_path = output_dir / f"{run_id}.md"
@@ -551,8 +613,13 @@ def _write_reports(
             "limits": {
                 key: benchmark[key]
                 for key in [
-                    "max_model_calls", "max_tool_calls", "max_total_steps",
-                    "max_total_tokens", "timeout_seconds", "max_output_tokens", "temperature"
+                    "max_model_calls",
+                    "max_tool_calls",
+                    "max_total_steps",
+                    "max_total_tokens",
+                    "timeout_seconds",
+                    "max_output_tokens",
+                    "temperature",
                 ]
             },
             "request": {"tool_choice": "auto", "response_format": "strict JSON Schema"},
@@ -565,22 +632,59 @@ def _write_reports(
         "results": results,
         "manual_review": "Preencher os campos de avaliação humana no CSV; métricas automáticas não escolhem sozinhas o modelo.",
     }
-    json_path.write_text(json.dumps(details, ensure_ascii=False, indent=2), encoding="utf-8")
+    json_path.write_text(
+        json.dumps(details, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     csv_fields = [
-        "case_id", "case_title", "model", "provider", "model_id", "repetition", "model_calls", "total_steps",
-        "expected_behavior", "expected_tool_calls", "expected_tool_arguments", "required_sources", "tool_calls", "tool_arguments_valid",
+        "case_id",
+        "case_title",
+        "model",
+        "provider",
+        "model_id",
+        "repetition",
+        "model_calls",
+        "total_steps",
+        "expected_behavior",
+        "expected_tool_calls",
+        "expected_tool_arguments",
+        "required_sources",
+        "tool_calls",
+        "tool_arguments_valid",
         "tool_arguments_match_expected",
-        "tool_behavior_matches", "schema_valid", "sources_grounded", "required_sources_cited", "expected_sufficiency",
-        "response_json", "response_text", "unsafe_write_attempt", "input_tokens", "output_tokens", "usage_complete", "token_budget_exceeded",
-        "latency_seconds", "cost", "currency", "termination", "error",
-        "human_accuracy_0_2", "human_clarity_0_2", "human_grounding_0_2", "human_safety_0_2", "reviewer_notes",
+        "tool_behavior_matches",
+        "schema_valid",
+        "sources_grounded",
+        "required_sources_cited",
+        "expected_sufficiency",
+        "response_json",
+        "response_text",
+        "unsafe_write_attempt",
+        "input_tokens",
+        "output_tokens",
+        "usage_complete",
+        "token_budget_exceeded",
+        "latency_seconds",
+        "cost",
+        "currency",
+        "termination",
+        "error",
+        "human_accuracy_0_2",
+        "human_clarity_0_2",
+        "human_grounding_0_2",
+        "human_safety_0_2",
+        "reviewer_notes",
     ]
     with csv_path.open("w", encoding="utf-8-sig", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=csv_fields, extrasaction="ignore")
         writer.writeheader()
         for row in results:
-            row = {**row, "currency": next(m["currency"] for m in models if m["name"] == row["model"])}
+            row = {
+                **row,
+                "currency": next(
+                    m["currency"] for m in models if m["name"] == row["model"]
+                ),
+            }
             writer.writerow(row)
 
     lines = [
@@ -593,16 +697,30 @@ def _write_reports(
     ]
     for row in summary:
         total = row["runs"] - row["errors"]
-        latency = f"{row['latency_median_seconds']} s" if row["latency_median_seconds"] is not None else "n/d"
-        cost = f"{row['cost_total']} {row['currency']}" if row["cost_total"] is not None else "n/d"
-        cost_100 = f"{row['cost_per_100_runs']} {row['currency']}" if row["cost_per_100_runs"] is not None else "n/d"
+        latency = (
+            f"{row['latency_median_seconds']} s"
+            if row["latency_median_seconds"] is not None
+            else "n/d"
+        )
+        cost = (
+            f"{row['cost_total']} {row['currency']}"
+            if row["cost_total"] is not None
+            else "n/d"
+        )
+        cost_100 = (
+            f"{row['cost_per_100_runs']} {row['currency']}"
+            if row["cost_per_100_runs"] is not None
+            else "n/d"
+        )
         semester_cost = (
             f"{row['cost_semester_projection']} {row['currency']}"
             if row["cost_semester_projection"] is not None
             else "n/d"
         )
         input_tokens = row["input_tokens"] if row["input_tokens"] is not None else "n/d"
-        output_tokens = row["output_tokens"] if row["output_tokens"] is not None else "n/d"
+        output_tokens = (
+            row["output_tokens"] if row["output_tokens"] is not None else "n/d"
+        )
         lines.append(
             f"| {row['model']} ({row['provider']} / `{row['model_id']}`) | {row['schema_valid']}/{total} | "
             f"{row['tool_argument_schema_valid']}/{total} | {row['tools_expected']}/{total} | "
@@ -627,18 +745,43 @@ def _write_reports(
         ]
     )
     if daily_volume is not None:
-        lines.insert(-1, f"Projeção semestral para {daily_volume} interações/dia (182 dias): custos por modelo constam no JSON.")
+        lines.insert(
+            -1,
+            f"Projeção semestral para {daily_volume} interações/dia (182 dias): custos por modelo constam no JSON.",
+        )
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return json_path, csv_path, md_path
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Compara modelos no benchmark sintético do projeto.")
-    parser.add_argument("--repetitions", type=int, default=1, help="repetições por caso e modelo (padrão: 1)")
-    parser.add_argument("--daily-volume", type=int, help="volume diário explícito para projeção semestral")
-    parser.add_argument("--model", action="append", dest="selected_models", help="nome exato do modelo; pode repetir")
-    parser.add_argument("--dry-run", action="store_true", help="mostra configuração sem chamar provedores")
-    parser.add_argument("--output-dir", help="pasta para relatórios; padrão definido no TOML")
+    parser = argparse.ArgumentParser(
+        description="Compara modelos no benchmark sintético do projeto."
+    )
+    parser.add_argument(
+        "--repetitions",
+        type=int,
+        default=1,
+        help="repetições por caso e modelo (padrão: 1)",
+    )
+    parser.add_argument(
+        "--daily-volume",
+        type=int,
+        help="volume diário explícito para projeção semestral",
+    )
+    parser.add_argument(
+        "--model",
+        action="append",
+        dest="selected_models",
+        help="nome exato do modelo; pode repetir",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="mostra configuração sem chamar provedores",
+    )
+    parser.add_argument(
+        "--output-dir", help="pasta para relatórios; padrão definido no TOML"
+    )
     args = parser.parse_args()
     if args.repetitions < 1:
         parser.error("--repetitions deve ser ao menos 1")
@@ -656,15 +799,27 @@ def main() -> int:
     if not models:
         parser.error("nenhum modelo configurado")
 
-    print("Comparação com a mesma versão de prompt, schema, ferramentas, casos e limites.")
-    print(f"Casos: {len(cases)} | repetições: {args.repetitions} | ferramentas simuladas, sem acesso à clínica.")
+    print(
+        "Comparação com a mesma versão de prompt, schema, ferramentas, casos e limites."
+    )
+    print(
+        f"Casos: {len(cases)} | repetições: {args.repetitions} | ferramentas simuladas, sem acesso à clínica."
+    )
     for model in models:
-        print(f"- {model['name']}: {model['provider']} / {model['model_id']} ({model['base_url']})")
+        print(
+            f"- {model['name']}: {model['provider']} / {model['model_id']} ({model['base_url']})"
+        )
     if args.dry_run:
         print("Dry run: nenhum provedor foi chamado.")
         return 0
 
-    missing = sorted({model["api_key_env"] for model in models if not os.getenv(model["api_key_env"])})
+    missing = sorted(
+        {
+            model["api_key_env"]
+            for model in models
+            if not os.getenv(model["api_key_env"])
+        }
+    )
     if missing:
         print("Configure estas chaves em .env: " + ", ".join(missing), file=sys.stderr)
         return 2
@@ -673,14 +828,18 @@ def main() -> int:
     for model in models:
         for case in cases:
             for repetition in range(1, args.repetitions + 1):
-                print(f"Executando {model['name']} · {case['id']} · tentativa {repetition}...")
+                print(
+                    f"Executando {model['name']} · {case['id']} · tentativa {repetition}..."
+                )
                 row = _run_case(model, case, benchmark, schema, repetition)
                 results.append(row)
                 if row["error"]:
                     print(f"  Falha registrada: {row['error']}", file=sys.stderr)
 
     summary = _summarize(results, models, args.daily_volume)
-    output_dir = Path(args.output_dir) if args.output_dir else ROOT / benchmark["results_dir"]
+    output_dir = (
+        Path(args.output_dir) if args.output_dir else ROOT / benchmark["results_dir"]
+    )
     if not output_dir.is_absolute():
         output_dir = ROOT / output_dir
     json_path, csv_path, md_path = _write_reports(

@@ -3,7 +3,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from agent.output_contract import AgentOutput, validate_agent_output
+from src.agent.output_contract import AgentOutput, validate_agent_output
 
 
 def _valid_payload():

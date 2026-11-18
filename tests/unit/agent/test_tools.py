@@ -1,6 +1,7 @@
 import json
 
-from agent import tools
+from src.agent import tools
+from src.agent.integrations import api
 
 
 class FakeResponse:
@@ -39,7 +40,7 @@ class FakeOpener:
 
 def test_api_client_keeps_agent_and_user_sessions_separate(monkeypatch):
     opener = FakeOpener()
-    monkeypatch.setattr(tools, "build_opener", lambda: opener)
+    monkeypatch.setattr(api, "build_opener", lambda: opener)
     monkeypatch.setenv("API_AGENT_USER", "agent@example.test")
     monkeypatch.setenv("API_AGENT_PASSWORD", "agent-secret")
 
@@ -121,7 +122,7 @@ def test_availability_accepts_optional_patient_id():
 
 
 def test_availability_treats_pending_appointment_as_occupied():
-    client = tools.ApiClient.__new__(tools.ApiClient)
+    client = api.ApiClient.__new__(api.ApiClient)
     client._request = lambda path: {
         "value": [
             {
