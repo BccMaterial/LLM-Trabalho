@@ -38,3 +38,5 @@ def test_atendente_prompt_blocks_exposing_appointments():
     assert "nunca devem ser expostos ao usuário" in prompt.content
     assert "exclusivamente para avaliar disponibilidade" in prompt.content
     assert "Não transcreva nem resuma registros da agenda" in prompt.content
+    assert "Pendente” representa um agendamento futuro confirmado" in prompt.content
+    assert "bloqueio aguardando decisão" in prompt.content

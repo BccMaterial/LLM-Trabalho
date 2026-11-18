@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -21,6 +22,18 @@ TOOLS = [
                             "ID, nome, username ou e-mail do paciente para "
                             "filtrar a consulta. Opcional."
                         ),
+                    },
+                    "professional_id": {
+                        "type": "string",
+                        "description": "UUID do profissional. Opcional.",
+                    },
+                    "agenda_inicio": {
+                        "type": "string",
+                        "description": "Início do intervalo em ISO 8601. Opcional.",
+                    },
+                    "agenda_fim": {
+                        "type": "string",
+                        "description": "Fim do intervalo em ISO 8601. Opcional.",
                     },
                 },
                 "additionalProperties": False,
@@ -148,15 +161,73 @@ class ApiClient:
         self.user_session_cookie = ""
         self.authenticated_user = None
 
-    def consultar_agendamentos(self, patient_id: str | None = None) -> dict:
+    def consultar_agendamentos(
+        self,
+        patient_id: str | None = None,
+        professional_id: str | None = None,
+        agenda_inicio: str | None = None,
+        agenda_fim: str | None = None,
+    ) -> dict:
         if patient_id:
             patient_id = self._resolve_patient_id(patient_id)
             if not patient_id:
                 return {"erro": "Paciente não encontrado na API."}
-        path = "/api/appointments"
+        if bool(agenda_inicio) != bool(agenda_fim):
+            return {
+                "disponibilidade": "indeterminada",
+                "motivo": "Informe o início e o fim do intervalo.",
+            }
+
+        params: dict[str, str] = {}
         if patient_id:
-            path += f"?{urlencode({'patient_id': patient_id})}"
-        return self._request(path)
+            params["patient_id"] = patient_id
+        if professional_id:
+            params["professional_id"] = professional_id
+        path = "/api/appointments"
+        if params:
+            path += f"?{urlencode(params)}"
+        appointments = self._request(path).get("value", [])
+
+        if not agenda_inicio or not agenda_fim:
+            return {
+                "disponibilidade": "indeterminada",
+                "motivo": "Informe o profissional e o intervalo para avaliar.",
+            }
+
+        try:
+            requested_start = self._parse_iso_datetime(agenda_inicio)
+            requested_end = self._parse_iso_datetime(agenda_fim)
+        except ValueError:
+            return {
+                "disponibilidade": "indeterminada",
+                "motivo": "Formato de data ou horário inválido.",
+            }
+        if requested_start >= requested_end:
+            return {
+                "disponibilidade": "indeterminada",
+                "motivo": "O início deve ser anterior ao fim.",
+            }
+
+        occupied = any(
+            appointment.get("status") == "Pendente"
+            and self._parse_iso_datetime(appointment["agenda_inicio"]) < requested_end
+            and self._parse_iso_datetime(appointment["agenda_fim"]) > requested_start
+            for appointment in appointments
+            if appointment.get("agenda_inicio") and appointment.get("agenda_fim")
+        )
+        if occupied:
+            return {
+                "disponibilidade": "indisponivel",
+                "motivo": "Há um agendamento pendente que ocupa o intervalo.",
+            }
+        return {"disponibilidade": "disponivel"}
+
+    @staticmethod
+    def _parse_iso_datetime(value: str) -> datetime:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed
 
     def _resolve_patient_id(self, identifier: str) -> str | None:
         try:
@@ -192,7 +263,12 @@ def execute_tool(
 ) -> dict:
     """Executa somente as ferramentas expostas ao modelo."""
     if name == "consultar_disponibilidade":
-        return client.consultar_agendamentos(patient_id=arguments.get("patient_id"))
+        return client.consultar_agendamentos(
+            patient_id=arguments.get("patient_id"),
+            professional_id=arguments.get("professional_id"),
+            agenda_inicio=arguments.get("agenda_inicio"),
+            agenda_fim=arguments.get("agenda_fim"),
+        )
     if name == "confirmar_agendamento":
         if not authenticated_user or not authenticated_user.get("id"):
             return {
@@ -201,5 +277,16 @@ def execute_tool(
             }
         arguments = dict(arguments)
         arguments["patient_id"] = authenticated_user["id"]
-        return client.criar_agendamento(**arguments)
+        try:
+            return client.criar_agendamento(**arguments)
+        except RuntimeError as error:
+            if '"status_code":409' in str(error):
+                return {
+                    "erro": "horario_indisponivel",
+                    "mensagem": (
+                        "Esse horário já está ocupado por um agendamento "
+                        "pendente. Avalie outra opção."
+                    ),
+                }
+            raise
     raise ValueError(f"Ferramenta desconhecida: {name}")
