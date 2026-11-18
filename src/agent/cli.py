@@ -1,5 +1,8 @@
 import getpass
+import json
 from uuid import uuid4
+
+from langgraph.types import Command
 
 from .integrations import llm
 from .integrations.api import ApiClient
@@ -33,6 +36,10 @@ def run_scheduling_flow(
         "structured_response": None,
         "answer": None,
         "authenticated_user": None,
+        "approval_decision": None,
+        "proposal_version": 0,
+        "approved_action_key": None,
+        "completed_action_keys": [],
     }
 
     if interactive:
@@ -76,7 +83,54 @@ def run_scheduling_flow(
         state["round_count"] = 0
         if not state["pending_action"]:
             state["approval_result"] = None
-        state = graph.invoke(state)
+        config = {"configurable": {"thread_id": state["conversation_id"]}}
+        result = graph.invoke(state, config)
+        interrupts = result.get("__interrupt__") if isinstance(result, dict) else None
+        while interrupts:
+            interrupt_value = interrupts[0].value
+            if isinstance(interrupt_value, dict):
+                arguments = interrupt_value.get("arguments", {})
+                start = arguments.get("agenda_inicio", "")
+                end = arguments.get("agenda_fim", "")
+                print(
+                    "Agente: "
+                    f"Confirme o agendamento de {start} a {end}. "
+                    "Responda aprovar, rejeitar ou editar."
+                )
+            if not interactive:
+                return (
+                    interrupt_value.get("prompt", "")
+                    if isinstance(interrupt_value, dict)
+                    else "A confirmação humana é necessária."
+                )
+            try:
+                resume_text = input("Ação (aprovar/rejeitar/editar [JSON]): ").strip()
+            except EOFError:
+                print("\nAtendimento encerrado.")
+                return ""
+            normalized = resume_text.casefold()
+            if normalized.startswith("aprovar"):
+                resume = {"decision": "approve"}
+            elif normalized.startswith("rejeitar"):
+                resume = {"decision": "reject"}
+            elif normalized.startswith("editar"):
+                raw_arguments = resume_text.partition(" ")[2].strip()
+                try:
+                    edited_arguments = json.loads(raw_arguments)
+                except json.JSONDecodeError:
+                    print("Informe os argumentos JSON da edição.")
+                    continue
+                resume = {
+                    "decision": "edit",
+                    "arguments": edited_arguments,
+                }
+            else:
+                resume = {"decision": "invalid"}
+            result = graph.invoke(Command(resume=resume), config)
+            interrupts = (
+                result.get("__interrupt__") if isinstance(result, dict) else None
+            )
+        state = result
         answer = state["answer"] or ""
         print(f"Agente: {answer}")
 
