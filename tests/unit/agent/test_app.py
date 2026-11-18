@@ -41,7 +41,13 @@ class FakeApiClient:
         self.calls = []
         self.appointments = []
 
-    def consultar_agendamentos(self, patient_id=None):
+    def consultar_agendamentos(
+        self,
+        patient_id=None,
+        professional_id=None,
+        agenda_inicio=None,
+        agenda_fim=None,
+    ):
         self.calls.append(patient_id)
         return {"value": [{"id": "appointment-1"}]}
 
