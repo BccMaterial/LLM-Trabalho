@@ -59,7 +59,11 @@ Os sete casos cobrem: orientação sem política, consulta de disponibilidade, i
 
 O verificador automático avalia estrutura, fonte, suficiência e ferramenta esperada. Ele não mede correção clínica, tom/clareza, adequação humana, qualidade da organização da clínica ou experiência real do paciente. O CSV deixa notas de revisão humana em branco; esta análise de saídas é uma leitura técnica inicial e deve ser confirmada pelo grupo antes de uma decisão final.
 
+<<<<<<< HEAD
 Para a revisão humana do CSV, aplicar a mesma escala a todos: `0` = falhou ou gerou risco, `1` = parcialmente correto e exige correção, `2` = correto, claro, sustentado por fonte e seguro. Comparar lado a lado sem olhar primeiro o custo. As notas humanas continuam pendentes; não foram inventadas para preencher o relatório.
+=======
+As notas de correção, clareza, grounding e segurança dos 21 resultados foram conferidas pelo grupo: `0` = falhou/risco, `1` = parcial, `2` = correto/seguro. As justificativas revisadas estão nas colunas de avaliação humana do CSV. Média por modelo nesta escala: GPT-OSS `0,43 / 0,00 / 0,00 / 2,00`; Qwen `1,43 / 1,43 / 1,29 / 2,00`; Gemini `1,57 / 1,86 / 1,86 / 2,00`. Segurança 2 significa que não foi observada ação insegura nos casos; não certifica segurança geral.
+>>>>>>> 34251ac (Record human review and Gemini selection)
 
 O JSON da execução salva a trajetória por caso: chamadas de modelo, ferramenta, argumentos, resultado simulado, fonte, validação, tokens, latência e erro. Esses registros cobrem a comparação com fixtures locais; não são evidência de uma execução na clínica nem substituem os logs do agente integrado à API.
 
@@ -79,9 +83,9 @@ Para qualquer nova rodada, a conta por chamada é `(tokens de entrada × preço 
 
 ## Decisão nesta etapa
 
-**Nenhum candidato está aprovado para uso com pacientes.** Nenhum passou todos os critérios nos sete casos. Para a próxima iteração técnica, Gemini 3.5 Flash-Lite é o candidato de continuação mais promissor: concluiu os sete casos, respeitou ferramenta/schema, teve menor latência que Qwen e oferece faixa gratuita para dados sintéticos. Isso é uma escolha provisória de experimento, não uma afirmação de segurança, qualidade clínica ou benefício de negócio.
+**Decisão do grupo:** selecionar Gemini 3.5 Flash-Lite para continuar o protótipo e as próximas avaliações sintéticas.** Neste conjunto, ele completou os sete casos sem erros de API, executou o comportamento esperado das ferramentas em 7/7, teve a menor latência mediana (1,25 s) e recebeu as melhores médias qualitativas. A estabilidade das chamadas de ferramenta e a ausência de erros do provedor foram fatores considerados pelo grupo. Apesar disso, houve uma saída fora do schema e suficiência correta em apenas 4/7 casos; portanto, o resultado justifica a escolha para a próxima etapa de desenvolvimento, mas não aprovação para uso com pacientes nem garantia de desempenho clínico.
 
-Antes de considerar o candidato apto, corrigir os três erros de suficiência do Gemini e a citação da fonte na confirmação de agendamento, e repetir a avaliação. Também repetir GPT-OSS depois de resolver a incompatibilidade de tool calling no endpoint. Mudar a escolha se outro modelo passar todos os casos críticos, mantiver os resultados em novas repetições e oferecer custo/latência/política de dados mais adequados. Os sete casos não são suficientes para generalizar.
+Reavaliar a escolha se novas rodadas mostrarem erros de chamada, schema ou suficiência no Gemini, ou se outro modelo superar seus resultados em casos críticos, latência, custo e segurança. Antes de qualquer uso com pacientes, ainda seriam necessárias validações e salvaguardas específicas; sete casos sintéticos e uma repetição não permitem generalizar nem demonstrar benefício clínico.
 
 ## Como reproduzir
 

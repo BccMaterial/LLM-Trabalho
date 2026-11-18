@@ -111,7 +111,7 @@ poetry run python -m src.agent.benchmark
 
 Para repetir os casos três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As tarifas configuradas estimam o custo em faixa paga; na faixa gratuita da Groq ou do Gemini há limites de uso e as solicitações permitidas dentro deles não geram cobrança. `--dry-run` não envia chamadas.
 
-Os relatórios Markdown, JSON e CSV são gravados em `logs/model-benchmark/`. O CSV deixa campos para avaliação humana; o programa não escolhe vencedor automaticamente. A projeção semestral usa 182 dias e só é calculada quando `--daily-volume` é fornecido.
+Os relatórios Markdown, JSON e CSV são gravados em `logs/model-benchmark/`. A rodada `20261117-212956-dff568` contém a revisão qualitativa das 21 respostas conferida pelo grupo. O grupo selecionou Gemini 3.5 Flash-Lite para continuar o protótipo com base nos resultados; o programa não escolhe vencedor automaticamente. Novas rodadas deixam as colunas de revisão vazias. A projeção semestral usa 182 dias e só é calculada quando `--daily-volume` é fornecido.
 
 Execução dos testes automatizados:
 ```bash
@@ -122,7 +122,7 @@ poetry run task test
 
 A API Flask oferece recursos de usuários, profissionais e agendamentos. O agente Python conversa em turnos e consulta/grava pela API HTTP; a demonstração cria registros sintéticos pela API. Isso prova a integração técnica básica, mas não é um sistema pronto para uso por uma clínica: a consulta atual lista agendamentos, não calcula horários livres, e a confirmação de escrita ainda depende do prompt/modelo em vez de uma barreira determinística completa no código. Não use dados reais.
 
-O benchmark comparativo foi executado em sete cenários fictícios por modelo. Os relatórios e a análise estão em [`docs/modelos.md`](docs/modelos.md) e `logs/model-benchmark/`. O resultado não escolheu um modelo apto para pacientes. Gestor e Secretária como agentes, RAG, MCP, LangGraph e o verificador completo continuam como etapas futuras.
+O benchmark comparativo foi executado em sete cenários fictícios por modelo. O grupo escolheu Gemini 3.5 Flash-Lite para continuar o protótipo, considerando que completou os sete casos sem erros de API, executou as chamadas de ferramenta esperadas e teve menor latência. Essa decisão não aprova o modelo para uso com pacientes. Os relatórios e a análise estão em [`docs/modelos.md`](docs/modelos.md) e `logs/model-benchmark/`. Gestor e Secretária como agentes, RAG, MCP e o verificador completo continuam como etapas futuras; o workflow do Atendente já usa LangGraph.
 
 ### Exemplo observado no benchmark
 
