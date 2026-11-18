@@ -1,10 +1,8 @@
 import json
 from types import SimpleNamespace
 
-import pytest
 from langgraph.types import Command
 
-from src.agent.output_contract import InvalidAgentOutputError
 from src.agent.workflows.scheduling import build_scheduling_graph
 
 
@@ -489,12 +487,16 @@ def test_scheduling_graph_requires_login_before_booking(monkeypatch):
     assert "/login" in result["answer"]
 
 
-def test_scheduling_graph_rejects_invalid_final_output(monkeypatch):
+def test_scheduling_graph_recovers_from_invalid_final_output(monkeypatch):
     monkeypatch.setattr(
         "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages: _response(FakeMessage("resposta sem JSON")),
     )
     graph = build_scheduling_graph(object(), FakeApiClient())
 
-    with pytest.raises(InvalidAgentOutputError, match="contrato de saída"):
-        graph.invoke(_state(), _config())
+    result = graph.invoke(_state(), _config())
+
+    assert result["answer"] == (
+        "Não consegui processar esta resposta com segurança. "
+        "Pode reformular sua pergunta?"
+    )

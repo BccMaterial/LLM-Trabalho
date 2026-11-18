@@ -81,6 +81,7 @@ def run_scheduling_flow(
 
         state["messages"].append({"role": "user", "content": user_message})
         state["round_count"] = 0
+        state["tool_results"] = []
         if not state["pending_action"]:
             state["approval_result"] = None
         config = {"configurable": {"thread_id": state["conversation_id"]}}
@@ -92,9 +93,11 @@ def run_scheduling_flow(
                 arguments = interrupt_value.get("arguments", {})
                 start = arguments.get("agenda_inicio", "")
                 end = arguments.get("agenda_fim", "")
+                professional_name = interrupt_value.get("professional_name")
+                professional = f" com {professional_name}" if professional_name else ""
                 print(
                     "Agente: "
-                    f"Confirme o agendamento de {start} a {end}. "
+                    f"Confirme o agendamento{professional} de {start} a {end}. "
                     "Responda aprovar, rejeitar ou editar."
                 )
             if not interactive:

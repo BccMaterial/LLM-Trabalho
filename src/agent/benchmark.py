@@ -100,6 +100,8 @@ def _valid_response(data: Any, schema: dict) -> bool:
 def _valid_tool_arguments(name: str, arguments: Any) -> bool:
     if name not in TOOL_NAMES or not isinstance(arguments, dict):
         return False
+    if name == "consultar_profissionais":
+        return not arguments
     if name == "consultar_disponibilidade":
         return set(arguments).issubset({"patient_id"}) and all(
             isinstance(value, str) for value in arguments.values()
@@ -122,6 +124,21 @@ def _mock_tool(
     name: str, arguments: dict[str, Any], case: dict[str, Any]
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Retorna fixtures sintéticas e bloqueia qualquer escrita não autorizada."""
+    if name == "consultar_profissionais":
+        return (
+            {
+                "simulado": True,
+                "value": [
+                    {
+                        "id": SYNTHETIC_PROFESSIONAL_ID,
+                        "nome": "Profissional da Demonstração",
+                        "status": True,
+                    }
+                ],
+                "fonte_id": "profissionais_demo",
+            },
+            {"tipo": "api", "referencia": "profissionais_demo"},
+        )
     if name == "consultar_disponibilidade":
         if arguments.get("patient_id") not in (None, SYNTHETIC_PATIENT_ID):
             return (

@@ -4,6 +4,23 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "consultar_profissionais",
+            "description": (
+                "Lista profissionais ativos e IDs reais. Use os IDs retornados "
+                "em chamadas de ferramentas; nunca invente IDs. Se o paciente "
+                "não escolheu um profissional, apresente os nomes e pergunte "
+                "qual prefere. Nunca revele IDs ao paciente."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "consultar_disponibilidade",
             "description": "Consulta os agendamentos existentes na API da clínica.",
             "parameters": {
@@ -67,6 +84,8 @@ def execute_tool(
     authenticated_user: dict | None = None,
 ) -> dict:
     """Executa somente as ferramentas expostas ao modelo."""
+    if name == "consultar_profissionais":
+        return {"value": client.listar_profissionais()}
     if name == "consultar_disponibilidade":
         return client.consultar_agendamentos(
             patient_id=arguments.get("patient_id"),
@@ -91,6 +110,14 @@ def execute_tool(
                     "mensagem": (
                         "Esse horário já está ocupado por um agendamento "
                         "pendente. Avalie outra opção."
+                    ),
+                }
+            if '"status_code":400' in str(error):
+                return {
+                    "erro": "dados_invalidos",
+                    "mensagem": (
+                        "A API rejeitou os dados do agendamento. "
+                        "Nenhum agendamento foi criado."
                     ),
                 }
             raise

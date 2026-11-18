@@ -1,11 +1,14 @@
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 from http.cookies import SimpleCookie
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, build_opener
 from uuid import UUID
+from zoneinfo import ZoneInfo
+
+LOCAL_TIMEZONE = ZoneInfo("America/Sao_Paulo")
 
 
 class ApiClient:
@@ -84,6 +87,23 @@ class ApiClient:
         self.user_session_cookie = ""
         self.authenticated_user = None
 
+    def listar_profissionais(self) -> list[dict[str, str]]:
+        professionals = []
+        page = 1
+        while True:
+            response = self._request(f"/api/professionals?page={page}&page_size=500")
+            professionals.extend(response.get("value", []))
+            if not response.get("next_link"):
+                break
+            page += 1
+        return [
+            {"id": str(professional["id"]), "nome": str(professional["nome"])}
+            for professional in professionals
+            if professional.get("status") is True
+            and professional.get("id")
+            and professional.get("nome")
+        ]
+
     def consultar_agendamentos(
         self,
         patient_id: str | None = None,
@@ -149,7 +169,7 @@ class ApiClient:
     def _parse_iso_datetime(value: str) -> datetime:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
         if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=timezone.utc)
+            parsed = parsed.replace(tzinfo=LOCAL_TIMEZONE)
         return parsed
 
     def _resolve_patient_id(self, identifier: str) -> str | None:
@@ -175,4 +195,9 @@ class ApiClient:
         return None
 
     def criar_agendamento(self, **fields: str) -> dict:
-        return self._request("/api/appointments", method="POST", payload=fields)
+        payload = dict(fields)
+        for field in ("agenda_inicio", "agenda_fim"):
+            value = payload.get(field)
+            if value is not None:
+                payload[field] = self._parse_iso_datetime(value).isoformat()
+        return self._request("/api/appointments", method="POST", payload=payload)
