@@ -329,9 +329,3 @@ def build_scheduling_graph(
     )
     builder.add_edge("limit_reached", END)
     return builder.compile()
-
-
-if __name__ == "__main__":
-    print("Executando demonstração de solicitação de agendamento...")
-    populate_example_data()
-    print(run_scheduling_flow())
