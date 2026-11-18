@@ -101,7 +101,7 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
 
     result = graph.invoke(_state())
 
-    assert api_client.calls == [None]
+    assert api_client.calls == ["paciente-demo"]
     assert result["answer"] == "Encontrei um agendamento."
     assert result["tool_results"] == [
         {
