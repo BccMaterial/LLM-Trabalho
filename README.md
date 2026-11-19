@@ -122,19 +122,20 @@ permite chamar `confirmar_agendamento`; rejeição ou ausência de autenticaçã
 não cria o registro.
 
 Cada execução grava `logs/cases/case-01.json` a
-`logs/cases/case-08.json`. Os arquivos incluem `run_id`, commit, timestamp,
-entrada, ferramentas, decisões e saída final. Senhas, cookies e tokens não são
-exportados. Os dados de demonstração são sintéticos e não representam uma
-clínica real.
+`logs/cases/case-09.json`. O formato atual registra `run_id`, commit,
+timestamp, estado do worktree, entrada, argumentos e resultados das
+ferramentas, decisões e saída final; logs antigos podem não conter todos esses
+campos. Senhas, cookies e tokens não são exportados. Os dados de demonstração
+são sintéticos e não representam uma clínica real.
 
 Esses arquivos são as evidências da demonstração real das issues #31 e #32.
 `docs/io.md` reproduz casos representativos, incluindo confirmação explícita
 antes da gravação, recusa de acesso a outro cadastro e bloqueio por falta de
 autenticação.
 
-Para executar um caso específico, use `poetry run python cases.py --case 7` (entrada incompleta) ou `--case 8` (entrada ambígua). Para repetir os casos do benchmark três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As tarifas configuradas estimam o custo em faixa paga; na faixa gratuita da Groq ou do Gemini há limites de uso e as solicitações permitidas dentro deles não geram cobrança. `--dry-run` não envia chamadas.
+Para executar um caso específico, use `poetry run python cases.py --case 2` (cadastro inexistente), `--case 7` (entrada incompleta), `--case 8` (entrada ambígua) ou `--case 9` (divergência com a agenda). Para repetir os casos do benchmark três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As tarifas configuradas estimam o custo em faixa paga; na faixa gratuita da Groq ou do Gemini há limites de uso e as solicitações permitidas dentro deles não geram cobrança. `--dry-run` não envia chamadas.
 
-Os cenários sintéticos adicionais estão ligados aos logs: [entrada incompleta](logs/cases/case-07.json), [entrada ambígua](logs/cases/case-08.json), [pergunta fora do corpus](logs/cases/case-05.json) e [edição humana seguida de aprovação repetida](logs/cases/case-06.json). No caso 6, o log registra a edição feita pela pessoa e `idempotent: true` na resposta da repetição, mostrando que o mesmo agendamento não foi criado duas vezes.
+Os cenários sintéticos adicionais estão ligados aos logs: [cadastro inexistente](logs/cases/case-02.json), [entrada incompleta](logs/cases/case-07.json), [entrada ambígua](logs/cases/case-08.json), [divergência com a agenda](logs/cases/case-09.json), [pergunta fora do corpus](logs/cases/case-05.json) e [edição humana seguida de aprovação repetida](logs/cases/case-06.json). O log do caso 6 preserva os resultados de cada turno: a primeira gravação e o retorno idempotente da repetição, com o mesmo identificador de agendamento.
 
 Os relatórios Markdown, JSON e CSV são gravados em `logs/model-benchmark/`. A rodada `20261117-212956-dff568` contém a revisão qualitativa das 21 respostas conferida pelo grupo. O grupo selecionou Gemini 3.5 Flash-Lite para continuar o protótipo com base nos resultados; o programa não escolhe vencedor automaticamente. Novas rodadas deixam as colunas de revisão vazias. A projeção semestral usa 182 dias e só é calculada quando `--daily-volume` é fornecido.
 
@@ -145,7 +146,7 @@ poetry run task test
 
 ## Estado do projeto
 
-A API Flask oferece recursos de usuários, profissionais e agendamentos. O agente Python conversa em turnos e consulta/grava pela API HTTP; a demonstração cria registros sintéticos pela API. Isso prova a integração técnica básica, mas não é um sistema pronto para uso por uma clínica: a consulta atual lista agendamentos, não calcula horários livres, e a confirmação de escrita ainda depende do prompt/modelo em vez de uma barreira determinística completa no código. Não use dados reais.
+A API Flask oferece recursos de usuários, profissionais e agendamentos. O agente Python conversa em turnos e consulta/grava pela API HTTP; a demonstração cria registros sintéticos pela API. O código exige aprovação explícita e revalida o horário antes da escrita, mas o sistema não é pronto para uso por uma clínica: a consulta verifica conflitos em um intervalo específico e não calcula uma grade real de horários livres. A idempotência depende do checkpoint em memória. Não use dados reais.
 
 O benchmark comparativo foi executado em sete cenários fictícios por modelo. O grupo escolheu Gemini 3.5 Flash-Lite para continuar o protótipo, considerando que completou os sete casos sem erros de API, executou as chamadas de ferramenta esperadas e teve menor latência. Essa decisão não aprova o modelo para uso com pacientes. Os relatórios e a análise estão em [`docs/modelos.md`](docs/modelos.md) e `logs/model-benchmark/`. O RAG está integrado como ferramenta local e foi avaliado apenas com fixtures sintéticas; validar políticas oficiais ainda está pendente. Gestor e Secretária como agentes, MCP e o verificador completo continuam como etapas futuras; o workflow do Atendente já usa LangGraph.
 

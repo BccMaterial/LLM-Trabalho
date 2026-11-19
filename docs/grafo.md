@@ -157,7 +157,7 @@ pode mudar a semântica interna do limite; por isso a versão está fixada em
   agregação nem agentes Gestor/Secretária ou nó RAG dedicado no grafo atual.
   O modelo pode chamar `consultar_politica` pelo nó `dispatch_tools`; a
   ferramenta usa o índice vetorial local e não contém políticas oficiais.
-- **Orçamento por turno:** 8 etapas, 10 chamadas externas, 6.000 tokens
+- **Orçamento por turno:** 8 etapas, 10 chamadas externas, 12.000 tokens
   reportados, 120 segundos; até 1.000 tokens por resposta e timeout de até 30
   segundos por chamada. O CLI também configura `recursion_limit=32`.
 - **Término e erro:** o estado distingue conclusão normal, saída do usuário,

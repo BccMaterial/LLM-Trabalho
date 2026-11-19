@@ -1,49 +1,94 @@
 {
-  "run_id": "20261119-003917-ee6cb48b",
+  "run_id": "20261119-045615-54a09201",
   "case": 2,
-  "title": "Profissional inexistente",
+  "title": "Registro de paciente inexistente",
   "issue": 31,
-  "timestamp": "2026-11-19T00:39:22.780985+00:00",
-  "commit": "4dcaffc553fe07e0073c00ed7d4a5678be3d93bb",
+  "timestamp": "2026-11-19T04:56:40.201896+00:00",
+  "commit": "b4271946e9e9e5825819f1da687fbd21eb8f25b6",
+  "working_tree_dirty": true,
   "model": "gemini-3.5-flash-lite",
-  "input": "Quero agendar uma avaliação com a profissional inexistente Dr. Inexistente no dia 2092-09-26 das 15:00 às 16:00.",
-  "conversation_id": "1d43d23d-e607-49cc-bc74-c8a94dc81b72",
+  "input": "Consulte minha agenda usando o identificador paciente-inexistente-65@example.test e verifique se há agendamentos para 2093-05-10 das 10:00 às 11:00.",
+  "conversation_id": "4a4e1f74-307a-440b-b901-bdf58ade05a1",
   "events": {
     "interrupts": [],
     "tool_results": [
       {
-        "name": "consultar_profissionais",
+        "name": "consultar_disponibilidade",
+        "arguments": {
+          "agenda_fim": "2093-05-10T11:00:00",
+          "patient_id": "<redacted>",
+          "agenda_inicio": "2093-05-10T10:00:00"
+        },
         "result": {
-          "value": [
-            {
-              "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
-              "nome": "Dra. Profissional da Demonstração"
-            }
-          ]
+          "erro": "Paciente não encontrado na API."
         }
       }
     ],
     "tool_call_counts": {
-      "56d6b90826ea2d42c7b71a2505e09d01c140e19452b1e76682dd01d766b59314": 1
-    }
+      "62eea871819b3b615305f1da7e1c8731fbd281c851c46a623fc0cb4860337309": 1
+    },
+    "turns": [
+      {
+        "input": "Consulte minha agenda usando o identificador paciente-inexistente-65@example.test e verifique se há agendamentos para 2093-05-10 das 10:00 às 11:00.",
+        "interrupts": [],
+        "tool_results": [
+          {
+            "name": "consultar_disponibilidade",
+            "arguments": {
+              "agenda_fim": "2093-05-10T11:00:00",
+              "patient_id": "<redacted>",
+              "agenda_inicio": "2093-05-10T10:00:00"
+            },
+            "result": {
+              "erro": "Paciente não encontrado na API."
+            }
+          }
+        ],
+        "answer": "Não foi possível localizar um cadastro associado ao identificador informado. Poderia confirmar os seus dados ou informar o nome completo para realizarmos a consulta?",
+        "structured_response": {
+          "resultado": {
+            "status": "informacao_insuficiente",
+            "mensagem": "Não foi possível localizar um cadastro associado ao identificador informado. Poderia confirmar os seus dados ou informar o nome completo para realizarmos a consulta?",
+            "acao": "aguarda_confirmacao"
+          },
+          "fonte": [
+            {
+              "tipo": "api",
+              "referencia": "consultar_disponibilidade"
+            },
+            {
+              "tipo": "pedido_de_clarificacao",
+              "referencia": "identificacao_do_paciente"
+            }
+          ],
+          "suficiencia": "insuficiente"
+        },
+        "termination_reason": "normal_completion",
+        "error_class": null
+      }
+    ]
   },
   "structured_output": {
     "resultado": {
       "status": "informacao_insuficiente",
-      "mensagem": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+      "mensagem": "Não foi possível localizar um cadastro associado ao identificador informado. Poderia confirmar os seus dados ou informar o nome completo para realizarmos a consulta?",
       "acao": "aguarda_confirmacao"
     },
     "fonte": [
       {
+        "tipo": "api",
+        "referencia": "consultar_disponibilidade"
+      },
+      {
         "tipo": "pedido_de_clarificacao",
-        "referencia": "resposta_invalida_do_agente"
+        "referencia": "identificacao_do_paciente"
       }
     ],
     "suficiencia": "insuficiente"
   },
-  "answer": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
-  "termination_reason": "recoverable_error",
-  "error_class": "recoverable",
+  "answer": "Não foi possível localizar um cadastro associado ao identificador informado. Poderia confirmar os seus dados ou informar o nome completo para realizarmos a consulta?",
+  "termination_reason": "normal_completion",
+  "error_class": null,
   "approval_decision": null,
   "completed_actions": {},
   "passed": true

@@ -388,7 +388,9 @@ def build_scheduling_graph(
                     "content": json.dumps(result, ensure_ascii=False),
                 }
             )
-            tool_results.append({"name": name, "result": result})
+            tool_results.append(
+                {"name": name, "arguments": arguments, "result": result}
+            )
 
     def require_authentication(state: SchedulingState) -> dict:
         answer = "Para agendar, faça login com o comando /login."
@@ -421,7 +423,7 @@ def build_scheduling_graph(
                 confirmation_call,
                 state.get("authenticated_user"),
             )
-        if approved_key and approved_key in completed_actions:
+        if confirmation_call and approved_key and approved_key in completed_actions:
             result = dict(completed_actions[approved_key])
             result["idempotent"] = True
             messages.append(
@@ -434,7 +436,14 @@ def build_scheduling_graph(
                     "content": json.dumps(result, ensure_ascii=False),
                 }
             )
-            tool_results.append({"name": "confirmar_agendamento", "result": result})
+            arguments = json.loads(confirmation_call["function"]["arguments"])
+            tool_results.append(
+                {
+                    "name": "confirmar_agendamento",
+                    "arguments": arguments,
+                    "result": result,
+                }
+            )
             budget_update = _budget_update(state, workflow_steps=1, external_calls=0)
         else:
             limit_reason = _limit_reason(state)

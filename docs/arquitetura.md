@@ -87,9 +87,9 @@ Arestas:
   validate_professional -> request_approval [condicional]
 ```
 
-## Resumo do sistema
+## Resumo do desenho-alvo (não implementado integralmente)
 
-O sistema atende pacientes e responsáveis de uma clínica de avaliações neuropsicológicas por mensagens. Um controlador em código coordena três agentes especializados: Atendente, Gestor e Secretária. Eles consultam dados autorizados na API, mantêm a agenda e as pendências como fonte de verdade e devolvem respostas com fonte e suficiência. O modelo interpreta linguagem e prepara decisões; código valida regras e executa ferramentas. Agendamento só é gravado depois da confirmação do paciente.
+O desenho proposto atende pacientes e responsáveis de uma clínica de avaliações neuropsicológicas por mensagens. Um controlador em código coordenaria três agentes especializados: Atendente, Gestor e Secretária. Eles consultariam dados autorizados na API, manteriam a agenda e as pendências como fonte de verdade e devolveriam respostas com fonte e suficiência. O modelo interpreta linguagem e prepara decisões; código valida regras e executa ferramentas. Agendamento só seria gravado depois da confirmação do paciente. Hoje, o repositório implementa apenas um Atendente com consulta e gravação básica pela API local.
 
 ## Diagrama da arquitetura-alvo
 
@@ -178,4 +178,4 @@ O humano pode interromper a conversa. O responsável da clínica revisa priorida
 
 ## Nível de autonomia
 
-O sistema usa um agente com ferramentas e workflow sequencial: é mais capaz que um FAQ porque interpreta mensagens abertas, consulta dados atuais e coordena três especialidades. Não usa planejamento autônomo aberto porque os limites são sensíveis, as escritas têm efeito real e a política pode estar incompleta. A autonomia fica restrita a classificar, consultar, preparar opções e registrar ações explicitamente confirmadas.
+O protótipo implementa um agente Atendente com ferramentas e workflow sequencial: interpreta mensagens abertas, consulta dados da API local e pode propor um agendamento. Não coordena as três especialidades do desenho-alvo nem usa planejamento autônomo aberto; os limites são sensíveis, as escritas têm efeito e a política pode estar incompleta. A autonomia fica restrita a consultar, pedir esclarecimentos, preparar a ação e gravar somente após aprovação explícita.

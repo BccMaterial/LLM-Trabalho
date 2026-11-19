@@ -38,6 +38,19 @@ def _git_commit() -> str:
         return "unknown"
 
 
+def _git_worktree_dirty() -> bool | None:
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return bool(result.stdout.strip())
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
 def _api_request(path: str, method: str = "GET", payload: dict | None = None):
     data = json.dumps(payload).encode() if payload is not None else None
     request = Request(
@@ -83,7 +96,15 @@ def _fixture_slot(run_id: str, offset: int) -> tuple[str, str, str]:
 
 
 def _sanitize(value):
-    sensitive = {"password", "cookie", "token", "secret", "authorization"}
+    sensitive = {
+        "password",
+        "cookie",
+        "token",
+        "secret",
+        "authorization",
+        "patient_id",
+        "id_paciente",
+    }
     if isinstance(value, dict):
         return {
             key: "<redacted>" if key.casefold() in sensitive else _sanitize(child)
@@ -111,7 +132,18 @@ def _case_passed(case_number: int, result: dict) -> bool:
             == "agendamento_confirmado"
         )
     if case_number == 2:
-        return not _single_tool_result(result, "confirmar_agendamento")
+        query = _single_tool_result(result, "consultar_disponibilidade")
+        output = result.get("structured_response") or {}
+        response = output.get("resultado") or {}
+        return bool(
+            isinstance(query, dict)
+            and query.get("erro") == "Paciente não encontrado na API."
+            and output.get("suficiencia") == "insuficiente"
+            and response.get("status")
+            in {"informacao_insuficiente", "consulta_indisponivel"}
+            and not _single_tool_result(result, "confirmar_agendamento")
+            and result.get("error_class") is None
+        )
     if case_number == 3:
         consultation = _single_tool_result(result, "consultar_disponibilidade")
         return bool(
@@ -134,16 +166,25 @@ def _case_passed(case_number: int, result: dict) -> bool:
         )
     if case_number == 6:
         actions = result.get("completed_actions") or {}
-        repeated_booking = _single_tool_result(result, "confirmar_agendamento")
+        bookings = [
+            item.get("result")
+            for item in result.get("tool_results") or []
+            if item.get("name") == "confirmar_agendamento"
+        ]
         interrupts = result.get("interrupts") or []
         return bool(
             len(actions) == 1
+            and len(bookings) == 2
+            and isinstance(bookings[0], dict)
+            and isinstance(bookings[1], dict)
+            and bookings[0].get("id")
+            and not bookings[0].get("idempotent")
+            and bookings[1].get("idempotent") is True
+            and bookings[1].get("id") == bookings[0].get("id")
             and len(interrupts) >= 3
             and interrupts[0].get("arguments") != interrupts[1].get("arguments")
-            and repeated_booking
-            and repeated_booking.get("idempotent") is True
         )
-    if case_number in {7, 8}:
+    if case_number in {7, 8, 9}:
         output = result.get("structured_response") or {}
         response = output.get("resultado") or {}
         answer = (result.get("answer") or "").casefold()
@@ -165,6 +206,31 @@ def _case_passed(case_number: int, result: dict) -> bool:
                         "profissional",
                     )
                 )
+            )
+        if case_number == 9:
+            setup_booking = result.get("setup_booking") or {}
+            availability_call = next(
+                (
+                    item
+                    for item in result.get("tool_results") or []
+                    if item.get("name") == "consultar_disponibilidade"
+                ),
+                {},
+            )
+            availability = availability_call.get("result")
+            return bool(
+                setup_booking.get("id")
+                and isinstance(availability, dict)
+                and availability.get("disponibilidade") == "indisponivel"
+                and availability_call.get("arguments", {}).get("professional_id")
+                == setup_booking.get("professional_id")
+                and availability_call.get("arguments", {}).get("agenda_inicio")
+                == setup_booking.get("agenda_inicio")
+                and availability_call.get("arguments", {}).get("agenda_fim")
+                == setup_booking.get("agenda_fim")
+                and response.get("status") != "opcoes_disponiveis"
+                and not _single_tool_result(result, "confirmar_agendamento")
+                and result.get("error_class") is None
             )
         declared_date = bool(
             re.search(r"\b(?:19|20|21)\d{2}[-/]\d{1,2}[-/]\d{1,2}\b", answer)
@@ -213,6 +279,7 @@ def _write_case(
         "issue": issue,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "commit": _git_commit(),
+        "working_tree_dirty": _git_worktree_dirty(),
         "model": os.getenv("LLM_MODEL") or "configured-by-LLM_BASE_URL",
         "input": input_text,
         "conversation_id": result.get("conversation_id"),
@@ -220,6 +287,7 @@ def _write_case(
             "interrupts": _sanitize(result.get("interrupts") or []),
             "tool_results": _sanitize(result.get("tool_results") or []),
             "tool_call_counts": _sanitize(result.get("tool_call_counts") or {}),
+            "turns": _sanitize(result.get("turns") or []),
         },
         "structured_output": _sanitize(result.get("structured_response")),
         "answer": result.get("answer"),
@@ -244,13 +312,13 @@ def _write_case(
 def main() -> int:
     load_dotenv()
     parser = argparse.ArgumentParser(
-        description="Executa os seis casos demonstrados das issues #31 e #32."
+        description="Executa os cenários sintéticos demonstrados das issues #31 e #32."
     )
     parser.add_argument(
         "--case",
         type=int,
-        choices=range(1, 9),
-        help="Executa apenas um caso (1–8).",
+        choices=range(1, 10),
+        help="Executa apenas um caso (1–9).",
     )
     args = parser.parse_args()
 
@@ -260,7 +328,7 @@ def main() -> int:
         datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S") + "-" + uuid4().hex[:8]
     )
 
-    selected = range(1, 9) if args.case is None else (args.case,)
+    selected = range(1, 10) if args.case is None else (args.case,)
     exports = []
 
     for case_number in selected:
@@ -290,19 +358,18 @@ def main() -> int:
                 },
             )
         elif case_number == 2:
-            slot, _, _ = _fixture_slot(run_id, 2)
             prompt = (
-                "Quero agendar uma avaliação com a profissional inexistente "
-                f"Dr. Inexistente no dia {slot}."
+                "Consulte minha agenda usando o identificador "
+                "paciente-inexistente-65@example.test e verifique se há "
+                "agendamentos para 2093-05-10 das 10:00 às 11:00."
             )
             result = run_scheduling_case(
                 [prompt],
                 login=(PATIENT_EMAIL, PATIENT_PASSWORD),
-                approval_decisions=[{"decision": "approve"}],
             )
             export = _write_case(
                 2,
-                "Profissional inexistente",
+                "Registro de paciente inexistente",
                 31,
                 run_id,
                 prompt,
@@ -419,7 +486,7 @@ def main() -> int:
                 prompt,
                 result,
             )
-        else:
+        elif case_number == 8:
             prompt = "Quero marcar na sexta de manhã."
             result = run_scheduling_case(
                 [prompt],
@@ -432,6 +499,54 @@ def main() -> int:
                 run_id,
                 prompt,
                 result,
+            )
+        else:
+            slot, iso_start, iso_end = _fixture_slot(run_id, 9)
+            setup_prompt = (
+                f"Quero agendar uma avaliação com {professional['nome']} "
+                f"no dia {slot}. Confirmo o agendamento."
+            )
+            setup_result = run_scheduling_case(
+                [setup_prompt],
+                login=(PATIENT_EMAIL, PATIENT_PASSWORD),
+                approval_decisions=[{"decision": "approve"}],
+            )
+            setup_booking = _single_tool_result(
+                setup_result,
+                "confirmar_agendamento",
+            )
+            if not isinstance(setup_booking, dict) or not setup_booking.get("id"):
+                raise RuntimeError(
+                    "Não foi possível preparar o agendamento sintético "
+                    "para o caso de divergência."
+                )
+            prompt = (
+                f"Esse horário está livre: quero agendar com {professional['nome']} "
+                f"no dia {slot}. Verifique na agenda antes de responder."
+            )
+            result = run_scheduling_case(
+                [prompt],
+                login=(PATIENT_EMAIL, PATIENT_PASSWORD),
+            )
+            result["setup_booking"] = setup_booking
+            result["setup_turn"] = {
+                "input": setup_prompt,
+                "tool_results": setup_result.get("tool_results") or [],
+                "structured_response": setup_result.get("structured_response"),
+            }
+            export = _write_case(
+                9,
+                "Divergência: paciente afirma que o horário está livre",
+                32,
+                run_id,
+                prompt,
+                result,
+                {
+                    "setup_turn": setup_result.get("turns"),
+                    "agenda_inicio": iso_start,
+                    "agenda_fim": iso_end,
+                    "sensitive": False,
+                },
             )
         exports.append(export)
 

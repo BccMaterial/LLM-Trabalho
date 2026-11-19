@@ -148,7 +148,7 @@ Assim, o checkpoint **retoma** uma conversa, a memória de longo prazo **lembrar
 7. **Gravar somente após confirmação** — escrita pela API; o paciente confirma a ação reversível por procedimento posterior e a equipe pode revisar. A confirmação deve ser validada também em código antes da chamada da ferramenta.
 8. **Informar resultado e encerrar** — resposta em português com fonte e suficiência; o código encerra por sucesso, encaminhamento, erro persistente, desistência ou limite.
 
-As decisões em linguagem livre e a interpretação de contradições justificam o uso restrito do modelo. Identidade, autorização, limites, validação da disponibilidade, confirmação de escrita e término pertencem ao código. A versão interativa ainda precisa tornar o estado e o bloqueio de escrita mais explícitos; os casos do benchmark já verificam parte desse contrato em ambiente simulado.
+As decisões em linguagem livre e a interpretação de contradições justificam o uso restrito do modelo. Identidade, autorização, limites, validação da disponibilidade, confirmação de escrita e término pertencem ao código. O portão de escrita é verificado pelo grafo e pelos casos de integração; o benchmark verifica um contrato separado em ambiente simulado.
 
 ## 11. Sistema, autonomia e fronteiras
 
@@ -157,7 +157,7 @@ O sistema recebe texto, consulta a API da aplicação por HTTP, prepara uma resp
 | Ferramenta | Ação | Leitura/escrita | Reversível? | Integração |
 |---|---|---|---|---|
 | `consultar_disponibilidade` | Consultar agendamentos do paciente | Leitura | Sim, sem alterar estado | HTTP `GET /api/appointments` na API Flask; hoje lista registros existentes, não calcula horários livres |
-| `confirmar_agendamento` | Registrar a opção informada | Escrita | Alteração posterior segue operação separada; deve requerer confirmação explícita | HTTP `POST /api/appointments` na API Flask; falta uma barreira determinística no agente antes da escrita |
+| `confirmar_agendamento` | Registrar a opção informada | Escrita | Alteração posterior segue operação separada; exige confirmação explícita | HTTP `POST /api/appointments` na API Flask; o grafo bloqueia a chamada sem aprovação e revalida a disponibilidade |
 
 Essa API própria é software tradicional separado do processo do agente. A demonstração usa registros de exemplo e não se conecta à clínica nem à agenda real. O nome da ferramenta de consulta sugere disponibilidade, mas a API atual não oferece esse dado; por isso as opções de disponibilidade nos casos do benchmark são fixtures locais, e não saída real dessa integração.
 
@@ -169,7 +169,7 @@ O agente é adequado apenas para a parte em que a mensagem pode vir incompleta, 
 
 Não há contato, observação do processo ou dados operacionais da clínica disponíveis ao grupo. Portanto não existe linha de base, volume ou denominador defensável para calcular redução percentual, tempo economizado, produtividade ou retorno financeiro. Não atribuímos um percentual hipotético — inclusive 10% — porque pareceria resultado medido sem evidência. A justificativa é uma hipótese qualitativa de organização e experiência a ser discutida, não uma alegação comprovada nem dependente de obter acesso da clínica para concluir o protótipo. Os casos artificiais avaliam regras do software, não efeitos sobre pessoas. Um número de impacto real exigiria estudo autorizado com medidas humanas adequadas, e está fora do que estes dados permitem afirmar.
 
-O custo de inferência observado e a conta por 100 casos estão em [`docs/modelos.md`](modelos.md); custo semestral não é estimado porque não há volume diário. O custo de desenvolvimento é o trabalho acadêmico do grupo e não foi convertido em dinheiro. O principal custo de erro é uma informação administrativa incorreta ou uma gravação indevida; por isso o protótipo não deve ser apresentado como serviço clínico, e a confirmação/escrita precisa de barreira determinística antes de qualquer uso real.
+O custo de inferência observado e a conta por 100 casos estão em [`docs/modelos.md`](modelos.md); custo semestral não é estimado porque não há volume diário. O custo de desenvolvimento é o trabalho acadêmico do grupo e não foi convertido em dinheiro. O principal custo de erro é uma informação administrativa incorreta ou uma gravação indevida; a barreira de aprovação e revalidação existe no grafo, mas a idempotência não é durável após reinício e o sistema não deve ser apresentado como serviço clínico.
 
 ## 13. Verificador, dados e expansão
 

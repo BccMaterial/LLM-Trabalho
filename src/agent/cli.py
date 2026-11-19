@@ -225,6 +225,8 @@ def run_scheduling_case(
 
     decisions = list(approval_decisions or [])
     interrupt_events: list[dict] = []
+    turn_events: list[dict] = []
+    all_tool_results: list[dict] = []
     for user_message in user_messages:
         state["messages"].append({"role": "user", "content": user_message})
         state["round_count"] = 0
@@ -245,22 +247,39 @@ def run_scheduling_case(
             "recursion_limit": LANGGRAPH_RECURSION_LIMIT,
         }
         result = graph.invoke(state, config)
+        turn_interrupts: list[dict] = []
         while isinstance(result, dict) and result.get("__interrupt__"):
             interrupt_value = result["__interrupt__"][0].value
-            interrupt_events.append(
+            interrupt_event = (
                 interrupt_value if isinstance(interrupt_value, dict) else {}
             )
+            interrupt_events.append(interrupt_event)
+            turn_interrupts.append(interrupt_event)
             resume = decisions.pop(0) if decisions else {"decision": "reject"}
             result = graph.invoke(Command(resume=resume), config)
         state = result
+        turn_tool_results = state.get("tool_results") or []
+        all_tool_results.extend(turn_tool_results)
+        turn_events.append(
+            {
+                "input": user_message,
+                "interrupts": turn_interrupts,
+                "tool_results": turn_tool_results,
+                "answer": state.get("answer"),
+                "structured_response": state.get("structured_response"),
+                "termination_reason": state.get("termination_reason"),
+                "error_class": state.get("error_class"),
+            }
+        )
 
     return {
         "conversation_id": state["conversation_id"],
         "authenticated_user": authenticated_user,
         "interrupts": interrupt_events,
+        "turns": turn_events,
         "answer": state.get("answer"),
         "structured_response": state.get("structured_response"),
-        "tool_results": state.get("tool_results") or [],
+        "tool_results": all_tool_results,
         "tool_call_counts": state.get("tool_call_counts") or {},
         "termination_reason": state.get("termination_reason"),
         "error_class": state.get("error_class"),
