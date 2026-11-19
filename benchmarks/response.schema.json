@@ -12,7 +12,7 @@
             "encaminhamento_pendente",
             "solicitacao_encaminhada",
             "revisao_humana_necessaria",
-            "fora_de_escopo",
+            "fora_do_escopo",
             "orientacao_administrativa",
             "aguarda_confirmacao",
             "erro_ferramenta"
