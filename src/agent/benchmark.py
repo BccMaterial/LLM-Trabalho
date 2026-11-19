@@ -22,7 +22,7 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from .app import TOOLS
+from .tools import TOOLS
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = ROOT / "benchmarks" / "modelos.toml"
@@ -42,10 +42,16 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _read_config() -> tuple[dict[str, Any], list[dict[str, Any]], dict, list]:
+def _read_config(
+    prompt_override: str | None = None,
+) -> tuple[dict[str, Any], list[dict[str, Any]], dict, list]:
     config = tomllib.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     benchmark = config["benchmark"]
-    prompt_path = ROOT / benchmark["prompt"]
+    prompt_path = (
+        Path(prompt_override).resolve()
+        if prompt_override
+        else ROOT / benchmark["prompt"]
+    )
     cases_path = ROOT / benchmark["cases"]
     schema_path = ROOT / benchmark["schema"]
     prompt = prompt_path.read_text(encoding="utf-8")
@@ -246,6 +252,8 @@ def _run_case(
         "tool_arguments_valid": True,
         "write_allowed": case["write_allowed"],
         "unsafe_write_attempt": False,
+        "forbidden_output_tokens": case.get("forbidden_output_tokens", []),
+        "forbidden_output_detected": False,
         "expected_sufficiency": case["expected_sufficiency"],
         "input_tokens": None,
         "output_tokens": None,
@@ -477,6 +485,11 @@ def _run_case(
             result["response_json"] = json.loads(result["response_text"])
         except (json.JSONDecodeError, TypeError):
             result["response_json"] = None
+        normalized_response = result["response_text"].casefold()
+        result["forbidden_output_detected"] = any(
+            token.casefold() in normalized_response
+            for token in result["forbidden_output_tokens"]
+        )
         result["schema_valid"] = _valid_response(result["response_json"], schema)
         result["sources_grounded"] = _source_check(
             result["response_json"], case["allowed_sources"]
@@ -564,6 +577,9 @@ def _summarize(
                     row["tool_arguments_valid"] for row in completed
                 ),
                 "unsafe_writes": sum(row["unsafe_write_attempt"] for row in rows),
+                "forbidden_output": sum(
+                    row["forbidden_output_detected"] for row in rows
+                ),
                 "token_budget_exceeded": sum(
                     row["token_budget_exceeded"] for row in completed
                 ),
@@ -677,6 +693,7 @@ def _write_reports(
         "response_json",
         "response_text",
         "unsafe_write_attempt",
+        "forbidden_output_detected",
         "input_tokens",
         "output_tokens",
         "usage_complete",
@@ -709,8 +726,8 @@ def _write_reports(
         "",
         f"Execução: `{run_id}`. Dataset totalmente sintético; as ferramentas são simuladas localmente.",
         "",
-        "| Modelo e endpoint | Schema de resposta | Schema dos argumentos | Tool calls esperadas | Fontes permitidas/obrigatórias | Suficiência correta | Escritas inseguras | Limite de tokens excedido | Tokens entrada/saída | Latência mediana | Custo total | Custo por 100 execuções | Semestre projetado |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Modelo e endpoint | Schema de resposta | Schema dos argumentos | Tool calls esperadas | Fontes permitidas/obrigatórias | Suficiência correta | Escritas inseguras | Saída proibida | Limite de tokens excedido | Tokens entrada/saída | Latência mediana | Custo total | Custo por 100 execuções | Semestre projetado |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in summary:
         total = row["runs"] - row["errors"]
@@ -742,7 +759,7 @@ def _write_reports(
             f"| {row['model']} ({row['provider']} / `{row['model_id']}`) | {row['schema_valid']}/{total} | "
             f"{row['tool_argument_schema_valid']}/{total} | {row['tools_expected']}/{total} | "
             f"{row['sources_grounded']}/{total} · {row['required_sources_cited']}/{total} | "
-            f"{row['sufficiency_matches']}/{total} | {row['unsafe_writes']} | {row['token_budget_exceeded']} | "
+            f"{row['sufficiency_matches']}/{total} | {row['unsafe_writes']} | {row['forbidden_output']} | {row['token_budget_exceeded']} | "
             f"{input_tokens}/{output_tokens} | {latency} | {cost} | {cost_100} | {semester_cost} |"
         )
     lines.extend(
@@ -799,6 +816,10 @@ def main() -> int:
     parser.add_argument(
         "--output-dir", help="pasta para relatórios; padrão definido no TOML"
     )
+    parser.add_argument(
+        "--prompt",
+        help="arquivo de prompt alternativo para uma ablação controlada",
+    )
     args = parser.parse_args()
     if args.repetitions < 1:
         parser.error("--repetitions deve ser ao menos 1")
@@ -806,7 +827,7 @@ def main() -> int:
         parser.error("--daily-volume não pode ser negativo")
 
     load_dotenv(ROOT / ".env")
-    benchmark, models, schema, cases = _read_config()
+    benchmark, models, schema, cases = _read_config(args.prompt)
     if args.selected_models:
         requested = set(args.selected_models)
         models = [model for model in models if model["name"] in requested]
