@@ -12,17 +12,17 @@ aprovação quando responde a uma solicitação explícita que identifica a aç�
 seus argumentos. O modelo não pode interpretar silêncio, ambiguidade ou uma
 resposta referente a outra opção como aprovação.
 
-> **Estado da implementação:** os três pontos abaixo são requisitos do fluxo.
-> O agente atual executa um laço de conversa e chama ferramentas, mas ainda
-> não implementa pausas com `interrupt`, checkpoint e retomada do LangGraph. A
-> descrição de uma ferramenta no prompt não substitui uma barreira de aprovação
-> validada pelo código.
+> **Estado da implementação:** o fluxo de agendamento usa `StateGraph`,
+> `interrupt`, `MemorySaver` e `Command(resume=...)`. O paciente confirma,
+> rejeita ou edita uma proposta; após a aprovação, o código revalida o horário
+> antes da escrita. A aprovação de documentos para RAG e as operações do
+> Gestor ainda não estão implementadas.
 
 ## 1. Ações que exigem intervenção
 
 | Ação | Quem decide | O que deve ser apresentado | Resultado da aprovação |
 |---|---|---|---|
-| Criar um agendamento | Paciente ou responsável autenticado | Paciente, profissional, data, horário e demais campos que serão gravados | O controlador revalida a disponibilidade e solicita à API a criação do agendamento exato |
+| Criar um agendamento | Paciente autenticado | Profissional e horário propostos; a identidade do paciente vem da sessão autenticada | O grafo revalida a disponibilidade e só então executa a ferramenta de criação |
 | Aprovar um documento para o RAG | Responsável autorizado pela clínica | Documento, origem, versão, datas de vigência, finalidade e efeito de disponibilizá-lo aos agentes | A versão aprovada pode ser publicada/indexada; somente ela pode ser recuperada para respostas |
 | Criar, remover ou atualizar um recurso | Gestor ou responsável autorizado conforme a política da clínica | Tipo e identificador do recurso, valores atuais e propostos e consequência da mudança | O controlador valida a autorização e aplica somente a mudança aprovada |
 
@@ -32,23 +32,23 @@ Até isso ser definido, o agente não deve executar alterações de recursos.
 
 ## 2. Confirmação de agendamento
 
-O agente pode consultar a agenda e apresentar opções retornadas pela API. Antes
-de criar o registro, deve pedir que o paciente ou responsável confirme uma
-opção específica. O pedido deve mostrar todos os campos que serão usados na
-gravação, incluindo paciente, profissional, data e horário. Não basta perguntar
-“confirma?” sem identificar a opção.
+O agente recebe uma proposta de agendamento do LLM. O nó
+`request_approval` valida que o profissional está ativo e interrompe o grafo
+com o profissional e os horários apresentados. A identidade do paciente vem
+da autenticação, não dos argumentos enviados pelo modelo. Antes de criar o
+registro, o nó `revalidate_availability` consulta a disponibilidade novamente.
 
 Respostas aceitas:
 
-- **aprovar:** autoriza exatamente a opção apresentada;
+- **aprovar:** autoriza exatamente a proposta interrompida;
 - **rejeitar:** encerra essa tentativa sem criar o agendamento;
-- **editar:** volta à conversa para corrigir ou escolher outra opção; a opção
-  alterada precisa ser apresentada e confirmada novamente.
+- **editar:** valida os campos obrigatórios, atualiza a proposta e solicita
+  nova aprovação.
 
-Depois da aprovação, o código deve consultar novamente a disponibilidade. Se
-ela mudou, não deve gravar o horário antigo: deve explicar a situação e
-apresentar novas opções. Sem resposta, com resposta ambígua ou fora do prazo,
-o agendamento permanece pendente e nenhuma gravação é feita.
+Resposta inválida mantém a interrupção e pede uma resposta aceita. Depois da
+aprovação, se a disponibilidade mudou ou a API falhou, o código não grava o
+horário antigo e encerra a tentativa com uma resposta. O grafo atual não define
+prazo de expiração da aprovação.
 
 ## 3. Aprovação de documentos para o RAG
 
@@ -91,42 +91,34 @@ alterar o recurso.
 
 ## 5. Pausa, retomada e ausência de resposta
 
-No grafo LangGraph, cada ação sujeita a aprovação deve parar antes de qualquer
-efeito externo. A pausa apresenta a proposta exata à pessoa. A retomada recebe
-uma das respostas aceitas — aprovar, rejeitar ou editar — e o código valida a
-resposta e a autorização antes de continuar.
+No fluxo implementado, `request_approval` chama `interrupt` antes da escrita.
+O CLI associa o checkpointer `MemorySaver` ao `thread_id` da conversa e retoma
+com `Command(resume=...)`. A retomada pode repetir a validação do profissional
+que precede o `interrupt`; ela não executa a escrita antes de receber a
+aprovação. A disponibilidade é revalidada em um nó posterior, antes do
+despacho da ferramenta de criação.
 
-A pausa deve usar `interrupt` e um checkpointer associado a um identificador de
-conversa (`thread_id`). A retomada deve usar `Command(resume=...)`. Como o nó
-que contém o `interrupt` executa novamente desde o início na retomada, nenhuma
-escrita na API ou publicação no índice pode ocorrer antes da pausa.
-
-O prazo de resposta e o destino do encaminhamento depois do vencimento ainda
-precisam ser definidos. O comportamento seguro enquanto isso não for decidido
-é manter a ação pendente, não aprová-la automaticamente e não executar a
-alteração. Se o checkpointer escolhido for em memória, a perda de uma aprovação
-pendente após reinício do processo deve ser documentada como limitação.
+Como o checkpointer é em memória, uma aprovação pendente não é durável após
+reinício do processo. O fluxo também não define prazo de expiração nem um
+encaminhamento automático por falta de resposta. Essas decisões continuam
+pendentes; silêncio nunca aprova a ação.
 
 ## 6. Repetição e idempotência
 
-Uma retomada repetida, uma mensagem duplicada ou uma repetição da chamada não
-pode criar duas reservas, publicar duas vezes a mesma versão ou duplicar uma
-mudança de recurso. Cada ação aprovada deve receber uma chave de idempotência
-derivada do conteúdo aprovado, da ação e do identificador do recurso. Se a
-mesma ação já tiver sido aplicada, retornar um resultado equivalente a
-`ja_existia` e não repetir o efeito externo.
+O fluxo de agendamento gera `approved_action_key` a partir do identificador da
+conversa, da ferramenta e dos argumentos canônicos aprovados. O estado
+`completed_action_keys` impede repetir a escrita no mesmo estado/checkpoint e
+retorna um resultado indicando que a ação já havia sido executada. Essa
+proteção depende do `MemorySaver`: não persiste após reinício e não cobre a
+janela entre uma escrita externa bem-sucedida e a atualização do checkpoint.
+Idempotência persistente na API ainda está pendente. Publicação no RAG e
+alterações de recursos pelo Gestor não estão implementadas.
 
 ## 7. Evidências para a entrega
 
-Os logs devem mostrar a proposta apresentada, o perfil que respondeu, a
-decisão (`aprovar`, `rejeitar` ou `editar`), a retomada e o resultado da
-validação. Não registrar senhas, documentos completos ou conteúdo clínico
-desnecessário.
+Os testes do agente cobrem aprovação, rejeição, edição, revalidação e repetição
+da ação aprovada. O CLI não mantém um log de auditoria dessas decisões. Não
+registrar senhas, documentos completos ou conteúdo clínico desnecessário.
 
-Incluir pelo menos uma execução em que uma pessoa edita a proposta antes de
-aprovar e uma repetição da mesma aprovação. A evidência deve demonstrar que a
-alteração editada foi a aplicada e que a repetição não duplicou o efeito.
-
-Os prazos, perfis e tipos de recurso ainda não definidos devem permanecer
-identificados como decisões pendentes; não preencher esses campos com regras
-inventadas.
+Prazos, perfis adicionais e tipos de recurso ainda não definidos permanecem
+decisões pendentes; não preencher esses campos com regras inventadas.
