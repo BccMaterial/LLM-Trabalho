@@ -2,11 +2,11 @@
 
 Os prompts de referência ficam em `src/prompts/` e são versionados junto com o código como recursos do pacote. Cada arquivo tem uma função limitada e deve produzir conteúdo compatível com o contrato de `docs/io.md`. Os prompts não substituem autorização, validação de schema, política clínica ou verificador determinístico.
 
-| Arquivo | Agente | Técnica | Contrato | O que impede |
+| Arquivo/etapa | Técnica | Por que se aplica | Contrato de saída | Como é avaliada |
 |---|---|---|---|---|
-| `src/prompts/atendente_v1.txt` | Atendente | Roteamento por intenção e extração de campos necessários | Intenção, campos ausentes, mensagem e evidências em estrutura definida | Não inventar horários, não gravar sem confirmação, não responder diagnóstico |
-| `src/prompts/gestor_v1.txt` | Gestor | Análise restrita aos critérios e registros autorizados | Prioridade/alerta estruturado com regra, fonte e suficiência | Não inferir gravidade clínica, não calcular com política ausente, não alterar agenda por conta própria |
-| `src/prompts/secretaria_v1.txt` | Secretária | Checklist administrativo com base em política vigente | Itens presentes/ausentes, referência da política e encaminhamento | Não validar conteúdo clínico, não inventar documento exigido, não modificar prontuário |
+| `src/prompts/atendente_v1.txt` — chamada de conversa e ferramenta | Instruções zero-shot, roteamento por intenção e tool calling limitado | A entrada é texto livre; as instruções delimitam o domínio e as ferramentas deixam consultas/escritas explícitas para validação em código | Objeto `AgentOutput` validado por `src/agent/output_contract.py`, com `resultado`, `fonte` e `suficiencia`; chamadas de ferramenta devem usar os nomes e argumentos declarados | Benchmark sintético de sete casos por modelo; valida schema, ferramenta, fonte, suficiência e escrita. A ablação do guardrail de privacidade está documentada abaixo, com uma repetição por variante |
+| `consultar_politica` — recuperação | Não há chamada separada ao LLM para responder o RAG; o modelo do Atendente decide quando chamar a ferramenta | Perguntas sobre regra podem exigir recuperação; registros individuais e mutáveis continuam na API | Trechos com fonte/versionamento e suficiência; só fontes retornadas podem ser citadas | Avaliação offline do recuperador em `docs/rag_evaluation.json`; não mede a redação final do LLM |
+| `src/prompts/gestor_v1.txt` e `src/prompts/secretaria_v1.txt` | Prompts de referência, não etapas executadas | Mantidos para documentar os papéis previstos no desenho futuro | Ainda não há consumidor executável nem contrato validado em fluxo | Não avaliados; Gestor e Secretária não são chamados pelo protótipo atual |
 
 ## Parâmetros e avaliação
 
@@ -16,7 +16,7 @@ Preferir saída estruturada com schema validado e temperatura baixa quando o end
 
 ## Estado de integração
 
-O prompt Atendente v1 é carregado por `src/agent/app.py`; o agente inicia com uma mensagem demonstrativa, mantém turnos e chama ferramentas pela API Flask do projeto. Gestor e Secretária ainda não são chamados. Os registros de benchmark exercitam ferramentas simuladas, não substituem teste de integração do agente contra a API. O verificador e a barreira determinística para escrita continuam pendentes.
+O prompt Atendente v1 é carregado por `src/agent/app.py`; o agente mantém turnos e chama ferramentas pela API Flask do projeto. Gestor e Secretária ainda não são chamados. O contrato de saída e a aprovação de agendamento são validados pelo código do grafo. Os registros de benchmark exercitam ferramentas simuladas e não substituem as execuções de integração em `logs/cases/`.
 
 ## Issue #25 — ablação do guardrail de privacidade da agenda
 

@@ -109,6 +109,33 @@ checkpointer, não um campo do estado.
 
 ## Padrões e limites conhecidos
 
+| Padrão | Uso no grafo atual | Por que este nível | Padrões não usados |
+|---|---|---|---|
+| Agente com ferramentas e laço limitado | `call_model` pode responder ou solicitar ferramenta; `dispatch_tools` retorna ao modelo enquanto o turno não termina | A mensagem livre pode combinar pedido, preferência e esclarecimento; uma regra fixa não classifica todas as formulações. O laço é limitado por orçamento e ferramentas declaradas | Planejamento aberto não é usado porque as operações são administrativas e as escritas exigem confirmação |
+| Workflow sequencial com portão humano | `validate_professional` → `request_approval` → `revalidate_availability` → `dispatch_tools` | A escrita só deve ocorrer depois de aprovação explícita e nova validação da disponibilidade | Não há escrita automática nem aprovação inferida pelo modelo |
+| Roteamento condicional em código | `route_from_start`, `route_after_model`, `route_after_approval` e `route_after_tools` | As condições são verificáveis no estado (autenticação, aprovação, erro, orçamento); código é o nível mais simples e previsível | Roteamento por embedding ou por julgamento do modelo não é usado para essas condições |
+| Paralelização, orquestrador-trabalhador e avaliador-otimizador | Não usados | O protótipo tem um único Atendente e não tem tarefas independentes que exijam ramos concorrentes ou ciclos de crítica | Gestor/Secretária são papéis futuros, não trabalhadores implementados |
+
+### Estado acumulado e reducers
+
+O grafo não executa nós em paralelo, portanto não há atualizações concorrentes
+que precisem de reducer do LangGraph. `messages` e `tool_results` são listas;
+as funções do CLI e de `dispatch_tools` criam uma nova lista e acrescentam os
+itens na ordem sequencial de execução. Os demais campos são substituições de
+estado (um valor por vez), conforme a tabela acima. Assim, a demonstração de
+sobrescrita entre ramos paralelos não se aplica à topologia implementada; se
+forem adicionados nós paralelos, essa conclusão deixará de valer para os campos
+compartilhados atualizados por mais de um ramo.
+
+### Parâmetro de framework
+
+O CLI declara `recursion_limit=32` ao invocar o grafo, embora o fluxo também
+tenha limites de domínio próprios (`MAX_WORKFLOW_STEPS=8` e
+`MAX_EXTERNAL_CALLS=10`). Como o limite é passado explicitamente, uma mudança
+do padrão do LangGraph não altera esse teto. Uma atualização da biblioteca ainda
+pode mudar a semântica interna do limite; por isso a versão está fixada em
+`requirements.txt` e o grafo deve ser inspecionado e reavaliado após atualização.
+
 - **Agente com ferramentas e loop limitado:** escolhido porque a mensagem
   livre pode pedir uma consulta ou um agendamento; o modelo propõe resposta ou
   tool call, e o código valida e executa apenas as ferramentas declaradas. Os

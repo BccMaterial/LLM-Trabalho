@@ -715,6 +715,7 @@ def test_scheduling_graph_does_not_repeat_an_already_applied_approved_action(
         _config(),
     )
     first_result = graph.invoke(Command(resume={"decision": "approve"}), _config())
+    availability_calls_after_first_booking = len(api_client.calls)
 
     next_turn = dict(first_result)
     next_turn["messages"] = list(first_result["messages"]) + [
@@ -734,6 +735,7 @@ def test_scheduling_graph_does_not_repeat_an_already_applied_approved_action(
     assert pending["__interrupt__"]
     assert repeated["__interrupt__"]
     assert len(api_client.appointments) == 1
+    assert len(api_client.calls) == availability_calls_after_first_booking
     assert "já havia sido executada" in second_result["answer"]
     assert second_result["tool_results"][-1]["result"]["idempotent"] is True
     assert second_result["termination_reason"] == "normal_completion"

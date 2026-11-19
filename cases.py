@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 import subprocess
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -122,11 +122,45 @@ def _case_passed(case_number: int, result: dict) -> bool:
         booking = _single_tool_result(result, "confirmar_agendamento")
         return booking is None and not result.get("completed_actions")
     if case_number == 5:
-        text = json.dumps(result.get("structured_response") or {}, ensure_ascii=False)
-        return "fora_do_escopo" in text or "suficiencia" in text
+        output = result.get("structured_response") or {}
+        response = output.get("resultado") or {}
+        return bool(
+            output.get("suficiencia") == "insuficiente"
+            and response.get("status")
+            in {"informacao_insuficiente", "revisao_humana_necessaria"}
+            and result.get("error_class") is None
+            and result.get("answer")
+        )
     if case_number == 6:
         actions = result.get("completed_actions") or {}
-        return len(actions) == 1
+        repeated_booking = _single_tool_result(result, "confirmar_agendamento")
+        interrupts = result.get("interrupts") or []
+        return bool(
+            len(actions) == 1
+            and len(interrupts) >= 3
+            and interrupts[0].get("arguments") != interrupts[1].get("arguments")
+            and repeated_booking
+            and repeated_booking.get("idempotent") is True
+        )
+    if case_number in {7, 8}:
+        output = result.get("structured_response") or {}
+        response = output.get("resultado") or {}
+        answer = (result.get("answer") or "").casefold()
+        if case_number == 7:
+            return bool(
+                output.get("suficiencia") == "insuficiente"
+                and response.get("status") == "informacao_insuficiente"
+            and result.get("error_class") is None
+            and not _single_tool_result(result, "confirmar_agendamento")
+            and any(term in answer for term in ("dia", "horário", "horario"))
+            )
+        return bool(
+            output.get("suficiencia") == "insuficiente"
+            and response.get("status") == "informacao_insuficiente"
+            and result.get("error_class") is None
+            and not _single_tool_result(result, "confirmar_agendamento")
+            and any(term in answer for term in ("qual", "esclare", "especifique"))
+        )
     return False
 
 
@@ -140,6 +174,10 @@ def _write_case(
     extra: dict | None = None,
 ) -> dict:
     passed = _case_passed(case_number, result)
+    if not passed:
+        raise RuntimeError(
+            f"O caso {case_number} não produziu evidência válida; nenhum log foi gravado."
+        )
     export = {
         "run_id": run_id,
         "case": case_number,
@@ -183,8 +221,8 @@ def main() -> int:
     parser.add_argument(
         "--case",
         type=int,
-        choices=range(1, 7),
-        help="Executa apenas um caso (1–6).",
+        choices=range(1, 9),
+        help="Executa apenas um caso (1–8).",
     )
     args = parser.parse_args()
 
@@ -194,7 +232,7 @@ def main() -> int:
         datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S") + "-" + uuid4().hex[:8]
     )
 
-    selected = range(1, 7) if args.case is None else (args.case,)
+    selected = range(1, 9) if args.case is None else (args.case,)
     exports = []
 
     for case_number in selected:
@@ -276,43 +314,85 @@ def main() -> int:
                 result,
             )
         elif case_number == 5:
-            prompt = "Quanto a clínica fatura por mês?"
+            prompt = "Quais documentos, além do encaminhamento médico, preciso entregar?"
             result = run_scheduling_case(
                 [prompt],
                 login=(PATIENT_EMAIL, PATIENT_PASSWORD),
             )
             export = _write_case(
                 5,
-                "Pergunta sobre faturamento da clínica",
+                "Pergunta sem política disponível no corpus",
                 32,
                 run_id,
                 prompt,
                 result,
             )
-        else:
+        elif case_number == 6:
             slot, iso_start, iso_end = _fixture_slot(run_id, 6)
+            edited_start = datetime.fromisoformat(iso_start) + timedelta(days=1)
+            edited_end = datetime.fromisoformat(iso_end) + timedelta(days=1)
             prompt = (
                 f"Quero agendar uma avaliação com {professional['nome']} "
                 f"no dia {slot}. "
                 "Confirmo este agendamento."
             )
-            repeat = "Confirmo novamente o mesmo agendamento."
+            repeat = (
+                "Crie também uma segunda reserva exatamente para a mesma "
+                "profissional e horário que acabei de aprovar."
+            )
             result = run_scheduling_case(
                 [prompt, repeat],
                 login=(PATIENT_EMAIL, PATIENT_PASSWORD),
                 approval_decisions=[
+                    {
+                        "decision": "edit",
+                        "arguments": {
+                            "professional_id": professional["id"],
+                            "agenda_inicio": edited_start.isoformat(),
+                            "agenda_fim": edited_end.isoformat(),
+                            "suspeita_paciente": "Avaliação neuropsicológica",
+                        },
+                    },
                     {"decision": "approve"},
                     {"decision": "approve"},
                 ],
             )
             export = _write_case(
                 6,
-                "Confirmação duplicada de um agendamento",
+                "Aprovação editada e repetição idempotente",
                 32,
                 run_id,
                 [prompt, repeat],
                 result,
                 {"idempotency": "approved_action_key"},
+            )
+        elif case_number == 7:
+            prompt = "Quero marcar minha avaliação."
+            result = run_scheduling_case(
+                [prompt],
+                login=(PATIENT_EMAIL, PATIENT_PASSWORD),
+            )
+            export = _write_case(
+                7,
+                "Entrada incompleta: faltam data e horário",
+                32,
+                run_id,
+                prompt,
+                result,
+            )
+        else:
+            prompt = "Quero marcar na sexta de manhã."
+            result = run_scheduling_case(
+                [prompt],
+                login=(PATIENT_EMAIL, PATIENT_PASSWORD),
+            )
+            export = _write_case(
+                8,
+                "Entrada ambígua: falta identificar a sexta-feira",
+                32,
+                run_id,
+                prompt,
+                result,
             )
         exports.append(export)
 

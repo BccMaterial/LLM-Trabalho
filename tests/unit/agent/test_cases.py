@@ -42,8 +42,25 @@ def test_case_passed_requires_no_booking_without_login():
     )
 
 
-def test_case_passed_requires_a_single_completed_action_for_retry():
-    assert cases._case_passed(
+def test_case_passed_requires_edited_approval_and_idempotent_retry():
+    assert not cases._case_passed(
         6,
         {"completed_actions": {"action-key": {"id": "appointment-1"}}},
+    )
+    assert cases._case_passed(
+        6,
+        {
+            "completed_actions": {"action-key": {"id": "appointment-1"}},
+            "interrupts": [
+                {"arguments": {"agenda_inicio": "2027-01-15T10:00:00"}},
+                {"arguments": {"agenda_inicio": "2027-01-16T10:00:00"}},
+                {"arguments": {"agenda_inicio": "2027-01-16T10:00:00"}},
+            ],
+            "tool_results": [
+                {
+                    "name": "confirmar_agendamento",
+                    "result": {"id": "appointment-1", "idempotent": True},
+                }
+            ],
+        },
     )

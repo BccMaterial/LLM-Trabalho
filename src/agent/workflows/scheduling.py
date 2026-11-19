@@ -695,6 +695,17 @@ def build_scheduling_graph(
                 "Nenhuma ação adicional foi executada.",
                 limit_reason,
             )
+        approved_key = state.get("approved_action_key")
+        completed_actions = state.get("completed_actions") or {}
+        if approved_key and approved_key in completed_actions:
+            # A repeated approval for an action already applied in this
+            # checkpoint must reach dispatch_tools' idempotency guard. A new
+            # availability check would incorrectly turn a safe retry into a
+            # conflict because the first write occupied that slot.
+            return {
+                "pending_action": state["pending_action"],
+                **_budget_update(state, workflow_steps=1, external_calls=0),
+            }
         try:
             arguments = json.loads(confirmation_call["function"]["arguments"])
         except (ValueError, TypeError, KeyError) as error:
