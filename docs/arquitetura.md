@@ -6,9 +6,13 @@
 
 O fluxo executado pelo CLI é compilado por
 `src/agent/workflows/scheduling.py::build_scheduling_graph`. Este é o fluxo
-real; não inclui os agentes Gestor/Secretária nem os nós futuros de RAG.
+real; não inclui os agentes Gestor/Secretária nem um nó RAG dedicado.
 Orçamento de execução, expiração da aprovação, classificação de término e
 detecção de chamadas repetidas são implementados no grafo.
+
+A busca RAG é oferecida como ferramenta `consultar_politica` dentro de
+`dispatch_tools`; ela não é um nó separado do grafo. O índice local ainda não
+contém políticas oficiais.
 
 ```text
 START

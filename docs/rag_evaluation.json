@@ -1,0 +1,1372 @@
+{
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "reference_date": "2026-11-18",
+  "chunk_size_characters": 96,
+  "minimum_lexical_coverage": 0.5,
+  "records": [
+    {
+      "question_id": 5,
+      "question": "Quais exames estão marcados para mim?",
+      "route": "api",
+      "retrieval_call": null,
+      "sources": [],
+      "sufficiency": "not_applicable",
+      "evaluation": "not_executed_missing_api_fixture"
+    },
+    {
+      "question_id": 6,
+      "question": "Meu encaminhamento foi registrado?",
+      "route": "api",
+      "retrieval_call": null,
+      "sources": [],
+      "sufficiency": "not_applicable",
+      "evaluation": "not_executed_missing_api_fixture"
+    },
+    {
+      "question_id": 7,
+      "question": "Quais horários estão disponíveis para meu agendamento?",
+      "route": "api",
+      "retrieval_call": null,
+      "sources": [],
+      "sufficiency": "not_applicable",
+      "evaluation": "not_executed_missing_api_fixture"
+    },
+    {
+      "question_id": 8,
+      "question": "Qual é a minha posição ou situação na fila?",
+      "route": "api",
+      "retrieval_call": null,
+      "sources": [],
+      "sufficiency": "not_applicable",
+      "evaluation": "not_executed_missing_api_fixture"
+    },
+    {
+      "question_id": 9,
+      "question": "Quem aprovou a política de encaminhamentos vigente?",
+      "route": "api",
+      "retrieval_call": null,
+      "sources": [],
+      "sufficiency": "not_applicable",
+      "evaluation": "not_executed_missing_api_fixture"
+    },
+    {
+      "question_id": 1,
+      "question": "Quantos exames um paciente pode realizar?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.16662079095840454
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.16662079095840454
+        }
+      ],
+      "lexical_coverage": 0.75,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 1,
+      "question": "Quantos exames um paciente pode realizar?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.16662079095840454
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.4993482232093811
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.57880699634552
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.16662079095840454
+        }
+      ],
+      "lexical_coverage": 0.75,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 1,
+      "question": "Quantos exames um paciente pode realizar?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.16662079095840454
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.4993482232093811
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.57880699634552
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.6119160652160645
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.16662079095840454
+        }
+      ],
+      "lexical_coverage": 0.75,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 2,
+      "question": "Um encaminhamento de outra clínica é aceito?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.21558994054794312
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.21558994054794312
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 2,
+      "question": "Um encaminhamento de outra clínica é aceito?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.21558994054794312
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.4743921756744385
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.49037981033325195
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.21558994054794312
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 2,
+      "question": "Um encaminhamento de outra clínica é aceito?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.21558994054794312
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.4743921756744385
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.49037981033325195
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.5936824083328247
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.21558994054794312
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 3,
+      "question": "O que fazer se o horário escolhido estiver indisponível?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.44360673427581787
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.3333333333333333,
+      "sufficiency": "insuficiente",
+      "evaluation": "miss"
+    },
+    {
+      "question_id": 3,
+      "question": "O que fazer se o horário escolhido estiver indisponível?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.44360673427581787
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.45103228092193604
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.7704194784164429
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.45103228092193604
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 3,
+      "question": "O que fazer se o horário escolhido estiver indisponível?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.44360673427581787
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.45103228092193604
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.7704194784164429
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.824501633644104
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.45103228092193604
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 4,
+      "question": "Todo paciente precisa realizar exatamente seis exames?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.14310574531555176
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.14310574531555176
+        }
+      ],
+      "lexical_coverage": 0.5,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 4,
+      "question": "Todo paciente precisa realizar exatamente seis exames?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.14310574531555176
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.587249755859375
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.6013859510421753
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.14310574531555176
+        }
+      ],
+      "lexical_coverage": 0.5,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 4,
+      "question": "Todo paciente precisa realizar exatamente seis exames?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.14310574531555176
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.587249755859375
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.6013859510421753
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.622105598449707
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.14310574531555176
+        }
+      ],
+      "lexical_coverage": 0.5,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 10,
+      "question": "Qual prazo de diagnóstico a clínica garante?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.3804784417152405
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "evaluation": "correct_refusal"
+    },
+    {
+      "question_id": 10,
+      "question": "Qual prazo de diagnóstico a clínica garante?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.3804784417152405
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.4357547163963318
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.5186222195625305
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "evaluation": "correct_refusal"
+    },
+    {
+      "question_id": 10,
+      "question": "Qual prazo de diagnóstico a clínica garante?",
+      "route": "rag",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "section-1",
+          "distance": 0.3804784417152405
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "section-1",
+          "distance": 0.4357547163963318
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "section-1",
+          "distance": 0.5186222195625305
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "section-1",
+          "distance": 0.5370349287986755
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "evaluation": "correct_refusal"
+    },
+    {
+      "question_id": 1,
+      "question": "Quantos exames um paciente pode realizar?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.10125178098678589
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.10125178098678589
+        }
+      ],
+      "lexical_coverage": 0.75,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 1,
+      "question": "Quantos exames um paciente pode realizar?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.10125178098678589
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.4434925317764282
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.5078272819519043
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.10125178098678589
+        }
+      ],
+      "lexical_coverage": 0.75,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 1,
+      "question": "Quantos exames um paciente pode realizar?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.10125178098678589
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.4434925317764282
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.5078272819519043
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.5423623919487
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.5452418327331543
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.10125178098678589
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.5423623919487
+        }
+      ],
+      "lexical_coverage": 0.75,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 2,
+      "question": "Um encaminhamento de outra clínica é aceito?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.18279731273651123
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.3333333333333333,
+      "sufficiency": "insuficiente",
+      "evaluation": "miss"
+    },
+    {
+      "question_id": 2,
+      "question": "Um encaminhamento de outra clínica é aceito?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.18279731273651123
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.30899542570114136
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4368385672569275
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.18279731273651123
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.30899542570114136
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 2,
+      "question": "Um encaminhamento de outra clínica é aceito?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.18279731273651123
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.30899542570114136
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4368385672569275
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4762571454048157
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.5452120900154114
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.18279731273651123
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.30899542570114136
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 3,
+      "question": "O que fazer se o horário escolhido estiver indisponível?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4722505211830139
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4722505211830139
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 3,
+      "question": "O que fazer se o horário escolhido estiver indisponível?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4722505211830139
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.49126744270324707
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.7205708622932434
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4722505211830139
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.7205708622932434
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 3,
+      "question": "O que fazer se o horário escolhido estiver indisponível?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4722505211830139
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.49126744270324707
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.7205708622932434
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.8021082878112793
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.807050347328186
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4722505211830139
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.7205708622932434
+        }
+      ],
+      "lexical_coverage": 0.6666666666666666,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 4,
+      "question": "Todo paciente precisa realizar exatamente seis exames?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.23016595840454102
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.23016595840454102
+        }
+      ],
+      "lexical_coverage": 0.5,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 4,
+      "question": "Todo paciente precisa realizar exatamente seis exames?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.23016595840454102
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.43620145320892334
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.5663894414901733
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.23016595840454102
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.43620145320892334
+        }
+      ],
+      "lexical_coverage": 0.5,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 4,
+      "question": "Todo paciente precisa realizar exatamente seis exames?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.23016595840454102
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.43620145320892334
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.5663894414901733
+        },
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.5665313005447388
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.5711468458175659
+        }
+      ],
+      "sources": [
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.23016595840454102
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.43620145320892334
+        }
+      ],
+      "lexical_coverage": 0.5,
+      "sufficiency": "suficiente",
+      "evaluation": "hit"
+    },
+    {
+      "question_id": 10,
+      "question": "Qual prazo de diagnóstico a clínica garante?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 1,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.348987340927124
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "evaluation": "correct_refusal"
+    },
+    {
+      "question_id": 10,
+      "question": "Qual prazo de diagnóstico a clínica garante?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 3,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.348987340927124
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.40893155336380005
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.44859641790390015
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "evaluation": "correct_refusal"
+    },
+    {
+      "question_id": 10,
+      "question": "Qual prazo de diagnóstico a clínica garante?",
+      "route": "rag",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "candidates": [
+        {
+          "document_id": "booking-confirmation",
+          "source": "fixture://case/booking-confirmation/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.348987340927124
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-2",
+          "distance": 0.40893155336380005
+        },
+        {
+          "document_id": "exam-count",
+          "source": "fixture://case/exam-count/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.44859641790390015
+        },
+        {
+          "document_id": "referral-origin",
+          "source": "fixture://case/referral-origin/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.4504779577255249
+        },
+        {
+          "document_id": "unavailable-time",
+          "source": "fixture://case/unavailable-time/v1",
+          "chunk_id": "fixed-1",
+          "distance": 0.497893750667572
+        }
+      ],
+      "sources": [],
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "evaluation": "correct_refusal"
+    }
+  ],
+  "summary": [
+    {
+      "chunking": "structural",
+      "k": 1,
+      "answerable_hits": 3,
+      "answerable_count": 4,
+      "answerable_precision": 1.0,
+      "exception_hits": 2,
+      "exception_count": 3,
+      "unknown_false_positives": 0
+    },
+    {
+      "chunking": "structural",
+      "k": 3,
+      "answerable_hits": 4,
+      "answerable_count": 4,
+      "answerable_precision": 1.0,
+      "exception_hits": 3,
+      "exception_count": 3,
+      "unknown_false_positives": 0
+    },
+    {
+      "chunking": "structural",
+      "k": 5,
+      "answerable_hits": 4,
+      "answerable_count": 4,
+      "answerable_precision": 1.0,
+      "exception_hits": 3,
+      "exception_count": 3,
+      "unknown_false_positives": 0
+    },
+    {
+      "chunking": "fixed",
+      "k": 1,
+      "answerable_hits": 3,
+      "answerable_count": 4,
+      "answerable_precision": 1.0,
+      "exception_hits": 2,
+      "exception_count": 3,
+      "unknown_false_positives": 0
+    },
+    {
+      "chunking": "fixed",
+      "k": 3,
+      "answerable_hits": 4,
+      "answerable_count": 4,
+      "answerable_precision": 1.0,
+      "exception_hits": 3,
+      "exception_count": 3,
+      "unknown_false_positives": 0
+    },
+    {
+      "chunking": "fixed",
+      "k": 5,
+      "answerable_hits": 4,
+      "answerable_count": 4,
+      "answerable_precision": 1.0,
+      "exception_hits": 3,
+      "exception_count": 3,
+      "unknown_false_positives": 0
+    }
+  ],
+  "revoked_policy_checks": [
+    {
+      "question": "Qual é o prazo de diagnóstico documentado?",
+      "chunking": "structural",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "candidates": [
+        "fixture://case/booking-confirmation/v1",
+        "fixture://case/unavailable-time/v1",
+        "fixture://case/referral-origin/v1",
+        "fixture://case/exam-count/v1"
+      ],
+      "revoked_source_returned": false,
+      "returned_sources": []
+    },
+    {
+      "question": "Qual é o prazo de diagnóstico documentado?",
+      "chunking": "fixed",
+      "retrieval_call": {
+        "limit": 5,
+        "include_test_fixtures": true,
+        "as_of": "2026-11-18"
+      },
+      "lexical_coverage": 0.0,
+      "sufficiency": "insuficiente",
+      "candidates": [
+        "fixture://case/booking-confirmation/v1",
+        "fixture://case/unavailable-time/v1",
+        "fixture://case/exam-count/v1",
+        "fixture://case/referral-origin/v1",
+        "fixture://case/referral-origin/v1"
+      ],
+      "revoked_source_returned": false,
+      "returned_sources": []
+    }
+  ]
+}

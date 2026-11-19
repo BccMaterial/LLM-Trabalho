@@ -89,11 +89,10 @@ As dez perguntas abaixo formam um primeiro dataset. Antes de usar com pacientes,
 é necessário validar as respostas com documentos oficiais mantidos fora do
 repositório e com registros de teste. Para as perguntas estruturadas, o item
 indicado é o campo ou registro esperado na API; não há ainda um trecho
-documental implementado para esses dados. A execução das dez perguntas pelo
-agente, com registro de chamadas, fontes, suficiência e resultado, ainda está
-pendente. A avaliação deve incluir perguntas que dependam das condições ou
-exceções das regras (como as perguntas 2 a 4), a pergunta sem resposta no corpus
-e uma versão revogada da política.
+documental implementado para esses dados. A avaliação executável do RAG cobre
+as perguntas vetoriais 1 a 4 e 10. As perguntas estruturadas 5 a 9 aparecem no
+relatório como não executadas: precisam de fixtures e/ou endpoints da API que
+não fazem parte deste conjunto de avaliação.
 
 | # | Pergunta | Forma | Trecho, registro ou resultado esperado |
 |---|---|---|---|
@@ -108,12 +107,28 @@ e uma versão revogada da política.
 | 9 | Quem aprovou a política de encaminhamentos vigente? | Estruturada | Metadado de aprovação da versão vigente da política, com responsável e data. Esse metadado precisa ser incluído quando a fonte oficial for cadastrada. |
 | 10 | Qual prazo de diagnóstico a clínica garante? | Sem resposta no corpus | Não há prazo garantido documentado em `docs/case.md`. O agente deve dizer que não encontrou essa informação e não inventar um prazo. |
 
-As perguntas 2 e 3 verificam a recuperação das regras de encaminhamento e
+As perguntas 2 e 3 verificam regras condicionais de encaminhamento e
 agendamento; a pergunta 4 verifica que uma faixa não seja reduzida a um valor
-fixo. A pergunta 10 testa a recusa
-quando a informação não consta do corpus. Para cada execução de avaliação,
-registrar a resposta, a fonte recuperada, se a resposta foi sustentada pela
-fonte e se houve recusa adequada.
+fixo. A pergunta 10 testa a insuficiência quando a informação não consta do
+corpus. O relatório registra chamadas, candidatos, fontes aceitas, suficiência
+e resultado da recuperação. A resposta final do LLM não foi avaliada.
+
+O executor reproduzível é:
+
+```powershell
+poetry run python -m scripts.evaluate_rag --output docs/rag_evaluation.json
+```
+
+Ele usa ChromaDB efêmero, o modelo de
+embeddings configurado e somente fixtures sintéticas derivadas do case. O JSON
+registra pergunta, chamada, `k`, candidatos com distâncias, fontes aceitas,
+suficiência e resultado. Não chama o LLM nem a API; portanto, mede recuperação
+e roteamento esperado, não a qualidade da resposta final do modelo. As
+perguntas 5 a 9 são registradas como `not_executed_missing_api_fixture`, sem
+fabricar resultados de paciente.
+
+A resposta final e a recusa determinística sem fonte são cobertas por testes do
+grafo; não foram avaliadas com chamadas a um LLM real.
 
 ## 4. Controle de versões
 
@@ -123,12 +138,13 @@ datas de vigência. A recuperação normal deve considerar somente versões
 vigentes; as versões revogadas ficam disponíveis apenas para auditoria, sem
 serem usadas para responder dúvidas de pacientes.
 
-**Avaliação pendente:** quando as fontes oficiais e o índice estiverem
-disponíveis, verificar que as consultas retornam a versão vigente e citam sua
-fonte. Registrar como falha se uma versão revogada for usada na resposta. Os
-testes atuais verificam os filtros de status e vigência com documentos
-sintéticos marcados como fixtures; eles não validam a relevância semântica do
-modelo nem políticas reais.
+Na avaliação sintética, uma política revogada com um prazo de diagnóstico
+fictício foi inserida no índice, mas não apareceu entre as fontes retornadas em
+nenhuma das duas estratégias de corte. A pergunta sobre prazo terminou com
+suficiência `insuficiente` e nenhuma fonte aceita. Os candidatos vetoriais
+irrelevantes são registrados no JSON, mas não são expostos ao agente como
+evidência. Isso confirma o filtro de status para esta fixture; não valida
+políticas reais.
 
 ## 5. Corte e `k` da busca vetorial
 
@@ -145,10 +161,30 @@ consultas estruturadas da API.
   documentos reais tiverem artigos longos, reavaliar com exemplos de consulta.
 - **`k = 3` inicial:** recuperar até três trechos para compor o contexto. É um
   valor inicial para testar cobertura de perguntas que dependem de mais de uma
-  regra sem carregar muitos trechos irrelevantes. Avaliar respostas com
-  `k = 1`, `3` e `5` no dataset; manter o menor valor que preserve as respostas
-  corretas e as exceções.
+  regra sem carregar muitos trechos irrelevantes.
 
-Os valores de corte e `k` são hipóteses de protótipo, não resultados medidos.
-Devem ser revistos após a inclusão dos documentos oficiais e a execução do
-conjunto de avaliação.
+### Medições no corpus sintético
+
+Foram comparados trechos por seção (**estrutural**) com janelas fixas de 96
+caracteres sem sobreposição (**fixo**). A suficiência exige cobertura lexical
+mínima de 0,5 dos termos significativos da pergunta em trechos do mesmo
+documento, após normalização de acentos e plurais. Esse corte conservador
+rejeitou os candidatos irrelevantes da pergunta 10; é uma heurística inicial,
+não uma validação semântica geral.
+
+| Corte | `k` | Perguntas respondíveis (1–4) | Exceções (2–4) | Falso positivo na 10 |
+|---|---:|---:|---:|---:|
+| Estrutural | 1 | 3/4 | 2/3 | 0 |
+| Estrutural | 3 | 4/4 | 3/3 | 0 |
+| Estrutural | 5 | 4/4 | 3/3 | 0 |
+| Fixo, 96 caracteres | 1 | 3/4 | 2/3 | 0 |
+| Fixo, 96 caracteres | 3 | 4/4 | 3/3 | 0 |
+| Fixo, 96 caracteres | 5 | 4/4 | 3/3 | 0 |
+
+Com `k = 3`, ambos os cortes recuperaram as quatro fontes esperadas e trataram
+as três perguntas condicionais/excepcionais; `k = 5` não aumentou a cobertura.
+Mantemos corte estrutural e `k = 3` como configuração inicial: preserva cada
+regra e sua exceção no mesmo trecho, enquanto o corte fixo pode separar essas
+partes e exigir múltiplos trechos. A medição cobre apenas quatro perguntas
+respondíveis e uma sem resposta, todas sintéticas. Repetir com fontes oficiais,
+mais paráfrases e avaliação da resposta final antes de qualquer uso real.

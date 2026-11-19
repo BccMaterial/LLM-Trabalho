@@ -120,7 +120,9 @@ checkpointer, não um campo do estado.
   revalidação, término e erro dependem do estado e de regras de segurança; o
   modelo não escolhe esses destinos.
 - **Sem paralelismo:** cada transição executa um único nó. Não há reducers de
-  agregação nem agentes Gestor/Secretária ou nós de RAG no grafo atual.
+  agregação nem agentes Gestor/Secretária ou nó RAG dedicado no grafo atual.
+  O modelo pode chamar `consultar_politica` pelo nó `dispatch_tools`; a
+  ferramenta usa o índice vetorial local e não contém políticas oficiais.
 - **Orçamento por turno:** 8 etapas, 10 chamadas externas, 6.000 tokens
   reportados, 120 segundos; até 1.000 tokens por resposta e timeout de até 30
   segundos por chamada. O CLI também configura `recursion_limit=32`.
