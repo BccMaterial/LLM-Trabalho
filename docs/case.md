@@ -123,7 +123,19 @@ Suspeita diagnóstica, laudos, histórico e encaminhamento podem conter dados de
 
 ## 9. Estado de implementação
 
-O repositório contém API Flask com autenticação, usuários, profissionais e operações de agenda; o agente Python usa a biblioteca `openai`, consulta e grava pela API, mantém a conversa em turnos e oferece duas ferramentas. O benchmark separado exercita sete cenários sintéticos com ferramentas simuladas. A agenda de demonstração não representa uma clínica real. Ainda não estão implementados os três agentes especializados, a priorização com regra aprovada, RAG, MCP, LangGraph nem um verificador determinístico completo para proteger as escritas do agente interativo. O benchmark tem verificações automáticas próprias e não substitui esse verificador de aplicação.
+O repositório contém API Flask com autenticação, usuários, profissionais e operações de agenda; o agente Python usa a biblioteca `openai`, consulta e grava pela API, mantém estado com LangGraph e exige aprovação explícita antes de executar agendamentos. O benchmark separado exercita sete cenários sintéticos com ferramentas simuladas. Há um serviço local inicial de recuperação vetorial, mas ele ainda não está integrado ao fluxo de agendamento nem contém políticas oficiais da clínica. A agenda de demonstração não representa uma clínica real. Ainda não estão implementados os três agentes especializados, a priorização com regra aprovada, MCP nem um verificador determinístico completo para proteger todas as saídas do agente. O benchmark tem verificações automáticas próprias e não substitui esse verificador de aplicação.
+
+### Memória, checkpoint e RAG neste case
+
+As três estruturas têm papéis distintos e não são intercambiáveis:
+
+| Estrutura | Decisão do case | O que guarda ou consulta | Ciclo de vida e fonte |
+|---|---|---|---|
+| **Checkpoint de curto prazo** | Usado para continuar a conversa atual e retomar uma aprovação interrompida | Estado e histórico da conversa, ação pendente e resultado de ferramentas | `MemorySaver` do LangGraph, apenas na memória do processo; não persiste após o encerramento |
+| **Memória de longo prazo** | Não usada: nenhuma conversa deixa fatos, episódios, preferências ou regras para conversas futuras | Zero registros de memória por execução; fatos mutáveis de pacientes continuam na API | Não há armazenamento nem escritor de memória |
+| **RAG** | Conhecimento consultável separado do estado do paciente | Busca trechos de referência administrativa em um corpus próprio; o serviço atual usa dados/fixtures sintéticos, sem política oficial e ainda não está conectado ao fluxo de agendamento | Índice vetorial local, conforme `docs/rag.md`; não grava mensagens dos pacientes no corpus nem aprende com as conversas |
+
+Assim, o checkpoint **retoma** uma conversa, a memória de longo prazo **lembraria** informação entre conversas (não usada neste projeto), e o RAG **consulta** documentos externos. A decisão detalhada de escrita, retenção, identificação da conversa, limite de contexto e esquecimento está em [`docs/memoria.md`](memoria.md). O protótipo permanece baseado em dados fictícios e não depende de acesso à clínica.
 
 ## 10. Workflow da entrega 1
 
@@ -163,4 +175,4 @@ O custo de inferência observado e a conta por 100 casos estão em [`docs/modelo
 
 Para esta etapa, o benchmark versiona casos, fontes, ferramentas simuladas, orçamento e validações estruturais. Os sete casos atuais incluem resposta sem política, paciente inexistente, divergência com encaminhamento, consulta de horário, ausência de confirmação, escrita após confirmação e cancelamento sem política. O caso que não deve disparar a ação principal é a preferência ainda não confirmada; todos os exemplos usam identificadores e registros fictícios. O verificador de benchmark não comprova correção humana ou de clínica.
 
-Para as etapas seguintes, a proposta é: RAG apenas sobre políticas sintéticas/publicamente disponíveis para exercitar recuperação, deixando claro que não são regras da clínica; MCP como fronteira de serviço para a API local de agenda; LangGraph para representar e comparar o workflow com estado explícito; e, na Parte 3, separar Atendente, Gestor e Secretária quando houver tarefas realmente distintas. Nenhuma dessas propostas presume acesso futuro à clínica. O maior risco é o modelo transformar ausência/contradição de informação em certeza e iniciar uma escrita incorreta; o plano B é bloquear a ferramenta em código, apresentar a insuficiência e terminar em revisão humana.
+Para as etapas seguintes, a proposta é integrar ao fluxo o serviço RAG já prototipado, usando somente políticas sintéticas ou públicas claramente identificadas; adicionar MCP como fronteira de serviço para a API local de agenda; e separar Atendente, Gestor e Secretária somente se houver tarefas realmente distintas. LangGraph já representa o workflow do Atendente. Nenhuma dessas propostas presume acesso futuro à clínica. O maior risco é o modelo transformar ausência/contradição de informação em certeza e iniciar uma escrita incorreta; o plano B é bloquear a ferramenta em código, apresentar a insuficiência e terminar em revisão humana.
