@@ -164,6 +164,38 @@ def test_scheduling_graph_returns_model_answer(monkeypatch):
     assert result["structured_response"]["resultado"]["mensagem"] == result["answer"]
 
 
+def test_scheduling_graph_checkpoints_are_isolated_by_thread(monkeypatch):
+    monkeypatch.setattr(
+        "src.agent.workflows.scheduling.llm.request_with_retry",
+        lambda client, messages, **kwargs: _response(
+            FakeMessage(_output("Resposta da conversa."))
+        ),
+    )
+    graph = build_scheduling_graph(object(), FakeApiClient())
+    configs = []
+
+    for conversation_id, message in (
+        ("conversation-a", "Mensagem da conversa A."),
+        ("conversation-b", "Mensagem da conversa B."),
+    ):
+        state = _state()
+        state["conversation_id"] = conversation_id
+        state["messages"].append({"role": "user", "content": message})
+        config = {
+            "configurable": {"thread_id": conversation_id},
+            "recursion_limit": LANGGRAPH_RECURSION_LIMIT,
+        }
+        graph.invoke(state, config)
+        configs.append((config, conversation_id, message))
+
+    for config, conversation_id, message in configs:
+        checkpoint = graph.get_state(config).values
+        assert checkpoint["conversation_id"] == conversation_id
+        assert [item for item in checkpoint["messages"] if item["role"] == "user"] == [
+            {"role": "user", "content": message}
+        ]
+
+
 def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, capsys):
     responses = iter(
         [
