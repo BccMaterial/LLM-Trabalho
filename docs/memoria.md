@@ -54,8 +54,8 @@ Uma política de resumo seletivo só deve ser implementada se o sistema passar a
 
 Não configuramos prazo clínico ou legal de retenção porque o grupo não recebeu uma política da clínica. Para demonstrações, use somente dados sintéticos e encerre o processo ao terminar. Se uma futura implantação exigir checkpoint durável ou memória de longo prazo, a equipe deverá definir acesso, retenção, exclusão e idempotência antes de ativá-los.
 
-## Estado da implementação e relação com a issue 29
+## Estado da implementação
 
 Implementado hoje: checkpoint em memória de processo no workflow LangGraph; identificador de thread por conversa; índice RAG separado do estado do workflow. Não implementado: persistência entre processos, remoção seletiva, sumarização/compactação de contexto e qualquer memória episódica, semântica ou procedural.
 
-A issue 29 deve seguir esta decisão: manter a separação entre threads, não introduzir memória de longo prazo nesta versão e verificar que uma conversa nova começa sem mensagens, aprovações ou resultados de ferramentas da conversa anterior. Uma eventual implementação de escrita/remoção de memória exige uma decisão nova e específica, não está autorizada por esta estratégia.
+Uma conversa nova deve começar sem mensagens, aprovações ou resultados de ferramentas da conversa anterior. Qualquer futura implementação de memória entre conversas exige uma política própria de necessidade, consentimento, retenção, exclusão e idempotência antes de ser ativada.
