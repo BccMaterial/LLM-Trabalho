@@ -8,9 +8,11 @@ autoriza o agente a fazer diagnóstico.
 > **Estado da implementação:** o repositório contém um primeiro serviço local
 > de recuperação vetorial em `src/agent/policy_retrieval.py`, baseado em
 > ChromaDB e no modelo de embeddings multilíngue descrito abaixo. Ainda não há
-> documentos oficiais da clínica no índice, ingestão integrada nem validação
-> com essas fontes. Os testes usam somente fixtures sintéticas identificadas
-> como tal; elas não representam políticas da clínica.
+> documentos oficiais da clínica no índice nem validação com essas fontes. O
+> agente expõe a ferramenta `consultar_politica`, que consulta o serviço quando
+> o modelo precisa responder sobre regras administrativas. Os testes usam
+> somente fixtures sintéticas identificadas como tal; elas não representam
+> políticas da clínica.
 
 ## 1. Formas de recuperação escolhidas
 
@@ -30,6 +32,17 @@ consultas estruturadas e pelos metadados dos documentos. Também não se propõe
 busca textual como forma principal, pois as perguntas gerais previstas são
 formuladas por assunto, não necessariamente repetindo os termos exatos das
 políticas.
+
+### Integração ao agente
+
+A recuperação é exposta como ferramenta `consultar_politica`, em vez de uma
+etapa fixa para toda mensagem. Assim, perguntas de agenda e dados individuais
+continuam usando a API estruturada, e o modelo só consulta o corpus para dúvidas
+de política. O índice exclui fixtures de teste e o serviço filtra documentos
+que não estejam aprovados e vigentes. A resposta precisa citar exatamente uma
+fonte retornada pela ferramenta; o contrato rejeita referências de política
+inventadas. Sem trechos recuperados, o prompt orienta o agente a declarar a
+insuficiência e não completar a resposta com conhecimento geral.
 
 ## 2. Corpus e manutenção
 
@@ -76,7 +89,11 @@ As dez perguntas abaixo formam um primeiro dataset. Antes de usar com pacientes,
 é necessário validar as respostas com documentos oficiais mantidos fora do
 repositório e com registros de teste. Para as perguntas estruturadas, o item
 indicado é o campo ou registro esperado na API; não há ainda um trecho
-documental implementado para esses dados.
+documental implementado para esses dados. A execução das dez perguntas pelo
+agente, com registro de chamadas, fontes, suficiência e resultado, ainda está
+pendente. A avaliação deve incluir perguntas que dependam das condições ou
+exceções das regras (como as perguntas 2 a 4), a pergunta sem resposta no corpus
+e uma versão revogada da política.
 
 | # | Pergunta | Forma | Trecho, registro ou resultado esperado |
 |---|---|---|---|
@@ -106,7 +123,7 @@ datas de vigência. A recuperação normal deve considerar somente versões
 vigentes; as versões revogadas ficam disponíveis apenas para auditoria, sem
 serem usadas para responder dúvidas de pacientes.
 
-**Avaliação proposta:** quando as fontes oficiais e o índice estiverem
+**Avaliação pendente:** quando as fontes oficiais e o índice estiverem
 disponíveis, verificar que as consultas retornam a versão vigente e citam sua
 fonte. Registrar como falha se uma versão revogada for usada na resposta. Os
 testes atuais verificam os filtros de status e vigência com documentos

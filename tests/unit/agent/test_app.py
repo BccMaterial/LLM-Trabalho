@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 from langgraph.types import Command
 
+from src.agent.policy_retrieval import PolicySearchResult
 from src.agent.workflows.execution import (
     LANGGRAPH_RECURSION_LIMIT,
     MAX_EXTERNAL_CALLS,
@@ -224,6 +225,124 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
     output = capsys.readouterr().out
     assert "paciente-demo" not in output
     assert "appointment-1" not in output
+
+
+def test_scheduling_graph_uses_retrieved_policy_and_validates_its_source(monkeypatch):
+    source = "fixture://policies/referrals"
+    responses = iter(
+        [
+            _response(
+                FakeMessage(
+                    tool_calls=[
+                        FakeToolCall(
+                            "consultar_politica",
+                            {"pergunta": "De onde pode vir o encaminhamento?"},
+                        )
+                    ]
+                )
+            ),
+            _response(
+                FakeMessage(
+                    _output(
+                        "O encaminhamento pode vir de outra clínica.",
+                        status="revisao_humana_necessaria",
+                        action="encaminhada",
+                        sources=[{"tipo": "politica", "referencia": source}],
+                    )
+                )
+            ),
+        ]
+    )
+    request_options = []
+    monkeypatch.setattr(
+        "src.agent.workflows.scheduling.llm.request_with_retry",
+        lambda client, messages, **kwargs: (
+            request_options.append(kwargs) or next(responses)
+        ),
+    )
+
+    class FakeRetriever:
+        def search(self, question):
+            assert question == "De onde pode vir o encaminhamento?"
+            return [
+                PolicySearchResult(
+                    document_id="referrals",
+                    version="v1",
+                    chunk_id="section-1",
+                    content="O encaminhamento pode vir de outra clínica.",
+                    source=source,
+                    effective_from=datetime(2026, 1, 1).date(),
+                    effective_until=None,
+                    distance=0.1,
+                    is_test_fixture=True,
+                )
+            ]
+
+    state = _state()
+    state["messages"].append(
+        {"role": "user", "content": "De onde pode vir o encaminhamento?"}
+    )
+    result = build_scheduling_graph(
+        object(),
+        FakeApiClient(),
+        FakeRetriever(),
+    ).invoke(state, _config())
+
+    assert result["answer"] == "O encaminhamento pode vir de outra clínica."
+    assert result["tool_results"][0]["name"] == "consultar_politica"
+    assert result["tool_results"][0]["result"]["suficiencia"] == "suficiente"
+    assert result["structured_response"]["fonte"] == [
+        {"tipo": "politica", "referencia": source}
+    ]
+    assert all(
+        any(
+            definition["function"]["name"] == "consultar_politica"
+            for definition in options["tool_definitions"]
+        )
+        for options in request_options
+    )
+
+
+def test_scheduling_graph_refuses_when_no_current_policy_is_retrieved(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        "src.agent.workflows.scheduling.llm.request_with_retry",
+        lambda client, messages, **kwargs: calls.append(messages)
+        or _response(
+            FakeMessage(
+                tool_calls=[
+                    FakeToolCall(
+                        "consultar_politica",
+                        {"pergunta": "Qual prazo de diagnóstico a clínica garante?"},
+                    )
+                ]
+            )
+        ),
+    )
+
+    class EmptyRetriever:
+        def search(self, question):
+            return []
+
+    state = _state()
+    state["messages"].append(
+        {
+            "role": "user",
+            "content": "Qual prazo de diagnóstico a clínica garante?",
+        }
+    )
+    result = build_scheduling_graph(
+        object(),
+        FakeApiClient(),
+        EmptyRetriever(),
+    ).invoke(state, _config())
+
+    assert len(calls) == 1
+    assert result["structured_response"]["resultado"]["status"] == (
+        "informacao_insuficiente"
+    )
+    assert "Não encontrei uma política aprovada e vigente" in result["answer"]
+    assert result["tool_results"][0]["result"]["suficiencia"] == "insuficiente"
 
 
 def test_scheduling_graph_requires_explicit_approval_before_booking(monkeypatch):

@@ -17,6 +17,7 @@ from ..output_contract import (
     insufficient_response,
     validate_agent_output,
 )
+from ..policy_retrieval import PolicyRetriever
 from .execution import (
     MAX_COMPLETION_TOKENS_PER_CALL,
     MAX_EXTERNAL_CALLS,
@@ -194,6 +195,7 @@ def _error_update(
 def build_scheduling_graph(
     llm_client: llm.OpenAI,
     api_client: tools.ApiClient,
+    policy_retriever: PolicyRetriever | None = None,
 ):
     def call_model(state: SchedulingState) -> dict:
         limit_reason = _limit_reason(state)
@@ -242,6 +244,9 @@ def build_scheduling_graph(
                 messages,
                 max_tokens=min(MAX_COMPLETION_TOKENS_PER_CALL, remaining_tokens),
                 timeout_seconds=timeout_seconds,
+                tool_definitions=tools.get_tool_definitions(
+                    include_policy_retrieval=policy_retriever is not None
+                ),
             )
         except (RuntimeError, TimeoutError, ConnectionError) as error:
             return _error_update(error, state)
@@ -373,6 +378,7 @@ def build_scheduling_graph(
                 name,
                 arguments,
                 authenticated_user=authenticated_user,
+                policy_retriever=policy_retriever,
             )
             messages.append(
                 {
@@ -490,6 +496,51 @@ def build_scheduling_graph(
                 "termination_reason": TerminationReason.NORMAL_COMPLETION.value,
                 "error_class": None,
             }
+
+        pending_tool_calls = state["pending_action"] or []
+        if pending_tool_calls and all(
+            call["function"]["name"] == "consultar_politica"
+            for call in pending_tool_calls
+        ):
+            policy_results = [
+                item["result"]
+                for item in tool_results
+                if item["name"] == "consultar_politica"
+            ]
+            if policy_results and all(
+                isinstance(result, dict)
+                and result.get("suficiencia") == "insuficiente"
+                and not result.get("resultados")
+                for result in policy_results
+            ):
+                answer = (
+                    "Não encontrei uma política aprovada e vigente que "
+                    "sustente essa resposta. Posso ajudar com outra dúvida "
+                    "administrativa ou encaminhar a pergunta para a equipe."
+                )
+                output = insufficient_response(answer, "politica_nao_encontrada")
+                structured_response = output.model_dump(mode="json")
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": json.dumps(structured_response, ensure_ascii=False),
+                    }
+                )
+                return {
+                    "messages": messages,
+                    "pending_action": None,
+                    "pending_message": None,
+                    "tool_results": tool_results,
+                    "approval_result": None,
+                    "approval_decision": None,
+                    "approved_action_key": None,
+                    "completed_actions": completed_actions,
+                    "structured_response": structured_response,
+                    "answer": answer,
+                    **budget_update,
+                    "termination_reason": TerminationReason.NORMAL_COMPLETION.value,
+                    "error_class": None,
+                }
 
         return {
             "messages": messages,
