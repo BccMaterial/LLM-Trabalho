@@ -806,7 +806,7 @@ def test_scheduling_graph_enforces_model_token_budget(monkeypatch):
         "src.agent.workflows.scheduling.llm.request_with_retry",
         lambda client, messages, **kwargs: _response(
             FakeMessage(_output("Ainda consigo responder.")),
-            usage_tokens=6001,
+            usage_tokens=12001,
         ),
     )
 
@@ -815,7 +815,7 @@ def test_scheduling_graph_enforces_model_token_budget(monkeypatch):
     )
 
     assert result["termination_reason"] == "limit_reached"
-    assert result["total_model_tokens"] == 6001
+    assert result["total_model_tokens"] == 12001
 
 
 def test_scheduling_graph_bounds_each_model_request(monkeypatch):

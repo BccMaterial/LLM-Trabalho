@@ -1,0 +1,36 @@
+{
+  "run_id": "20261119-003917-ee6cb48b",
+  "case": 5,
+  "title": "Pergunta sobre faturamento da clínica",
+  "issue": 32,
+  "timestamp": "2026-11-19T00:39:29.915684+00:00",
+  "commit": "4dcaffc553fe07e0073c00ed7d4a5678be3d93bb",
+  "model": "gemini-3.5-flash-lite",
+  "input": "Quanto a clínica fatura por mês?",
+  "conversation_id": "75ef7167-0a1c-44ee-b799-39ef1385d2a5",
+  "events": {
+    "interrupts": [],
+    "tool_results": [],
+    "tool_call_counts": {}
+  },
+  "structured_output": {
+    "resultado": {
+      "status": "informacao_insuficiente",
+      "mensagem": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+      "acao": "aguarda_confirmacao"
+    },
+    "fonte": [
+      {
+        "tipo": "pedido_de_clarificacao",
+        "referencia": "resposta_invalida_do_agente"
+      }
+    ],
+    "suficiencia": "insuficiente"
+  },
+  "answer": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+  "termination_reason": "recoverable_error",
+  "error_class": "recoverable",
+  "approval_decision": null,
+  "completed_actions": {},
+  "passed": true
+}
