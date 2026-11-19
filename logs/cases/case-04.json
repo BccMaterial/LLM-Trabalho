@@ -1,0 +1,57 @@
+{
+  "run_id": "20261119-003917-ee6cb48b",
+  "case": 4,
+  "title": "Agendamento sem login",
+  "issue": 32,
+  "timestamp": "2026-11-19T00:39:26.982723+00:00",
+  "commit": "4dcaffc553fe07e0073c00ed7d4a5678be3d93bb",
+  "model": "gemini-3.5-flash-lite",
+  "input": "Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2090-11-20 das 16:00 às 17:00. Confirmo este agendamento.",
+  "conversation_id": "9731eee6-612d-4003-bf80-06c07cab0c6c",
+  "events": {
+    "interrupts": [],
+    "tool_results": [
+      {
+        "name": "consultar_profissionais",
+        "result": {
+          "value": [
+            {
+              "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+              "nome": "Dra. Profissional da Demonstração"
+            }
+          ]
+        }
+      },
+      {
+        "name": "consultar_disponibilidade",
+        "result": {
+          "disponibilidade": "disponivel"
+        }
+      }
+    ],
+    "tool_call_counts": {
+      "56d6b90826ea2d42c7b71a2505e09d01c140e19452b1e76682dd01d766b59314": 1,
+      "b62cffcd5de85574ec063e1996a7e12f9bd6cbcb110576d305ff3b3359e3b591": 1
+    }
+  },
+  "structured_output": {
+    "resultado": {
+      "status": "informacao_insuficiente",
+      "mensagem": "Para realizar o agendamento, é necessário estar autenticado. Por favor, acesse /login para entrar na sua conta.",
+      "acao": "aguarda_confirmacao"
+    },
+    "fonte": [
+      {
+        "tipo": "pedido_de_clarificacao",
+        "referencia": "autenticacao_necessaria"
+      }
+    ],
+    "suficiencia": "insuficiente"
+  },
+  "answer": "Para realizar o agendamento, é necessário estar autenticado. Por favor, acesse /login para entrar na sua conta.",
+  "termination_reason": "normal_completion",
+  "error_class": null,
+  "approval_decision": null,
+  "completed_actions": {},
+  "passed": true
+}

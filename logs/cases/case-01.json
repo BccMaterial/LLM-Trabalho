@@ -1,0 +1,105 @@
+{
+  "run_id": "20261119-003917-ee6cb48b",
+  "case": 1,
+  "title": "Caminho feliz: login e agendamento confirmado",
+  "issue": 31,
+  "timestamp": "2026-11-19T00:39:20.621509+00:00",
+  "commit": "4dcaffc553fe07e0073c00ed7d4a5678be3d93bb",
+  "model": "gemini-3.5-flash-lite",
+  "input": "Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2095-05-01 das 12:00 às 13:00. Confirmo o agendamento.",
+  "conversation_id": "6ca3b0f6-e1af-4244-8130-2792a94cadf7",
+  "events": {
+    "interrupts": [
+      {
+        "type": "appointment_approval",
+        "action": "confirmar_agendamento",
+        "proposal_version": 1,
+        "arguments": {
+          "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+          "agenda_inicio": "2095-05-01T12:00:00-03:00",
+          "agenda_fim": "2095-05-01T13:00:00-03:00",
+          "suspeita_paciente": "Avaliação neuropsicológica"
+        },
+        "professional_name": "Dra. Profissional da Demonstração",
+        "expires_at": "2026-11-19T00:41:20.597324+00:00",
+        "prompt": "Antes de registrar, confirme o profissional e o horário exatos: Dra. Profissional da Demonstração em 2095-05-01T12:00:00-03:00 a 2095-05-01T13:00:00-03:00. ",
+        "accepted_responses": [
+          "approve",
+          "reject",
+          "edit"
+        ]
+      }
+    ],
+    "tool_results": [
+      {
+        "name": "consultar_profissionais",
+        "result": {
+          "value": [
+            {
+              "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+              "nome": "Dra. Profissional da Demonstração"
+            }
+          ]
+        }
+      },
+      {
+        "name": "consultar_disponibilidade",
+        "result": {
+          "disponibilidade": "disponivel"
+        }
+      },
+      {
+        "name": "confirmar_agendamento",
+        "result": {
+          "agenda_fim": "2095-05-01T13:00:00-03:00",
+          "agenda_inicio": "2095-05-01T12:00:00-03:00",
+          "created_at": "2026-11-19T00:39:20.618566+00:00",
+          "id": "9bcdf1c3-53fc-4abc-a6bd-883d5a1f2a3d",
+          "id_paciente": "40b83e1f-0ce6-466d-9fa3-3e249d015692",
+          "id_profissional": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+          "patient_id": "40b83e1f-0ce6-466d-9fa3-3e249d015692",
+          "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+          "status": "Pendente",
+          "suspeita_paciente": "Avaliação neuropsicológica",
+          "updated_at": "2026-11-19T00:39:20.618569+00:00"
+        }
+      }
+    ],
+    "tool_call_counts": {
+      "56d6b90826ea2d42c7b71a2505e09d01c140e19452b1e76682dd01d766b59314": 1,
+      "c4a1857ca666307b62a852b6c947e9153481b0cea53e891e3b00e3cbde98ce90": 1
+    }
+  },
+  "structured_output": {
+    "resultado": {
+      "status": "agendamento_confirmado",
+      "mensagem": "O agendamento foi confirmado para 2095-05-01T12:00:00-03:00 a 2095-05-01T13:00:00-03:00.",
+      "acao": "concluida"
+    },
+    "fonte": [
+      {
+        "tipo": "api",
+        "referencia": "confirmar_agendamento"
+      }
+    ],
+    "suficiencia": "suficiente"
+  },
+  "answer": "O agendamento foi confirmado para 2095-05-01T12:00:00-03:00 a 2095-05-01T13:00:00-03:00.",
+  "termination_reason": "normal_completion",
+  "error_class": null,
+  "approval_decision": null,
+  "completed_actions": {
+    "229a710ccefe5d9def1dd37a9ad76eb8f64cb3c7aa0b3dd80b895f4891a2b7f0": {
+      "id": "9bcdf1c3-53fc-4abc-a6bd-883d5a1f2a3d",
+      "agenda_inicio": "2095-05-01T12:00:00-03:00",
+      "agenda_fim": "2095-05-01T13:00:00-03:00"
+    }
+  },
+  "passed": true,
+  "setup": {
+    "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+    "agenda_inicio": "2095-05-01T12:00:00",
+    "agenda_fim": "2095-05-01T13:00:00",
+    "sensitive": false
+  }
+}

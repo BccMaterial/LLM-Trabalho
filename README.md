@@ -109,6 +109,19 @@ poetry run python -m src.agent.benchmark --dry-run
 poetry run python -m src.agent.benchmark
 ```
 
+Casos demonstrados das issues #31 e #32 (API e modelo reais):
+
+```bash
+poetry run python cases.py
+poetry run python cases.py --case 1
+```
+
+Cada execução grava `logs/cases/case-01.json` a
+`logs/cases/case-06.json`. Os arquivos incluem `run_id`, commit, timestamp,
+entrada, ferramentas, decisões e saída final. Senhas, cookies e tokens não são
+exportados. Os dados de demonstração são sintéticos e não representam uma
+clínica real.
+
 Para repetir os casos três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As tarifas configuradas estimam o custo em faixa paga; na faixa gratuita da Groq ou do Gemini há limites de uso e as solicitações permitidas dentro deles não geram cobrança. `--dry-run` não envia chamadas.
 
 Os relatórios Markdown, JSON e CSV são gravados em `logs/model-benchmark/`. A rodada `20261117-212956-dff568` contém a revisão qualitativa das 21 respostas conferida pelo grupo. O grupo selecionou Gemini 3.5 Flash-Lite para continuar o protótipo com base nos resultados; o programa não escolhe vencedor automaticamente. Novas rodadas deixam as colunas de revisão vazias. A projeção semestral usa 182 dias e só é calculada quando `--daily-volume` é fornecido.

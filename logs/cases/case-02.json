@@ -1,0 +1,50 @@
+{
+  "run_id": "20261119-003917-ee6cb48b",
+  "case": 2,
+  "title": "Profissional inexistente",
+  "issue": 31,
+  "timestamp": "2026-11-19T00:39:22.780985+00:00",
+  "commit": "4dcaffc553fe07e0073c00ed7d4a5678be3d93bb",
+  "model": "gemini-3.5-flash-lite",
+  "input": "Quero agendar uma avaliação com a profissional inexistente Dr. Inexistente no dia 2092-09-26 das 15:00 às 16:00.",
+  "conversation_id": "1d43d23d-e607-49cc-bc74-c8a94dc81b72",
+  "events": {
+    "interrupts": [],
+    "tool_results": [
+      {
+        "name": "consultar_profissionais",
+        "result": {
+          "value": [
+            {
+              "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+              "nome": "Dra. Profissional da Demonstração"
+            }
+          ]
+        }
+      }
+    ],
+    "tool_call_counts": {
+      "56d6b90826ea2d42c7b71a2505e09d01c140e19452b1e76682dd01d766b59314": 1
+    }
+  },
+  "structured_output": {
+    "resultado": {
+      "status": "informacao_insuficiente",
+      "mensagem": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+      "acao": "aguarda_confirmacao"
+    },
+    "fonte": [
+      {
+        "tipo": "pedido_de_clarificacao",
+        "referencia": "resposta_invalida_do_agente"
+      }
+    ],
+    "suficiencia": "insuficiente"
+  },
+  "answer": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+  "termination_reason": "recoverable_error",
+  "error_class": "recoverable",
+  "approval_decision": null,
+  "completed_actions": {},
+  "passed": true
+}
