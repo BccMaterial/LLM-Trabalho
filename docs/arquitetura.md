@@ -2,11 +2,92 @@
 
 > Este documento descreve o desenho-alvo. O repositório tem uma API local de usuários/agendamentos e um Atendente com ferramentas HTTP básicas; não há integração com clínica real, consulta de horários livres, nem os três agentes especializados.
 
+## Grafo implementado do Atendente
+
+O fluxo executado pelo CLI é compilado por
+`src/agent/workflows/scheduling.py::build_scheduling_graph`. Este é o fluxo
+real; não inclui os agentes Gestor/Secretária nem os nós futuros de RAG.
+Orçamento de execução, expiração da aprovação, classificação de término e
+detecção de chamadas repetidas são implementados no grafo.
+
+```text
+START
++-- ação pendente e sem decisão ------> validar profissional, se necessário
+|                                         +-- profissional válido -> request_approval
++-- caso contrário -------------------> call_model
+
+call_model
++-- resposta final/limite/erro -------> END
++-- agendamento sem login ------------> require_authentication -> END
++-- agendamento autenticado ---------> validate_professional
++-- outra tool call -----------------> dispatch_tools
+
+validate_professional
++-- profissional válido -------------> request_approval
++-- erro ou limite ------------------> END
+
+request_approval
++-- aprovado ------------------------> revalidate_availability
++-- editado -------------------------> validate_professional -> request_approval
++-- resposta inválida ---------------> END (proposta pode ser retomada)
++-- rejeição/expiração/erro ---------> END
+
+revalidate_availability
++-- horário disponível -------------> dispatch_tools
++-- indisponível/erro/limite --------> END
+
+dispatch_tools
++-- término final/erro/limite -------> END
++-- caso contrário -------------------> call_model
+```
+
+Para inspecionar o objeto compilado usado pelo agente, execute da raiz:
+
+```text
+poetry run python conferir_grafo.py
+```
+
+O script importa `build_scheduling_graph` e compila esse mesmo grafo com
+dependências placeholder; não cria um grafo paralelo nem chama LLM/API.
+Saída atual:
+
+```text
+Nos:
+  __end__
+  __start__
+  call_model
+  dispatch_tools
+  request_approval
+  require_authentication
+  revalidate_availability
+  validate_professional
+Arestas:
+  __start__ -> call_model [condicional]
+  __start__ -> request_approval [condicional]
+  __start__ -> validate_professional [condicional]
+  call_model -> __end__ [condicional]
+  call_model -> dispatch_tools [condicional]
+  call_model -> request_approval [condicional]
+  call_model -> require_authentication [condicional]
+  call_model -> validate_professional [condicional]
+  dispatch_tools -> __end__ [condicional]
+  dispatch_tools -> call_model [condicional]
+  request_approval -> __end__ [condicional]
+  request_approval -> request_approval [condicional]
+  request_approval -> revalidate_availability [condicional]
+  request_approval -> validate_professional [condicional]
+  require_authentication -> __end__ [condicional]
+  revalidate_availability -> __end__ [condicional]
+  revalidate_availability -> dispatch_tools [condicional]
+  validate_professional -> __end__ [condicional]
+  validate_professional -> request_approval [condicional]
+```
+
 ## Resumo do sistema
 
 O sistema atende pacientes e responsáveis de uma clínica de avaliações neuropsicológicas por mensagens. Um controlador em código coordena três agentes especializados: Atendente, Gestor e Secretária. Eles consultam dados autorizados na API, mantêm a agenda e as pendências como fonte de verdade e devolvem respostas com fonte e suficiência. O modelo interpreta linguagem e prepara decisões; código valida regras e executa ferramentas. Agendamento só é gravado depois da confirmação do paciente.
 
-## Diagrama
+## Diagrama da arquitetura-alvo
 
 ```mermaid
 flowchart TD

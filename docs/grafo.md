@@ -1,161 +1,136 @@
 # Grafo do agente
 
-> O fluxo de agendamento já usa `StateGraph` e LangGraph checkpointing em
-> memória. Os nós de RAG e Gestor continuam como proposta até serem implementados.
+Este documento descreve o grafo compilado por
+`src/agent/workflows/scheduling.py::build_scheduling_graph`, usado pelo CLI em
+`src/agent/cli.py::run_scheduling_flow`. O diagrama-alvo da arquitetura não
+representa funcionalidades que ainda não existem; este arquivo registra o
+comportamento executado.
 
-## 1. O que roda hoje
+## Inspecionar o grafo compilado
 
-`src/agent/app.py::run_scheduling_flow` mantém a conversa em uma lista `messages`
-durante o processo. A cada rodada, envia as mensagens e as ferramentas ao LLM.
-O terminal inicia em modo convidado e aceita `/login`, `/help` e `/sair`.
-Uma sessão técnica separada autentica as chamadas do agente à API; os dados da
-conta do usuário autenticado ficam em estado separado e nunca são enviados ao
-LLM como texto ou credencial. O login identifica o usuário para operações de
-agendamento, mas não filtra a consulta de agendamentos por paciente.
-Se o modelo pedir uma ferramenta, o código a executa, acrescenta o resultado à
-conversa e chama o modelo novamente. Se não pedir ferramenta, mostra a resposta
-e, no modo interativo, aguarda outra mensagem do paciente.
+Na raiz do repositório, execute:
 
 ```text
-START
-  → criar sessão na API
-  → receber mensagem do paciente
-  → chamar LLM com histórico e ferramentas
-      ├─ sem tool call → mostrar resposta
-      │    ├─ modo não interativo → END
-      │    ├─ paciente encerra/EOF → END
-      │    └─ nova mensagem → chamar LLM
-      └─ com tool call → despachar ferramenta
-           ├─ consultar_disponibilidade → consultar API → acrescentar retorno → chamar LLM
-           ├─ confirmar_agendamento → criar agendamento na API → acrescentar retorno → chamar LLM
-           └─ ferramenta desconhecida → erro
-  → depois de 5 rodadas de ferramentas → resposta de limite → END
+poetry run python conferir_grafo.py
 ```
 
-O código repete chamadas ao LLM quando recebe `RateLimitError`, até cinco
-tentativas, com espera exponencial iniciada em cinco segundos. Erros HTTP do
-LLM, de conexão ou da API terminam a execução com erro. Não há limite total de
-tempo ou tokens declarado no código.
+O script importa e compila `build_scheduling_graph`, o mesmo builder usado
+pelo CLI. As dependências são placeholders apenas durante a compilação; o
+script não executa nós nem faz chamadas ao LLM ou à API. A saída atual está
+registrada junto ao diagrama em [`arquitetura.md`](./arquitetura.md).
+`__start__` e `__end__` são sentinelas do LangGraph, não nós de negócio.
 
-### Nós e decisões atuais
+## Nós executados
 
-| Etapa/nó lógico | O que faz | Chama LLM? | Quem decide o próximo passo | Estado observado |
-|---|---|---:|---|---|
-| `abrir_sessao_tecnica` | Autentica a conta própria do agente na API e guarda o cookie técnico no `ApiClient` | Não | Código | `agent_session_cookie` no cliente |
-| `login_usuario` | `/login` autentica a conta do usuário no terminal e guarda apenas sua identidade local | Não | Pessoa fornece e-mail/senha; código valida a resposta da API | `authenticated_user` no estado |
-| `receber_mensagem` | Lê a mensagem inicial ou a próxima mensagem interativa | Não | Pessoa fornece a próxima entrada; código encerra por comando/EOF | Texto local |
-| `consultar_llm` | Envia histórico e definições de ferramentas | Sim | Modelo escolhe resposta ou tool call | Lista `messages` |
-| `consultar_disponibilidade` | Consulta agendamentos na API; pode resolver identificador de paciente | Não | Código despacha a função pedida pelo modelo | Retorno da API em `messages` |
-| `confirmar_agendamento` | Envia os argumentos recebidos para criar agendamento na API | Não | Código despacha a função pedida pelo modelo | Retorno da API em `messages` |
-| `responder_ou_limitar` | Mostra resposta final ou informa que o limite de rodadas foi atingido | Não | Código | Texto da resposta |
-
-As arestas para as duas ferramentas são escolhidas pelo modelo a partir das
-tool calls. Antes de `confirmar_agendamento`, o nó `request_approval` usa
-`interrupt`, associado ao `thread_id` da conversa e ao checkpointer em memória.
-A aprovação, rejeição ou edição é retomada por `Command(resume=...)`. Após
-aprovação, o grafo reconsulta a disponibilidade antes do despacho da escrita.
-Ver os pontos de aprovação e o fluxo esperado em [`humano.md`](./humano.md).
-
-## 2. Grafo proposto para LangGraph
-
-O diagrama abaixo é um alvo para implementação, não uma descrição do código
-atual. Os pontos `interrupt` devem ocorrer antes de qualquer efeito externo.
-
-```text
-START
-  → receber_mensagem
-  → chamar_modelo
-      ├─ resposta sem ferramenta → validar_saida → responder →
-      │    ├─ continuar conversa → receber_mensagem
-      │    └─ encerrar → END
-      ├─ tool call de consulta → validar_argumentos
-      │    → consultar_disponibilidade → anexar_resultado → chamar_modelo
-      └─ tool call de escrita → validar_argumentos
-           → preparar_proposta
-           → interrupt: paciente/gestor confirma, rejeita ou edita
-                ├─ rejeita → responder_sem_escrita → END/continuar
-                ├─ edita → validar_edicao → preparar_proposta → interrupt
-                └─ aprova → revalidar_dados_e_permissão
-                     → aplicar_escrita_idempotente → anexar_resultado
-                     → chamar_modelo
-
-Fluxo de publicação de política (ingestão, antes de uso no RAG):
-  receber_documento → validar_metadados → interrupt: responsável aprova?
-      ├─ rejeita → manter_fora_do_índice → END
-      └─ aprova → indexar_versão_aprovada → END
-```
-
-O Gestor usa o mesmo padrão de aprovação para criação, atualização e remoção
-de recursos: apresentar recurso e argumentos exatos, pausar, validar a
-resposta, e só então executar a operação autorizada. Os tipos de recurso e a
-semântica de remoção ainda precisam ser definidos com a clínica.
-
-## 3. Padrões e autonomia
-
-| Padrão | Onde se aplica | Justificativa inicial | Quando não usar |
-|---|---|---|---|
-| Agente com ferramentas/laço limitado | Interpretação de texto livre e escolha entre consultar, propor ou responder | O modelo pode precisar escolher uma ferramenta conforme a intenção; o laço tem teto de rodadas | Se regras determinísticas cobrirem as rotas, preferir router/workflow em código |
-| Sequencial com portão | Confirmação humana antes de gravar agendamento ou alterar recurso | A escrita só prossegue depois de aprovação para argumentos específicos | Não é necessário para consulta somente leitura |
-| Router | Separar os fluxos de agendamento, orientação, documento/RAG e gestão | Permite encaminhar tarefas a nós especializados com rotas limitadas | Se houver uma única tarefa e nenhuma escolha de rota |
-
-Esta justificativa ainda é preliminar. Com o grafo implementado, registrar no
-diagrama qual decisão concreta depende do modelo. Para cada aresta condicional,
-indicar se decide uma regra em código, uma busca por embedding ou o modelo.
-Quando o modelo escolher uma rota, restringir a saída às rotas válidas por
-schema e validar em código.
-
-## 4. Estado do grafo
-
-No código atual, o histórico é uma lista `messages` em memória e o cookie da
-API fica no `ApiClient`. Não há estado tipado de LangGraph, reducer,
-checkpointer ou persistência entre processos.
-
-Tabela a completar quando o estado do grafo for implementado:
-
-| Campo | Tipo | Quem escreve | Quem lê | Origem | Reducer/justificativa |
-|---|---|---|---|---|---|
-| `messages` | Lista de mensagens | Nós de conversa e ferramentas | Nó do LLM | Paciente, modelo e ferramentas | A definir; preservar ordem das mensagens |
-| `conversation_id` / `thread_id` | Identificador | Entrada/controlador | Checkpointer e nós de retomada | Metadado da conversa | Não acumulado |
-| `tool_rounds` | Inteiro | Código | Roteamento/limite | Contador da execução | Atualização determinística |
-| `pending_action` | Objeto de proposta | Nó que prepara escrita | Nó de aprovação e retomada | Tool call validada | Sobrescrita controlada; uma ação pendente por thread, se essa for a decisão |
-| `approval_result` | Objeto/status | Retomada humana | Nó de validação | Resposta da pessoa | Não deve misturar aprovações de ações diferentes |
-| `tool_results` | Lista de resultados | Nós de ferramenta | Nó do LLM/verificador | API/RAG | Definir reducer se houver ramos paralelos |
-
-Separar mensagens conversacionais do estado operacional. Identificadores,
-contadores, estado da aprovação e resultados validados devem ser campos
-explícitos. Não copiar conteúdo clínico para o estado sem necessidade. Se
-houver vários agentes, documentar o contrato mínimo que cada um recebe e
-devolve.
-
-Não há paralelismo no fluxo atual, portanto não há reducer concorrente a
-justificar nem demonstração de sobrescrita entre ramos. Se o grafo passar a ter
-ramos paralelos que acumulam resultados, definir o reducer de cada campo e
-registrar uma execução comparando o resultado com e sem esse reducer.
-
-## 5. Limites, término e erros
-
-| Limite/saída | Situação atual | Decisão necessária para o grafo |
+| Nó | Responsabilidade | Decisão e estado principal |
 |---|---|---|
-| Rodadas de tool call | `MAX_TOOL_ROUNDS = 5` | Manter como parâmetro explícito e definir saída segura ao atingir o teto |
-| Tentativas por rate limit | `MAX_LLM_RETRIES = 5` | Preservar no desenho e documentar erros fatais versus repetíveis |
-| Espera entre tentativas | `RETRY_BACKOFF_SECONDS = 5`, exponencial | Definir teto total de espera/tempo da execução |
-| Tokens e duração total | Sem teto no código | Definir e aplicar limites explícitos |
-| Pausa humana sem resposta | Não implementada | Definir prazo; expirar ou encaminhar sem aprovar automaticamente |
-| Erro da API | Vira `RuntimeError` | Modelar como estado/saída recuperável ou fatal, conforme erro |
-| Repetição de escrita | Sem chave de idempotência no fluxo do agente | Derivar chave da ação aprovada e evitar duplicidade |
+| `call_model` | Envia histórico e ferramentas ao LLM, valida a resposta e registra tool calls | O modelo escolhe responder ou solicitar ferramenta; o nó aplica orçamento, conta tokens e atualiza `messages`, `pending_action`, `round_count` e `proposal_version` |
+| `validate_professional` | Confere se o profissional da proposta está ativo | Código lê `pending_action`, consulta a API e escreve `professional_name` e `professional_validated` |
+| `request_approval` | Solicita aprovação dos argumentos exatos da proposta | `actions.request_appointment_approval` chama `interrupt`; registra decisão, chave idempotente e prazo de aprovação |
+| `revalidate_availability` | Consulta novamente a disponibilidade após a aprovação | Código preserva ou limpa `pending_action` antes de permitir a escrita |
+| `dispatch_tools` | Executa tool calls e anexa resultados; evita repetir uma ação concluída | Exige aprovação para `confirmar_agendamento`, atualiza `tool_results` e `completed_actions`; também aplica o orçamento |
+| `require_authentication` | Informa que `/login` é necessário para agendar | Encerra o turno sem executar a escrita |
 
-O término deve distinguir ao menos: resposta concluída, usuário encerrou,
-recusa/insuficiência, limite atingido, ação rejeitada, aprovação expirada,
-erro recuperável e erro fatal. `MAX_TOOL_ROUNDS` limita iterações; não é, por
-si só, detector de laço improdutivo.
+O CLI mantém o loop de conversa fora do grafo. Ele reinicia os contadores por
+turno, estabelece um deadline, invoca o grafo e imprime a resposta. Para uma
+proposta interrompida, retoma com `Command(resume=...)` usando o mesmo
+`thread_id`.
 
-## 6. Conferência entre desenho e implementação
+## Arestas e decisões de roteamento
 
-O grafo de agendamento é compilado em
-`src/agent/workflows/scheduling.py::build_scheduling_graph` com
-`MemorySaver`. O CLI fornece um `thread_id` estável por conversa e envia
-`Command(resume=...)` para retomar uma proposta interrompida.
+As bifurcações condicionais são decididas por funções/lambdas em Python. O
+modelo escolhe uma resposta ou tool call; não escolhe os destinos do grafo.
+Não há roteamento por embedding.
 
-O comportamento de confirmação, edição, rejeição, expiração e repetição deve
-ser conferido com execuções registradas em `logs/`; detalhes dos responsáveis e
-dos pontos de aprovação estão em [`humano.md`](./humano.md).
+| Origem | Quem decide | Condição | Destino |
+|---|---|---|---|
+| `START` | `route_from_start` (código) | Há ação pendente sem resultado de aprovação; o profissional já foi validado | `request_approval` |
+| `START` | `route_from_start` (código) | Há ação pendente sem resultado de aprovação; o profissional ainda precisa ser validado | `validate_professional` |
+| `START` | `route_from_start` (código) | Não há ação aguardando aprovação | `call_model` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) verifica o estado | Há término ou não há tool call pendente | `END` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) verifica autenticação | Ação é agendamento e não há `authenticated_user` | `require_authentication` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) valida o destino | Ação é agendamento autenticado | `validate_professional` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) valida o destino | Outra tool call | `dispatch_tools` |
+| `validate_professional` | `route_after_professional_validation` (código) | A validação terminou com erro ou limite | `END` |
+| `validate_professional` | `route_after_professional_validation` (código) | Profissional válido | `request_approval` |
+| `request_approval` | `route_after_approval` (código) | Ação aprovada | `revalidate_availability` |
+| `request_approval` | `route_after_approval` (código) | Ainda não há decisão; a proposta requer validação do profissional | `validate_professional` |
+| `request_approval` | `route_after_approval` (código) | Ainda não há decisão; o profissional já foi validado | `request_approval` |
+| `request_approval` | `route_after_approval` (código) | Resposta inválida, marcada como `approval_decision="invalid"`; mantém a ação pendente para a próxima invocação | `END` |
+| `request_approval` | `route_after_approval` (código) | Ação rejeitada, aprovação expirada ou outro término | `END` |
+| `revalidate_availability` | Lambda do grafo (código) | `pending_action` permanece definida após revalidar | `dispatch_tools` |
+| `revalidate_availability` | Lambda do grafo (código) | Proposta inválida, horário indisponível, erro ou limite | `END` |
+| `dispatch_tools` | `route_after_tools` (código) | Há motivo de término ou status final de agendamento | `END` |
+| `dispatch_tools` | `route_after_tools` (código) | Ainda há trabalho no turno | `call_model` |
+| `require_authentication` | Lambda constante do grafo | Sempre | `END` |
+
+Os limites são retornados pelos próprios nós como estado terminal; não existe
+um nó `limit_reached` separado. A lista de nós e arestas extraída do objeto
+compilado está em [`arquitetura.md`](./arquitetura.md).
+
+## Estado, leitores, escritores e reducers
+
+`SchedulingState` é um `TypedDict`. O CLI cria os valores iniciais e o grafo
+usa `MemorySaver` com `thread_id=conversation_id`. Nenhum campo declara reducer
+LangGraph: a atualização padrão substitui o valor do campo. Quando um nó
+acrescenta mensagens/resultados, ele copia a lista, inclui os itens e devolve
+a lista completa. Não há ramos paralelos nem escritas concorrentes.
+
+| Campo | Escritores | Leitores | Reducer |
+|---|---|---|---|
+| `messages` | CLI, `call_model`, `dispatch_tools`, `request_approval`, erros em `revalidate_availability` | `call_model`, `dispatch_tools`, `request_approval`, CLI | Substituição; alguns nós concatenam manualmente |
+| `conversation_id` | CLI | `actions.approved_action_key`; CLI usa como `thread_id` | Substituição |
+| `round_count` | CLI reinicia por turno; `call_model` incrementa | `route_after_tools` | Substituição |
+| `pending_action` | `call_model`, edição/rejeição em `request_approval`, `dispatch_tools`, `revalidate_availability` | Roteamento, `request_approval`, `dispatch_tools`, `revalidate_availability`, CLI | Substituição |
+| `pending_message` | `call_model`; `dispatch_tools` e `request_approval` limpam | `dispatch_tools`, `request_approval` | Substituição |
+| `approval_result` | `request_approval`; CLI e `dispatch_tools` limpam | Roteamento, `dispatch_tools`, CLI | Substituição |
+| `tool_results` | CLI inicia/limpa; `dispatch_tools` acrescenta | `call_model`, `dispatch_tools`, `booking_result_response` | Substituição; `dispatch_tools` concatena manualmente |
+| `structured_response` | `call_model`, `dispatch_tools`, respostas terminais | `route_after_tools` | Substituição |
+| `answer` | `call_model`, `dispatch_tools`, `request_approval`, `require_authentication`, `revalidate_availability` | CLI | Substituição |
+| `authenticated_user` | CLI após `/login` | `call_model`, roteamento, `execute_tool_calls` | Substituição |
+| `approval_decision` | `request_approval`; `dispatch_tools` limpa | `route_after_approval` | Substituição |
+| `proposal_version` | `call_model` ao propor agendamento; `request_approval` ao editar | `call_model`, `request_approval` | Substituição |
+| `approved_action_key` | `request_approval` ao aprovar; `dispatch_tools` e erros limpam | `dispatch_tools` | Substituição |
+| `completed_actions` | `dispatch_tools` | `dispatch_tools` | Substituição; cópia e atualização manual |
+| `approval_expires_at` | `call_model` ao propor; `actions` ao aprovar, editar ou encerrar | `actions.request_appointment_approval` | Substituição |
+| `professional_name` | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | `request_approval`, `actions`, CLI lê o payload do interrupt | Substituição |
+| `professional_validated` | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | Roteamento, `request_approval` | Substituição |
+| `execution_deadline` | CLI inicia por turno | Nós que verificam limite; `ApiClient` recebe o mesmo deadline | Substituição |
+| `workflow_step_count` | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason` | Substituição |
+| `external_call_count` | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason`, `dispatch_tools` | Substituição |
+| `total_model_tokens` | `call_model`; CLI reinicia por turno | `call_model`, `_limit_reason` | Substituição |
+| `tool_call_counts` | `call_model`; CLI reinicia por turno | `call_model` | Substituição; o nó copia e atualiza manualmente |
+| `termination_reason` | Nós e `actions`; CLI define `user_exit` ou limpa por turno | Roteamento | Substituição |
+| `error_class` | Nós de erro; CLI limpa por turno | Consumidor do estado final | Substituição |
+
+`agent_session_cookie` e `user_session_cookie` pertencem ao `ApiClient`, não
+ao `SchedulingState`. O `thread_id` também é metadado de configuração do
+checkpointer, não um campo do estado.
+
+## Padrões e limites conhecidos
+
+- **Agente com ferramentas e loop limitado:** escolhido porque a mensagem
+  livre pode pedir uma consulta ou um agendamento; o modelo propõe resposta ou
+  tool call, e o código valida e executa apenas as ferramentas declaradas. Os
+  limites impedem chamadas sem controle.
+- **Workflow sequencial com aprovação humana:** usado porque a gravação altera
+  a agenda; a proposta pausa antes da escrita, o código valida o profissional
+  e revalida o horário após a aprovação.
+- **Roteamento determinístico em código:** autenticação, aprovação,
+  revalidação, término e erro dependem do estado e de regras de segurança; o
+  modelo não escolhe esses destinos.
+- **Sem paralelismo:** cada transição executa um único nó. Não há reducers de
+  agregação nem agentes Gestor/Secretária ou nós de RAG no grafo atual.
+- **Orçamento por turno:** 8 etapas, 10 chamadas externas, 6.000 tokens
+  reportados, 120 segundos; até 1.000 tokens por resposta e timeout de até 30
+  segundos por chamada. O CLI também configura `recursion_limit=32`.
+- **Término e erro:** o estado distingue conclusão normal, saída do usuário,
+  limite, ação rejeitada, aprovação expirada, loop improdutivo, erro
+  recuperável e erro fatal; a classe de erro é `recoverable` ou `fatal`.
+- **Detecção de repetição:** uma tool call de leitura idêntica é identificada
+  pelo hash de nome e argumentos; `MAX_IDENTICAL_TOOL_CALLS=1` encerra o fluxo
+  antes de executar a repetição.
+- **Aprovação e idempotência:** a aprovação expira após 120 segundos. A chave
+  identifica conversa, ferramenta e argumentos canônicos; `completed_actions`
+  evita repetir a escrita no checkpoint em memória. Não há persistência entre
+  reinícios nem proteção para a janela entre a escrita externa e o checkpoint.
