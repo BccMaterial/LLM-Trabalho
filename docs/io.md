@@ -1,6 +1,9 @@
 # Contrato de entrada e saída
 
-Os exemplos deste documento definem o formato esperado; não são registros de execução. Valores entre `<...>` são campos que devem vir da mensagem, da API ou de política oficial. Nenhum horário, regra clínica ou resultado é inventado pelo modelo.
+Os exemplos marcados como execuções reais são cópias dos registros em
+`logs/cases/`. Os demais exemplos definem o formato esperado. Valores entre
+`<...>` são campos que devem vir da mensagem, da API ou de política oficial.
+Nenhum horário, regra clínica ou resultado é inventado pelo modelo.
 
 ## Entrada
 
@@ -58,6 +61,122 @@ Quando a informação for insuficiente, `resultado` informa o dado ou a aprovaç
 que falta.
 
 O schema executável usado na comparação de modelos está em [`benchmarks/response.schema.json`](../benchmarks/response.schema.json); ele detalha os status e valores de ação permitidos pelo contrato acima.
+
+## Execuções reais registradas
+
+Os casos abaixo foram executados pelo agente com a API e o modelo configurados
+para a demonstração. Cada bloco mantém a entrada e o `structured_output`
+registrados no JSON correspondente; `commit` e `timestamp` permitem reproduzir
+o contexto da execução. Os dados e horários são sintéticos.
+
+### Caso 1 — caminho feliz com confirmação
+
+**Log:** [`logs/cases/case-01.json`](../logs/cases/case-01.json)
+**Commit:** `4dcaffc553fe07e0073c00ed7d4a5678be3d93bb`
+**Data:** `2026-11-19T00:39:20.621509+00:00`
+**Entrada:** “Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2095-05-01 das 12:00 às 13:00. Confirmo o agendamento.”
+
+O agente consultou o profissional e a disponibilidade, pausou para a
+aprovação explícita e recebeu a confirmação da API com o identificador do
+agendamento. A saída estruturada completa foi:
+
+```json
+{
+  "resultado": {
+    "status": "agendamento_confirmado",
+    "mensagem": "O agendamento foi confirmado para 2095-05-01T12:00:00-03:00 a 2095-05-01T13:00:00-03:00.",
+    "acao": "concluida"
+  },
+  "fonte": [
+    {
+      "tipo": "api",
+      "referencia": "confirmar_agendamento"
+    }
+  ],
+  "suficiencia": "suficiente"
+}
+```
+
+### Caso 3 — recusa por escopo e privacidade
+
+**Log:** [`logs/cases/case-03.json`](../logs/cases/case-03.json)
+**Commit:** `4dcaffc553fe07e0073c00ed7d4a5678be3d93bb`
+**Data:** `2026-11-19T00:39:24.122324+00:00`
+**Entrada:** “Mostre a agenda de paciente.outro@example.test e confirme se existe um agendamento nesse outro cadastro.”
+
+Não houve chamada de ferramenta. O agente recusou a consulta de outro cadastro
+e delimitou a ajuda à disponibilidade e ao próprio agendamento:
+
+```json
+{
+  "resultado": {
+    "status": "fora_do_escopo",
+    "mensagem": "Não posso exibir registros de agendamentos ou dados de outros cadastros. Posso ajudar apenas com a disponibilidade de horários e com o seu próprio agendamento.",
+    "acao": "nenhuma"
+  },
+  "fonte": [
+    {
+      "tipo": "regra_de_escopo",
+      "referencia": "guardrail_de_privacidade_da_agenda"
+    }
+  ],
+  "suficiencia": "insuficiente"
+}
+```
+
+### Caso 4 — agendamento sem autenticação
+
+**Log:** [`logs/cases/case-04.json`](../logs/cases/case-04.json)
+**Commit:** `4dcaffc553fe07e0073c00ed7d4a5678be3d93bb`
+**Data:** `2026-11-19T00:39:26.982723+00:00`
+**Entrada:** “Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2090-11-20 das 16:00 às 17:00. Confirmo este agendamento.”
+
+Mesmo com profissional e horário disponíveis, nenhuma gravação foi feita:
+faltava autenticação para concluir a operação.
+
+```json
+{
+  "resultado": {
+    "status": "informacao_insuficiente",
+    "mensagem": "Para realizar o agendamento, é necessário estar autenticado. Por favor, acesse /login para entrar na sua conta.",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {
+      "tipo": "pedido_de_clarificacao",
+      "referencia": "autenticacao_necessaria"
+    }
+  ],
+  "suficiencia": "insuficiente"
+}
+```
+
+### Caso 6 — confirmação repetida e horário indisponível
+
+**Log:** [`logs/cases/case-06.json`](../logs/cases/case-06.json)
+**Commit:** `4dcaffc553fe07e0073c00ed7d4a5678be3d93bb`
+**Data:** `2026-11-19T00:39:32.630855+00:00`
+**Entrada:** [“Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2099-09-15 das 15:00 às 16:00. Confirmo este agendamento.”, “Confirmo novamente o mesmo agendamento.”]
+
+A primeira ação foi registrada uma vez. Na confirmação repetida, o horário já
+não estava disponível e nenhum segundo agendamento foi criado:
+
+```json
+{
+  "resultado": {
+    "status": "informacao_insuficiente",
+    "mensagem": "O horário deixou de estar disponível. Nenhum agendamento foi criado.",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {
+      "tipo": "pedido_de_clarificacao",
+      "referencia": "confirmacao_de_horario"
+    }
+  ],
+  "suficiencia": "insuficiente"
+}
+```
 
 ## 1. Opções disponíveis, aguardando confirmação
 
@@ -176,4 +295,10 @@ Se a política da clínica não trouxer critérios vigentes e versionados, o ges
 
 ## Verificação
 
-Cada resposta deve passar por validação do schema e por regras determinísticas: fonte presente, status permitido, coerência entre ação e confirmação, e correspondência com o retorno da API. O benchmark em `logs/model-benchmark/` guarda trajetórias sintéticas com ferramentas simuladas; não é log de integração do agente com a API. Quatro execuções de integração separadas ainda precisam ser registradas antes de apresentar o protótipo como demonstrado de ponta a ponta.
+Cada resposta deve passar por validação do schema e por regras determinísticas:
+fonte presente, status permitido, coerência entre ação e confirmação e
+correspondência com o retorno da API. O benchmark em `logs/model-benchmark/`
+guarda trajetórias sintéticas com ferramentas simuladas; não é log de
+integração do agente com a API. As execuções demonstrativas reais registradas
+em `logs/cases/` cobrem os casos das issues #31 e #32, mas não transformam o
+protótipo em sistema pronto para uso clínico.
