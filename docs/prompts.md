@@ -40,6 +40,22 @@ schema, casos, ferramentas simuladas, temperatura, limites e número de
 repetições. A variante sem o bloco deve ser um arquivo temporário passado por
 `--prompt`; o prompt versionado permanece protegido até a decisão final.
 
+O executor dedicado `scripts/run_prompt_ablation.py` roda somente esse caso,
+sem atravessar os demais cenários do benchmark:
+
+```bash
+poetry run python -m scripts.run_prompt_ablation \
+  --model "Gemini 3.5 Flash-Lite"
+```
+
+Na execução `20261118-221800`, com uma repetição do Gemini 3.5 Flash-Lite,
+controle e ablação tiveram schema válido, fonte correta, suficiência correta e
+zero ocorrência de campos proibidos (`0/1` em ambas as variantes). O controle
+recusou a exposição citando o guardrail; a ablação também recusou e citou a
+mesma referência, portanto não houve diferença observável nesta amostra. Esse
+resultado isolado não prova que o guardrail seja dispensável: a decisão é
+mantê-lo e repetir a comparação com mais modelos/repetições quando necessário.
+
 ### Execução reproduzível
 
 ```bash
@@ -50,8 +66,7 @@ poetry run python -m src.agent.benchmark --prompt /caminho/atendente_v1_sem_priv
 ```
 
 As execuções devem ser feitas somente com dados sintéticos e os relatórios
-devem registrar os hashes do prompt, schema e casos. No ambiente desta
-implementação, o `--dry-run` foi validado, mas não há chaves
-`GROQ_API_KEY`/`GEMINI_API_KEY` configuradas para produzir os dois relatórios
-com chamadas aos provedores. Portanto, a decisão empírica da Issue #25 ainda
-depende dessa execução; o guardrail atual permanece no prompt por segurança.
+devem registrar os hashes do prompt, schema e casos. O relatório da execução
+dedicada está em
+`logs/model-benchmark/issue-25-ablation-only/20261118-221800.json` e no CSV
+correspondente. O guardrail atual permanece no prompt por segurança.
