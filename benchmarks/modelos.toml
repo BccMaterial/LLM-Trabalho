@@ -1,5 +1,5 @@
 [benchmark]
-prompt = "prompts/atendente_v1.txt"
+prompt = "src/prompts/atendente_v1.txt"
 cases = "benchmarks/casos.json"
 schema = "benchmarks/response.schema.json"
 results_dir = "logs/model-benchmark"
