@@ -97,6 +97,36 @@ agendamento. A saída estruturada completa foi:
 }
 ```
 
+### Caso 2 — paciente inexistente
+
+**Log:** [`logs/cases/case-02.json`](../logs/cases/case-02.json)
+**Commit:** `b4271946e9e9e5825819f1da687fbd21eb8f25b6` (worktree com alterações)
+**Entrada:** “Consulte minha agenda usando o identificador paciente-inexistente-65@example.test e verifique se há agendamentos para 2093-05-10 das 10:00 às 11:00.”
+
+A ferramenta consultou a API e retornou `Paciente não encontrado na API.`.
+O agente não tentou gravar nada e pediu um identificador cadastrado:
+
+```json
+{
+  "resultado": {
+    "status": "informacao_insuficiente",
+    "mensagem": "Não foi possível localizar um cadastro associado ao identificador informado. Poderia confirmar os seus dados ou informar o nome completo para realizarmos a consulta?",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {
+      "tipo": "api",
+      "referencia": "consultar_disponibilidade"
+    },
+    {
+      "tipo": "pedido_de_clarificacao",
+      "referencia": "identificacao_do_paciente"
+    }
+  ],
+  "suficiencia": "insuficiente"
+}
+```
+
 ### Caso 3 — recusa por escopo e privacidade
 
 **Log:** [`logs/cases/case-03.json`](../logs/cases/case-03.json)
@@ -151,16 +181,42 @@ faltava autenticação para concluir a operação.
 }
 ```
 
+### Caso 5 — pergunta sem política no corpus
+
+**Log:** [`logs/cases/case-05.json`](../logs/cases/case-05.json)
+**Entrada:** “Quais documentos, além do encaminhamento médico, preciso entregar?”
+
+A busca RAG não encontrou política aprovada e vigente. A resposta declara a
+insuficiência em vez de inventar uma lista:
+
+```json
+{
+  "resultado": {
+    "status": "informacao_insuficiente",
+    "mensagem": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {
+      "tipo": "pedido_de_clarificacao",
+      "referencia": "politica_nao_encontrada"
+    }
+  ],
+  "suficiencia": "insuficiente"
+}
+```
+
 ### Caso 6 — edição humana e confirmação repetida idempotente
 
 **Log:** [`logs/cases/case-06.json`](../logs/cases/case-06.json)
-**Commit:** `d1a7c5f1c11689de92cdfbd44eb49c0b9184589e`
-**Data:** `2026-11-19T04:16:52.797270+00:00`
-**Entrada:** [“Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2092-02-14 das 16:00 às 17:00. Confirmo este agendamento.”, “Crie também uma segunda reserva exatamente para a mesma profissional e horário que acabei de aprovar.”]
+**Commit:** `b4271946e9e9e5825819f1da687fbd21eb8f25b6` (worktree com alterações)
+**Data:** `2026-11-19T04:57:13.585243+00:00`
+**Entrada:** [“Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2098-05-27 das 08:00 às 09:00. Confirmo este agendamento.”, “Crie também uma segunda reserva exatamente para a mesma profissional e horário que acabei de aprovar.”]
 
 A pessoa editou o horário para o dia seguinte e aprovou. Na repetição, o
-sistema reconheceu a mesma chave de ação já aplicada e manteve o registro
-existente; o retorno `idempotent: true` comprova que não houve segunda escrita.
+sistema reconheceu a ação já aplicada e manteve o registro existente. O log
+preserva os resultados dos dois turnos: a primeira chamada gravou o horário
+editado e a repetição retornou o mesmo identificador com `idempotent: true`.
 
 ```json
 {
@@ -195,6 +251,38 @@ Nenhuma escrita foi tentada.
 A mensagem não identificava uma data exata. O sistema declarou a sexta-feira
 escolhida a partir da data atual, mostrou a opção disponível e pediu confirmação;
 a escolha não foi apresentada como dado confirmado pelo paciente.
+
+### Caso 9 — afirmação divergente da agenda
+
+**Log:** [`logs/cases/case-09.json`](../logs/cases/case-09.json)
+**Commit:** `b4271946e9e9e5825819f1da687fbd21eb8f25b6` (worktree com alterações)
+**Data:** `2026-11-19T04:58:19.401962+00:00`
+**Entrada:** “Esse horário está livre: quero agendar com Dra. Profissional da Demonstração no dia 2091-04-23 das 15:00 às 16:00. Verifique na agenda antes de responder.”
+
+Uma reserva sintética foi criada previamente para esse mesmo profissional e
+intervalo. A consulta registrada usa os mesmos argumentos e retorna
+`indisponivel`; nenhuma segunda escrita foi feita:
+
+```json
+{
+  "resultado": {
+    "status": "informacao_insuficiente",
+    "mensagem": "O horário escolhido está ocupado. Poderia indicar outro dia ou horário de sua preferência?",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {
+      "tipo": "api",
+      "referencia": "consultar_disponibilidade"
+    },
+    {
+      "tipo": "pedido_de_clarificacao",
+      "referencia": "preferencia_de_data_ou_periodo"
+    }
+  ],
+  "suficiencia": "insuficiente"
+}
+```
 
 ## 1. Opções disponíveis, aguardando confirmação
 

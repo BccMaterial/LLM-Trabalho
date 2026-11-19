@@ -218,6 +218,7 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
     assert result["tool_results"] == [
         {
             "name": "consultar_disponibilidade",
+            "arguments": {"patient_id": "paciente-demo"},
             "result": {"value": [{"id": "appointment-1"}]},
         }
     ]
