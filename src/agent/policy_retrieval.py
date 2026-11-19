@@ -1,4 +1,6 @@
 import os
+import re
+import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
@@ -8,6 +10,51 @@ from typing import Any, Protocol
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 DEFAULT_COLLECTION_NAME = "clinic_policy_chunks"
 DEFAULT_RESULTS_LIMIT = 3
+MIN_POLICY_QUERY_COVERAGE = 0.5
+_POLICY_QUERY_STOPWORDS = frozenset(
+    {
+        "a",
+        "as",
+        "ao",
+        "aos",
+        "da",
+        "das",
+        "de",
+        "do",
+        "dos",
+        "e",
+        "em",
+        "esta",
+        "estao",
+        "estiver",
+        "fazer",
+        "foi",
+        "na",
+        "nas",
+        "no",
+        "nos",
+        "o",
+        "os",
+        "ou",
+        "para",
+        "por",
+        "qual",
+        "quando",
+        "que",
+        "se",
+        "um",
+        "uma",
+        "umas",
+        "uns",
+        "voce",
+        "voces",
+        "paciente",
+        "pacientes",
+        "clinica",
+        "politica",
+        "politicas",
+    }
+)
 
 
 class PolicyStatus(str, Enum):
@@ -69,6 +116,62 @@ class PolicySearchResult:
     effective_until: date | None
     distance: float | None
     is_test_fixture: bool
+
+
+def policy_query_coverage(
+    question: str,
+    results: list[PolicySearchResult],
+) -> float:
+    return max(
+        policy_query_coverage_by_document(question, results).values(),
+        default=0.0,
+    )
+
+
+def policy_query_coverage_by_document(
+    question: str,
+    results: list[PolicySearchResult],
+) -> dict[str, float]:
+    query_terms = _policy_terms(question)
+    if not query_terms:
+        return {}
+
+    terms_by_document: dict[str, set[str]] = {}
+    for result in results:
+        terms_by_document.setdefault(result.document_id, set()).update(
+            _policy_terms(result.content)
+        )
+    return {
+        document_id: len(query_terms & document_terms) / len(query_terms)
+        for document_id, document_terms in terms_by_document.items()
+    }
+
+
+def supported_policy_results(
+    question: str,
+    results: list[PolicySearchResult],
+    *,
+    minimum_coverage: float = MIN_POLICY_QUERY_COVERAGE,
+) -> list[PolicySearchResult]:
+    coverage_by_document = policy_query_coverage_by_document(question, results)
+    supported_documents = {
+        document_id
+        for document_id, coverage in coverage_by_document.items()
+        if coverage >= minimum_coverage
+    }
+    return [result for result in results if result.document_id in supported_documents]
+
+
+def _policy_terms(text: str) -> set[str]:
+    normalized = unicodedata.normalize("NFKD", text)
+    ascii_text = normalized.encode("ascii", "ignore").decode("ascii").lower()
+    terms = set()
+    for term in re.findall(r"[a-z0-9]+", ascii_text):
+        if term.endswith("s") and len(term) > 4:
+            term = term[:-1]
+        if term not in _POLICY_QUERY_STOPWORDS and len(term) > 2:
+            terms.add(term)
+    return terms
 
 
 class VectorCollection(Protocol):

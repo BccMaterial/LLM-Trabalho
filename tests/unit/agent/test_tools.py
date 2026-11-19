@@ -132,6 +132,40 @@ def test_policy_tool_returns_only_retrieved_sources_and_sufficiency():
     ]
 
 
+def test_policy_tool_excludes_vector_candidates_without_query_support():
+    class FakeRetriever:
+        def search(self, question):
+            return [
+                PolicySearchResult(
+                    document_id="booking",
+                    version="v1",
+                    chunk_id="section-1",
+                    content=(
+                        "Agendamento: grave um horário somente depois da "
+                        "confirmação explícita do paciente."
+                    ),
+                    source="fixture://policies/booking",
+                    effective_from=datetime(2026, 1, 1).date(),
+                    effective_until=None,
+                    distance=0.2,
+                    is_test_fixture=True,
+                )
+            ]
+
+    result = tools.execute_tool(
+        object(),
+        "consultar_politica",
+        {"pergunta": "Qual prazo de diagnóstico a clínica garante?"},
+        policy_retriever=FakeRetriever(),
+    )
+
+    assert result["suficiencia"] == "insuficiente"
+    assert result["resultados"] == []
+    assert result["candidatos_rejeitados"] == [
+        {"fonte": "fixture://policies/booking", "distancia": 0.2}
+    ]
+
+
 def test_create_appointment_adds_sao_paulo_offset_to_naive_datetimes():
     client = api.ApiClient.__new__(api.ApiClient)
     request = {}

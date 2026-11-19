@@ -8,7 +8,10 @@ from chromadb.api.types import Documents, Embeddings
 from src.agent.policy_retrieval import (
     PolicyChunk,
     PolicyRetriever,
+    PolicySearchResult,
     PolicyStatus,
+    policy_query_coverage,
+    supported_policy_results,
 )
 
 
@@ -214,6 +217,49 @@ def test_policy_chunk_rejects_invalid_effective_range():
             effective_from=date(2026, 5, 1),
             effective_until=date(2026, 4, 1),
         )
+
+
+def test_policy_query_coverage_accepts_exception_terms_but_rejects_unrelated_terms():
+    result = PolicySearchResult(
+        document_id="unavailable-time",
+        version="v1",
+        chunk_id="section-1",
+        content=(
+            "Horário indisponível: informe o paciente e apresente opções reais "
+            "ou peça que escolha outra faixa."
+        ),
+        source="fixture://policies/unavailable-time",
+        effective_from=date(2026, 1, 1),
+        effective_until=None,
+        distance=0.1,
+        is_test_fixture=True,
+    )
+
+    assert (
+        policy_query_coverage(
+            "O que fazer se o horário escolhido estiver indisponível?",
+            [result],
+        )
+        >= 0.5
+    )
+    assert supported_policy_results(
+        "O que fazer se o horário escolhido estiver indisponível?",
+        [result],
+    ) == [result]
+    assert (
+        policy_query_coverage(
+            "Qual prazo de diagnóstico a clínica garante?",
+            [result],
+        )
+        == 0.0
+    )
+    assert (
+        supported_policy_results(
+            "Qual prazo de diagnóstico a clínica garante?",
+            [result],
+        )
+        == []
+    )
 
 
 def test_upsert_preserves_source_version_and_approval_lifecycle_metadata():

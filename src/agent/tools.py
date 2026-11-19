@@ -1,5 +1,9 @@
 from .integrations.api import ApiClient
-from .policy_retrieval import PolicyRetriever
+from .policy_retrieval import (
+    MIN_POLICY_QUERY_COVERAGE,
+    PolicyRetriever,
+    supported_policy_results,
+)
 
 TOOLS = [
     {
@@ -119,10 +123,19 @@ def execute_tool(
         if policy_retriever is None:
             raise ValueError("A recuperação de políticas não está configurada.")
         question = arguments["pergunta"]
-        results = policy_retriever.search(question)
+        candidates = policy_retriever.search(question)
+        supported_results = supported_policy_results(
+            question,
+            candidates,
+            minimum_coverage=MIN_POLICY_QUERY_COVERAGE,
+        )
+        supported_chunks = {
+            (result.document_id, result.version, result.chunk_id)
+            for result in supported_results
+        }
         return {
             "consulta": question,
-            "suficiencia": "suficiente" if results else "insuficiente",
+            "suficiencia": "suficiente" if supported_results else "insuficiente",
             "resultados": [
                 {
                     "conteudo": result.content,
@@ -131,7 +144,20 @@ def execute_tool(
                     "versao": result.version,
                     "trecho": result.chunk_id,
                 }
-                for result in results
+                for result in supported_results
+            ],
+            "candidatos_rejeitados": [
+                {
+                    "fonte": result.source,
+                    "distancia": result.distance,
+                }
+                for result in candidates
+                if (
+                    result.document_id,
+                    result.version,
+                    result.chunk_id,
+                )
+                not in supported_chunks
             ],
         }
     if name == "consultar_profissionais":
