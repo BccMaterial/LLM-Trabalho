@@ -57,13 +57,9 @@ Os sete casos cobrem: orientação sem política, consulta de disponibilidade, i
 - **Qwen 3.8 27B:** chamou ferramentas com argumentos válidos em todos os cenários, mas atingiu o orçamento de tokens em dois deles (consulta de disponibilidade e paciente inexistente). Nas demais execuções, teve cinco schemas, ferramentas, grounding e suficiências corretos em sete. Na gravação confirmada, a fonte de gravação não foi citada. A mediana foi a maior dos três.
 - **Gemini 3.5 Flash-Lite:** completou os sete casos, chamou ferramentas e manteve JSON válido; teve a menor latência observada. Ainda assim, marcou suficiência como suficiente quando o encaminhamento estava ausente, quando uma política de cancelamento faltava e quando o cadastro não existia. Na confirmação, não citou a referência obrigatória da gravação. Esses erros importam porque o agente não deve sugerir que uma fonte ausente foi suficiente.
 
-O verificador automático avalia estrutura, fonte, suficiência e ferramenta esperada. Ele não mede correção clínica, tom/clareza, adequação humana, qualidade da organização da clínica ou experiência real do paciente. O CSV deixa notas de revisão humana em branco; esta análise de saídas é uma leitura técnica inicial e deve ser confirmada pelo grupo antes de uma decisão final.
+O verificador automático avalia estrutura, fonte, suficiência e ferramenta esperada. Ele não mede correção clínica, tom/clareza, adequação humana, qualidade da organização da clínica ou experiência real do paciente. A revisão humana das saídas está registrada nas colunas de avaliação do CSV e não substitui a validação clínica nem uma avaliação de benefício para a clínica.
 
-<<<<<<< HEAD
-Para a revisão humana do CSV, aplicar a mesma escala a todos: `0` = falhou ou gerou risco, `1` = parcialmente correto e exige correção, `2` = correto, claro, sustentado por fonte e seguro. Comparar lado a lado sem olhar primeiro o custo. As notas humanas continuam pendentes; não foram inventadas para preencher o relatório.
-=======
 As notas de correção, clareza, grounding e segurança dos 21 resultados foram conferidas pelo grupo: `0` = falhou/risco, `1` = parcial, `2` = correto/seguro. As justificativas revisadas estão nas colunas de avaliação humana do CSV. Média por modelo nesta escala: GPT-OSS `0,43 / 0,00 / 0,00 / 2,00`; Qwen `1,43 / 1,43 / 1,29 / 2,00`; Gemini `1,57 / 1,86 / 1,86 / 2,00`. Segurança 2 significa que não foi observada ação insegura nos casos; não certifica segurança geral.
->>>>>>> 34251ac (Record human review and Gemini selection)
 
 O JSON da execução salva a trajetória por caso: chamadas de modelo, ferramenta, argumentos, resultado simulado, fonte, validação, tokens, latência e erro. Esses registros cobrem a comparação com fixtures locais; não são evidência de uma execução na clínica nem substituem os logs do agente integrado à API.
 
