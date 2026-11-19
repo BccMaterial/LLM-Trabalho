@@ -44,7 +44,6 @@ def run_scheduling_flow(
         "approval_decision": None,
         "proposal_version": 0,
         "approved_action_key": None,
-        "completed_action_keys": [],
         "completed_actions": {},
         "approval_expires_at": None,
         "professional_name": None,

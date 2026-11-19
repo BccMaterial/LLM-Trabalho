@@ -91,7 +91,6 @@ def _state():
         "approval_decision": None,
         "proposal_version": 0,
         "approved_action_key": None,
-        "completed_action_keys": [],
         "completed_actions": {},
         "approval_expires_at": None,
         "professional_name": None,
@@ -160,6 +159,8 @@ def test_scheduling_graph_returns_model_answer(monkeypatch):
 
     assert result["answer"] == "Olá, como posso ajudar?"
     assert result["round_count"] == 1
+    assert result["workflow_step_count"] == 1
+    assert result["external_call_count"] == 1
     assert result["structured_response"]["resultado"]["mensagem"] == result["answer"]
 
 

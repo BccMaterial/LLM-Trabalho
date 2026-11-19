@@ -31,6 +31,13 @@ from .execution import (
     new_approval_deadline,
     remaining_seconds,
 )
+from .scheduling_routing import (
+    route_after_approval,
+    route_after_model,
+    route_after_professional_validation,
+    route_after_tools,
+    route_from_start,
+)
 
 ATENDENTE_PROMPT = load_prompt("atendente_v1")
 SYSTEM_PROMPT = ATENDENTE_PROMPT.content
@@ -57,7 +64,6 @@ class SchedulingState(TypedDict):
     approval_decision: str | None
     proposal_version: int
     approved_action_key: str | None
-    completed_action_keys: list[str]
     completed_actions: dict[str, dict[str, Any]]
     approval_expires_at: str | None
     professional_name: str | None
@@ -108,9 +114,14 @@ def _terminal_update(
     message: str,
     reason: TerminationReason,
     error_class: ErrorClass | None = None,
+    *,
+    state: SchedulingState | None = None,
+    workflow_steps: int | None = None,
+    external_calls: int | None = None,
+    model_tokens: int | None = None,
 ) -> dict:
     output = insufficient_response(message, reason.value)
-    return {
+    update = {
         "pending_action": None,
         "pending_message": None,
         "approval_result": None,
@@ -119,6 +130,37 @@ def _terminal_update(
         "termination_reason": reason.value,
         "error_class": error_class.value if error_class else None,
     }
+    if state is not None:
+        update.update(
+            _budget_update(
+                state,
+                workflow_steps=workflow_steps,
+                external_calls=external_calls,
+                model_tokens=model_tokens,
+            )
+        )
+    return update
+
+
+def _budget_update(
+    state: SchedulingState,
+    *,
+    workflow_steps: int | None = None,
+    external_calls: int | None = None,
+    model_tokens: int | None = None,
+) -> dict:
+    update = {}
+    if workflow_steps is not None:
+        update["workflow_step_count"] = (
+            state.get("workflow_step_count", 0) + workflow_steps
+        )
+    if external_calls is not None:
+        update["external_call_count"] = (
+            state.get("external_call_count", 0) + external_calls
+        )
+    if model_tokens is not None:
+        update["total_model_tokens"] = model_tokens
+    return update
 
 
 def _error_update(
@@ -139,10 +181,14 @@ def _error_update(
         else "O atendimento foi interrompido por uma falha interna. "
         "Nenhuma ação pendente foi executada."
     )
-    update = _terminal_update(message, reason, error_class)
-    update["workflow_step_count"] = state.get("workflow_step_count", 0) + 1
-    update["external_call_count"] = state.get("external_call_count", 0) + external_calls
-    return update
+    return _terminal_update(
+        message,
+        reason,
+        error_class,
+        state=state,
+        workflow_steps=1,
+        external_calls=external_calls,
+    )
 
 
 def build_scheduling_graph(
@@ -248,30 +294,29 @@ def build_scheduling_graph(
                 return _error_update(error, state)
             tool_call_counts[fingerprint] = tool_call_counts.get(fingerprint, 0) + 1
             if tool_call_counts[fingerprint] > MAX_IDENTICAL_TOOL_CALLS:
-                update = _terminal_update(
+                return _terminal_update(
                     "O atendimento foi encerrado porque repetiu uma consulta "
                     "sem progresso. Reformule o pedido para continuar.",
                     TerminationReason.UNPRODUCTIVE_LOOP,
+                    state=state,
+                    workflow_steps=1,
+                    external_calls=1,
+                    model_tokens=state.get("total_model_tokens", 0)
+                    + _response_tokens(response),
                 )
-                update["workflow_step_count"] = state.get("workflow_step_count", 0) + 1
-                update["external_call_count"] = state.get("external_call_count", 0) + 1
-                update["total_model_tokens"] = state.get(
-                    "total_model_tokens", 0
-                ) + _response_tokens(response)
-                return update
         total_model_tokens = state.get("total_model_tokens", 0) + _response_tokens(
             response
         )
         if total_model_tokens > MAX_MODEL_TOKENS:
-            update = _terminal_update(
+            return _terminal_update(
                 "O atendimento atingiu o limite de tokens permitido. "
                 "Nenhuma ação adicional foi executada.",
                 TerminationReason.LIMIT_REACHED,
+                state=state,
+                workflow_steps=1,
+                external_calls=1,
+                model_tokens=total_model_tokens,
             )
-            update["total_model_tokens"] = total_model_tokens
-            update["workflow_step_count"] = state.get("workflow_step_count", 0) + 1
-            update["external_call_count"] = state.get("external_call_count", 0) + 1
-            return update
         return {
             "messages": (
                 state["messages"]
@@ -279,8 +324,7 @@ def build_scheduling_graph(
                 else state["messages"] + [assistant_message]
             ),
             "round_count": state["round_count"] + 1,
-            "workflow_step_count": state.get("workflow_step_count", 0) + 1,
-            "external_call_count": state.get("external_call_count", 0) + 1,
+            **_budget_update(state, workflow_steps=1, external_calls=1),
             "pending_action": pending_actions or None,
             "pending_message": assistant_message if tool_calls else None,
             "structured_response": structured_response,
@@ -340,20 +384,6 @@ def build_scheduling_graph(
             )
             tool_results.append({"name": name, "result": result})
 
-    def route_after_model(state: SchedulingState) -> str:
-        if state.get("termination_reason"):
-            return "end"
-        if not state["pending_action"]:
-            return "end"
-        if any(
-            tool_call["function"]["name"] == "confirmar_agendamento"
-            for tool_call in state["pending_action"]
-        ):
-            if not state.get("authenticated_user"):
-                return "require_authentication"
-            return "validate_professional"
-        return "dispatch_tools"
-
     def require_authentication(state: SchedulingState) -> dict:
         answer = "Para agendar, faça login com o comando /login."
         return {
@@ -371,7 +401,6 @@ def build_scheduling_graph(
         tool_results = list(state["tool_results"])
         approved_key = state.get("approved_action_key")
         completed_actions = dict(state.get("completed_actions") or {})
-        completed_action_keys = list(state.get("completed_action_keys") or [])
         if approved_key and approved_key in completed_actions:
             result = dict(completed_actions[approved_key])
             result["idempotent"] = True
@@ -386,8 +415,7 @@ def build_scheduling_graph(
                 }
             )
             tool_results.append({"name": "confirmar_agendamento", "result": result})
-            workflow_step_count = state.get("workflow_step_count", 0) + 1
-            external_call_count = state.get("external_call_count", 0)
+            budget_update = _budget_update(state, workflow_steps=1, external_calls=0)
         else:
             limit_reason = _limit_reason(state)
             attempted_tool_calls = len(state["pending_action"] or [])
@@ -412,9 +440,10 @@ def build_scheduling_graph(
                 return _error_update(error, state, attempted_tool_calls)
             except (FatalExecutionError, ValueError, TypeError, KeyError) as error:
                 return _error_update(error, state, attempted_tool_calls)
-            workflow_step_count = state.get("workflow_step_count", 0) + 1
-            external_call_count = (
-                state.get("external_call_count", 0) + attempted_tool_calls
+            budget_update = _budget_update(
+                state,
+                workflow_steps=1,
+                external_calls=attempted_tool_calls,
             )
 
         booking_result = next(
@@ -435,8 +464,6 @@ def build_scheduling_graph(
                 for key in ("id", "agenda_inicio", "agenda_fim")
                 if key in booking_result
             }
-            if approved_key not in completed_action_keys:
-                completed_action_keys.append(approved_key)
 
         booking_output = booking_result_response(tool_results)
         if booking_output is not None:
@@ -456,12 +483,10 @@ def build_scheduling_graph(
                 "approval_result": None,
                 "approval_decision": None,
                 "approved_action_key": None,
-                "completed_action_keys": completed_action_keys,
                 "completed_actions": completed_actions,
                 "structured_response": structured_response,
                 "answer": answer,
-                "workflow_step_count": workflow_step_count,
-                "external_call_count": external_call_count,
+                **budget_update,
                 "termination_reason": TerminationReason.NORMAL_COMPLETION.value,
                 "error_class": None,
             }
@@ -474,10 +499,8 @@ def build_scheduling_graph(
             "approval_result": None,
             "approval_decision": None,
             "approved_action_key": None,
-            "completed_action_keys": completed_action_keys,
             "completed_actions": completed_actions,
-            "workflow_step_count": workflow_step_count,
-            "external_call_count": external_call_count,
+            **budget_update,
             "termination_reason": None,
         }
 
@@ -487,7 +510,7 @@ def build_scheduling_graph(
             return {
                 "professional_validated": True,
                 "professional_name": None,
-                "workflow_step_count": state.get("workflow_step_count", 0) + 1,
+                **_budget_update(state, workflow_steps=1),
             }
 
         limit_reason = _limit_reason(state)
@@ -568,8 +591,7 @@ def build_scheduling_graph(
             update["messages"] = state["messages"] + [
                 {"role": "assistant", "content": answer}
             ]
-            update["external_call_count"] = state.get("external_call_count", 0) + 1
-            update["workflow_step_count"] = state.get("workflow_step_count", 0) + 1
+            update.update(_budget_update(state, workflow_steps=1, external_calls=1))
             update["structured_response"] = insufficient_response(
                 answer, "escolha_de_profissional"
             ).model_dump(mode="json")
@@ -577,8 +599,7 @@ def build_scheduling_graph(
         return {
             "professional_name": professional["nome"],
             "professional_validated": True,
-            "external_call_count": state.get("external_call_count", 0) + 1,
-            "workflow_step_count": state.get("workflow_step_count", 0) + 1,
+            **_budget_update(state, workflow_steps=1, external_calls=1),
         }
 
     def request_approval(state: SchedulingState) -> dict:
@@ -596,31 +617,6 @@ def build_scheduling_graph(
         except (FatalExecutionError, ValueError, TypeError, KeyError) as error:
             return _error_update(error, state, external_calls=0)
         return update
-
-    def route_from_start(state: SchedulingState) -> str:
-        if state["pending_action"] and state["approval_result"] is None:
-            return (
-                "request_approval"
-                if state.get("professional_validated")
-                else "validate_professional"
-            )
-        return "call_model"
-
-    def route_after_professional_validation(state: SchedulingState) -> str:
-        return "end" if state.get("termination_reason") else "request_approval"
-
-    def route_after_approval(state: SchedulingState) -> str:
-        if state.get("termination_reason"):
-            return "end"
-        if state["approval_result"] is True:
-            return "revalidate_availability"
-        if state["approval_result"] is None and state["approval_decision"] is None:
-            return (
-                "request_approval"
-                if state.get("professional_validated")
-                else "validate_professional"
-            )
-        return "end"
 
     def revalidate_availability(state: SchedulingState) -> dict:
         confirmation_call = next(
@@ -678,8 +674,7 @@ def build_scheduling_graph(
                 "approval_result": None,
                 "approval_decision": "revalidation_failed",
                 "approved_action_key": None,
-                "external_call_count": state.get("external_call_count", 0) + 1,
-                "workflow_step_count": state.get("workflow_step_count", 0) + 1,
+                **_budget_update(state, workflow_steps=1, external_calls=1),
                 "structured_response": output.model_dump(mode="json"),
                 "answer": answer,
                 "termination_reason": TerminationReason.RECOVERABLE_ERROR.value,
@@ -699,27 +694,15 @@ def build_scheduling_graph(
                 "approval_result": None,
                 "approval_decision": None,
                 "approved_action_key": None,
-                "external_call_count": state.get("external_call_count", 0) + 1,
-                "workflow_step_count": state.get("workflow_step_count", 0) + 1,
+                **_budget_update(state, workflow_steps=1, external_calls=1),
                 "structured_response": output.model_dump(mode="json"),
                 "answer": answer,
                 "termination_reason": TerminationReason.NORMAL_COMPLETION.value,
             }
         return {
             "pending_action": state["pending_action"],
-            "external_call_count": state.get("external_call_count", 0) + 1,
-            "workflow_step_count": state.get("workflow_step_count", 0) + 1,
+            **_budget_update(state, workflow_steps=1, external_calls=1),
         }
-
-    def route_after_tools(state: SchedulingState) -> str:
-        if state.get("termination_reason"):
-            return "end"
-        final_status = (
-            (state.get("structured_response") or {}).get("resultado", {}).get("status")
-        )
-        if final_status in {"agendamento_confirmado", "agendamento_nao_confirmado"}:
-            return "end"
-        return "call_model"
 
     builder = StateGraph(SchedulingState)
     builder.add_node("call_model", call_model)
