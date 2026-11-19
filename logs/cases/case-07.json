@@ -1,0 +1,54 @@
+{
+  "run_id": "20261119-040004-1908092f",
+  "case": 7,
+  "title": "Entrada incompleta: faltam data e horário",
+  "issue": 32,
+  "timestamp": "2026-11-19T04:00:18.583514+00:00",
+  "commit": "d1a7c5f1c11689de92cdfbd44eb49c0b9184589e",
+  "model": "gemini-3.5-flash-lite",
+  "input": "Quero marcar minha avaliação.",
+  "conversation_id": "01fd92a2-6e2d-4a95-b7d8-43e801aed87d",
+  "events": {
+    "interrupts": [],
+    "tool_results": [
+      {
+        "name": "consultar_profissionais",
+        "result": {
+          "value": [
+            {
+              "id": "a5b8a3df-e338-490c-99b6-cb33719f2f20",
+              "nome": "Dra. Profissional da Demonstração"
+            }
+          ]
+        }
+      }
+    ],
+    "tool_call_counts": {
+      "56d6b90826ea2d42c7b71a2505e09d01c140e19452b1e76682dd01d766b59314": 1
+    }
+  },
+  "structured_output": {
+    "resultado": {
+      "status": "informacao_insuficiente",
+      "mensagem": "Temos a Dra. Profissional da Demonstração disponível. Qual data ou período você prefere para o agendamento?",
+      "acao": "aguarda_confirmacao"
+    },
+    "fonte": [
+      {
+        "tipo": "api",
+        "referencia": "consultar_profissionais"
+      },
+      {
+        "tipo": "pedido_de_clarificacao",
+        "referencia": "preferencia_de_data_ou_periodo"
+      }
+    ],
+    "suficiencia": "insuficiente"
+  },
+  "answer": "Temos a Dra. Profissional da Demonstração disponível. Qual data ou período você prefere para o agendamento?",
+  "termination_reason": "normal_completion",
+  "error_class": null,
+  "approval_decision": null,
+  "completed_actions": {},
+  "passed": true
+}

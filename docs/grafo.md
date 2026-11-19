@@ -127,6 +127,13 @@ sobrescrita entre ramos paralelos não se aplica à topologia implementada; se
 forem adicionados nós paralelos, essa conclusão deixará de valer para os campos
 compartilhados atualizados por mais de um ramo.
 
+Uma proposta repetida pode chegar em um turno posterior já sem
+`approved_action_key` no estado. Antes de revalidar ou executar
+`confirmar_agendamento`, o grafo recomputa a chave pela conversa, ferramenta,
+argumentos canônicos e usuário autenticado; se ela estiver em
+`completed_actions`, a revalidação é evitada e o retorno marca a ação como
+`idempotent` em vez de gravar novamente.
+
 ### Parâmetro de framework
 
 O CLI declara `recursion_limit=32` ao invocar o grafo, embora o fluxo também

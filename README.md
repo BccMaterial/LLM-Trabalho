@@ -134,6 +134,8 @@ autenticação.
 
 Para executar um caso específico, use `poetry run python cases.py --case 7` (entrada incompleta) ou `--case 8` (entrada ambígua). Para repetir os casos do benchmark três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As tarifas configuradas estimam o custo em faixa paga; na faixa gratuita da Groq ou do Gemini há limites de uso e as solicitações permitidas dentro deles não geram cobrança. `--dry-run` não envia chamadas.
 
+Os cenários sintéticos adicionais estão ligados aos logs: [entrada incompleta](logs/cases/case-07.json), [entrada ambígua](logs/cases/case-08.json), [pergunta fora do corpus](logs/cases/case-05.json) e [edição humana seguida de aprovação repetida](logs/cases/case-06.json). No caso 6, o log registra a edição feita pela pessoa e `idempotent: true` na resposta da repetição, mostrando que o mesmo agendamento não foi criado duas vezes.
+
 Os relatórios Markdown, JSON e CSV são gravados em `logs/model-benchmark/`. A rodada `20261117-212956-dff568` contém a revisão qualitativa das 21 respostas conferida pelo grupo. O grupo selecionou Gemini 3.5 Flash-Lite para continuar o protótipo com base nos resultados; o programa não escolhe vencedor automaticamente. Novas rodadas deixam as colunas de revisão vazias. A projeção semestral usa 182 dias e só é calculada quando `--daily-volume` é fornecido.
 
 Execução dos testes automatizados:

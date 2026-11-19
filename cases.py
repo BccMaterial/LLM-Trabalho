@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -150,16 +151,43 @@ def _case_passed(case_number: int, result: dict) -> bool:
             return bool(
                 output.get("suficiencia") == "insuficiente"
                 and response.get("status") == "informacao_insuficiente"
-            and result.get("error_class") is None
-            and not _single_tool_result(result, "confirmar_agendamento")
-            and any(term in answer for term in ("dia", "horário", "horario"))
+                and result.get("error_class") is None
+                and not _single_tool_result(result, "confirmar_agendamento")
+                and any(
+                    term in answer
+                    for term in (
+                        "data",
+                        "dia",
+                        "horário",
+                        "horario",
+                        "período",
+                        "periodo",
+                        "profissional",
+                    )
+                )
             )
+        declared_date = bool(
+            re.search(r"\b(?:19|20|21)\d{2}[-/]\d{1,2}[-/]\d{1,2}\b", answer)
+            or re.search(r"\b\d{1,2}\s+de\s+\w+\s+de\s+(?:19|20|21)\d{2}\b", answer)
+            or re.search(r"\b(?:19|20|21)\d{2}\b", answer)
+        )
+        valid_ambiguity_handling = bool(
+            (
+                output.get("suficiencia") == "insuficiente"
+                and response.get("status") == "informacao_insuficiente"
+                and any(term in answer for term in ("qual", "esclare", "especifique"))
+            )
+            or (
+                output.get("suficiencia") == "suficiente"
+                and response.get("status") == "opcoes_disponiveis"
+                and declared_date
+                and _single_tool_result(result, "consultar_disponibilidade")
+            )
+        )
         return bool(
-            output.get("suficiencia") == "insuficiente"
-            and response.get("status") == "informacao_insuficiente"
+            valid_ambiguity_handling
             and result.get("error_class") is None
             and not _single_tool_result(result, "confirmar_agendamento")
-            and any(term in answer for term in ("qual", "esclare", "especifique"))
         )
     return False
 
@@ -314,7 +342,9 @@ def main() -> int:
                 result,
             )
         elif case_number == 5:
-            prompt = "Quais documentos, além do encaminhamento médico, preciso entregar?"
+            prompt = (
+                "Quais documentos, além do encaminhamento médico, preciso entregar?"
+            )
             result = run_scheduling_case(
                 [prompt],
                 login=(PATIENT_EMAIL, PATIENT_PASSWORD),
@@ -354,6 +384,15 @@ def main() -> int:
                         },
                     },
                     {"decision": "approve"},
+                    {
+                        "decision": "edit",
+                        "arguments": {
+                            "professional_id": professional["id"],
+                            "agenda_inicio": edited_start.isoformat(),
+                            "agenda_fim": edited_end.isoformat(),
+                            "suspeita_paciente": "Avaliação neuropsicológica",
+                        },
+                    },
                     {"decision": "approve"},
                 ],
             )

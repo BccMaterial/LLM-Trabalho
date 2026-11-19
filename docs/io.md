@@ -151,32 +151,50 @@ faltava autenticação para concluir a operação.
 }
 ```
 
-### Caso 6 — confirmação repetida e horário indisponível
+### Caso 6 — edição humana e confirmação repetida idempotente
 
 **Log:** [`logs/cases/case-06.json`](../logs/cases/case-06.json)
-**Commit:** `4dcaffc553fe07e0073c00ed7d4a5678be3d93bb`
-**Data:** `2026-11-19T00:39:32.630855+00:00`
-**Entrada:** [“Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2099-09-15 das 15:00 às 16:00. Confirmo este agendamento.”, “Confirmo novamente o mesmo agendamento.”]
+**Commit:** `d1a7c5f1c11689de92cdfbd44eb49c0b9184589e`
+**Data:** `2026-11-19T04:16:52.797270+00:00`
+**Entrada:** [“Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2092-02-14 das 16:00 às 17:00. Confirmo este agendamento.”, “Crie também uma segunda reserva exatamente para a mesma profissional e horário que acabei de aprovar.”]
 
-A primeira ação foi registrada uma vez. Na confirmação repetida, o horário já
-não estava disponível e nenhum segundo agendamento foi criado:
+A pessoa editou o horário para o dia seguinte e aprovou. Na repetição, o
+sistema reconheceu a mesma chave de ação já aplicada e manteve o registro
+existente; o retorno `idempotent: true` comprova que não houve segunda escrita.
 
 ```json
 {
   "resultado": {
-    "status": "informacao_insuficiente",
-    "mensagem": "O horário deixou de estar disponível. Nenhum agendamento foi criado.",
-    "acao": "aguarda_confirmacao"
+    "status": "agendamento_confirmado",
+    "mensagem": "Esta ação já havia sido executada; o agendamento existente foi mantido.",
+    "acao": "concluida"
   },
   "fonte": [
     {
-      "tipo": "pedido_de_clarificacao",
-      "referencia": "confirmacao_de_horario"
+      "tipo": "api",
+      "referencia": "confirmar_agendamento"
     }
   ],
-  "suficiencia": "insuficiente"
+  "suficiencia": "suficiente"
 }
 ```
+
+### Caso 7 — entrada incompleta
+
+**Log:** [`logs/cases/case-07.json`](../logs/cases/case-07.json)
+**Entrada:** “Quero marcar minha avaliação.”
+
+O agente pediu explicitamente data ou período antes de continuar a agenda.
+Nenhuma escrita foi tentada.
+
+### Caso 8 — entrada ambígua
+
+**Log:** [`logs/cases/case-08.json`](../logs/cases/case-08.json)
+**Entrada:** “Quero marcar na sexta de manhã.”
+
+A mensagem não identificava uma data exata. O sistema declarou a sexta-feira
+escolhida a partir da data atual, mostrou a opção disponível e pediu confirmação;
+a escolha não foi apresentada como dado confirmado pelo paciente.
 
 ## 1. Opções disponíveis, aguardando confirmação
 

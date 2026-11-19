@@ -1,0 +1,57 @@
+{
+  "run_id": "20261119-041456-32035f0a",
+  "case": 8,
+  "title": "Entrada ambígua: falta identificar a sexta-feira",
+  "issue": 32,
+  "timestamp": "2026-11-19T04:15:08.806358+00:00",
+  "commit": "d1a7c5f1c11689de92cdfbd44eb49c0b9184589e",
+  "model": "gemini-3.5-flash-lite",
+  "input": "Quero marcar na sexta de manhã.",
+  "conversation_id": "d2ec882a-486e-4c49-a74d-be7483182e08",
+  "events": {
+    "interrupts": [],
+    "tool_results": [
+      {
+        "name": "consultar_profissionais",
+        "result": {
+          "value": [
+            {
+              "id": "a5b8a3df-e338-490c-99b6-cb33719f2f20",
+              "nome": "Dra. Profissional da Demonstração"
+            }
+          ]
+        }
+      },
+      {
+        "name": "consultar_disponibilidade",
+        "result": {
+          "disponibilidade": "disponivel"
+        }
+      }
+    ],
+    "tool_call_counts": {
+      "56d6b90826ea2d42c7b71a2505e09d01c140e19452b1e76682dd01d766b59314": 1,
+      "a4d8864a7c012bc9715b278405c4e1230337bdaa3e91974ed2be4e0ff282af59": 1
+    }
+  },
+  "structured_output": {
+    "resultado": {
+      "status": "opcoes_disponiveis",
+      "mensagem": "Encontrei disponibilidade na sexta-feira (20/11/2026) das 08:00 às 12:00 com a Dra. Profissional da Demonstração. Deseja confirmar este horário?",
+      "acao": "aguarda_confirmacao"
+    },
+    "fonte": [
+      {
+        "tipo": "api",
+        "referencia": "consultar_disponibilidade"
+      }
+    ],
+    "suficiencia": "suficiente"
+  },
+  "answer": "Encontrei disponibilidade na sexta-feira (20/11/2026) das 08:00 às 12:00 com a Dra. Profissional da Demonstração. Deseja confirmar este horário?",
+  "termination_reason": "normal_completion",
+  "error_class": null,
+  "approval_decision": null,
+  "completed_actions": {},
+  "passed": true
+}
