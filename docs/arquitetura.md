@@ -7,29 +7,37 @@
 O fluxo executado pelo CLI é compilado por
 `src/agent/workflows/scheduling.py::build_scheduling_graph`. Este é o fluxo
 real; não inclui os agentes Gestor/Secretária nem os nós futuros de RAG.
-Decisões pendentes de aprovação repetem a pausa; rejeição encerra sem escrita.
+Orçamento de execução, expiração da aprovação, classificação de término e
+detecção de chamadas repetidas são implementados no grafo.
 
 ```text
 START
-+-- ação pendente e sem decisão ------> request_approval
++-- ação pendente e sem decisão ------> validar profissional, se necessário
+|                                         +-- profissional válido -> request_approval
 +-- caso contrário -------------------> call_model
 
 call_model
-+-- sem tool call --------------------> END
++-- resposta final/limite/erro -------> END
 +-- agendamento sem login ------------> require_authentication -> END
-+-- agendamento autenticado ---------> request_approval
++-- agendamento autenticado ---------> validate_professional
 +-- outra tool call -----------------> dispatch_tools
+
+validate_professional
++-- profissional válido -------------> request_approval
++-- erro ou limite ------------------> END
 
 request_approval
 +-- aprovado ------------------------> revalidate_availability
-|                                         +-- ainda pendente -> dispatch_tools
-|                                         +-- falha/indisponível -> END
-+-- rejeitado -----------------------> END
-+-- editado ou resposta inválida ----> request_approval (nova pausa)
++-- editado -------------------------> validate_professional -> request_approval
++-- resposta inválida ---------------> END (proposta pode ser retomada)
++-- rejeição/expiração/erro ---------> END
+
+revalidate_availability
++-- horário disponível -------------> dispatch_tools
++-- indisponível/erro/limite --------> END
 
 dispatch_tools
-+-- resposta de agendamento final ---> END
-+-- limite de rodadas atingido ------> limit_reached -> END
++-- término final/erro/limite -------> END
 +-- caso contrário -------------------> call_model
 ```
 
@@ -49,27 +57,30 @@ Nos:
   __start__
   call_model
   dispatch_tools
-  limit_reached
   request_approval
   require_authentication
   revalidate_availability
+  validate_professional
 Arestas:
   __start__ -> call_model [condicional]
   __start__ -> request_approval [condicional]
+  __start__ -> validate_professional [condicional]
   call_model -> __end__ [condicional]
   call_model -> dispatch_tools [condicional]
   call_model -> request_approval [condicional]
   call_model -> require_authentication [condicional]
+  call_model -> validate_professional [condicional]
   dispatch_tools -> __end__ [condicional]
   dispatch_tools -> call_model [condicional]
-  dispatch_tools -> limit_reached [condicional]
-  limit_reached -> __end__ [direta]
   request_approval -> __end__ [condicional]
   request_approval -> request_approval [condicional]
   request_approval -> revalidate_availability [condicional]
+  request_approval -> validate_professional [condicional]
   require_authentication -> __end__ [condicional]
   revalidate_availability -> __end__ [condicional]
   revalidate_availability -> dispatch_tools [condicional]
+  validate_professional -> __end__ [condicional]
+  validate_professional -> request_approval [condicional]
 ```
 
 ## Resumo do sistema

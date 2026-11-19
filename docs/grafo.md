@@ -24,46 +24,49 @@ registrada junto ao diagrama em [`arquitetura.md`](./arquitetura.md).
 
 | Nó | Responsabilidade | Decisão e estado principal |
 |---|---|---|
-| `call_model` | Envia histórico e ferramentas ao LLM; valida a resposta final e guarda tool calls pendentes | O modelo escolhe responder ou solicitar uma ferramenta; o código atualiza `messages`, `pending_action`, `pending_message`, `round_count` e `proposal_version` |
-| `dispatch_tools` | Executa as tool calls pendentes e anexa os resultados; impede repetir uma ação de agendamento já concluída neste thread | O código exige `approval_result=True` para executar `confirmar_agendamento`; lê e atualiza `tool_results` e `completed_action_keys` |
-| `request_approval` | Valida o profissional ativo e pede aprovação para os argumentos exatos da proposta | `actions.request_appointment_approval` chama `interrupt`; o código registra `approval_result`, `approval_decision` e `approved_action_key` ao retomar |
-| `revalidate_availability` | Consulta novamente a disponibilidade depois da aprovação | O código mantém ou limpa `pending_action`; o próximo roteamento decide se despacha a escrita |
-| `require_authentication` | Informa que é necessário usar `/login` para agendar | O código encerra esse turno sem executar a escrita |
-| `limit_reached` | Devolve uma resposta estruturada ao atingir `MAX_TOOL_ROUNDS` | O código encerra o grafo com a resposta de limite |
+| `call_model` | Envia histórico e ferramentas ao LLM, valida a resposta e registra tool calls | O modelo escolhe responder ou solicitar ferramenta; o nó aplica orçamento, conta tokens e atualiza `messages`, `pending_action`, `round_count` e `proposal_version` |
+| `validate_professional` | Confere se o profissional da proposta está ativo | Código lê `pending_action`, consulta a API e escreve `professional_name` e `professional_validated` |
+| `request_approval` | Solicita aprovação dos argumentos exatos da proposta | `actions.request_appointment_approval` chama `interrupt`; registra decisão, chave idempotente e prazo de aprovação |
+| `revalidate_availability` | Consulta novamente a disponibilidade após a aprovação | Código preserva ou limpa `pending_action` antes de permitir a escrita |
+| `dispatch_tools` | Executa tool calls e anexa resultados; evita repetir uma ação concluída | Exige aprovação para `confirmar_agendamento`, atualiza `tool_results` e `completed_actions`; também aplica o orçamento |
+| `require_authentication` | Informa que `/login` é necessário para agendar | Encerra o turno sem executar a escrita |
 
-O CLI mantém o loop de conversa fora do grafo: recebe uma mensagem, invoca o
-grafo e imprime a resposta. Para uma proposta interrompida, retoma com
-`Command(resume=...)` usando o mesmo `thread_id`.
+O CLI mantém o loop de conversa fora do grafo. Ele reinicia os contadores por
+turno, estabelece um deadline, invoca o grafo e imprime a resposta. Para uma
+proposta interrompida, retoma com `Command(resume=...)` usando o mesmo
+`thread_id`.
 
 ## Arestas e decisões de roteamento
 
-Todas as bifurcações condicionais abaixo são decididas por funções/lambdas em
-Python, exceto a escolha inicial do modelo entre resposta e tool call. Não há
-roteamento por embedding.
+As bifurcações condicionais são decididas por funções/lambdas em Python. O
+modelo escolhe uma resposta ou tool call; não escolhe os destinos do grafo.
+Não há roteamento por embedding.
 
 | Origem | Quem decide | Condição | Destino |
 |---|---|---|---|
-| `START` | `route_from_start` (código) | Existe `pending_action` e `approval_result` ainda é `None` | `request_approval` |
-| `START` | `route_from_start` (código) | Caso contrário | `call_model` |
-| `call_model` | Modelo escolhe; `route_after_model` (código) valida o destino | Não há tool call | `END` |
-| `call_model` | Modelo escolhe; `route_after_model` (código) valida autenticação | Tool call é `confirmar_agendamento`, sem `authenticated_user` | `require_authentication` |
-| `call_model` | Modelo escolhe; `route_after_model` (código) verifica a identidade | Tool call é `confirmar_agendamento`, com usuário autenticado | `request_approval` |
-| `call_model` | Modelo escolhe; `route_after_model` (código) identifica a ferramenta | Outra tool call | `dispatch_tools` |
-| `request_approval` | Decisão gravada por `actions.request_appointment_approval`; lambda do grafo encaminha | `approval_result is True` | `revalidate_availability` |
-| `request_approval` | A mesma decisão e lambda | `approval_result is None` e `approval_decision is None` (edição ou resposta inválida) | `request_approval` |
-| `request_approval` | A mesma decisão e lambda | Rejeição ou outra decisão terminal | `END` |
-| `revalidate_availability` | Lambda do grafo (código) | `pending_action` continua definida | `dispatch_tools` |
-| `revalidate_availability` | Lambda do grafo (código) | A proposta foi invalidada ou a revalidação falhou | `END` |
-| `dispatch_tools` | `route_after_tools` (código) | Resposta tem status final de agendamento | `END` |
-| `dispatch_tools` | `route_after_tools` (código) | `round_count >= MAX_TOOL_ROUNDS` | `limit_reached` |
-| `dispatch_tools` | `route_after_tools` (código) | Caso contrário | `call_model` |
+| `START` | `route_from_start` (código) | Há ação pendente sem resultado de aprovação; o profissional já foi validado | `request_approval` |
+| `START` | `route_from_start` (código) | Há ação pendente sem resultado de aprovação; o profissional ainda precisa ser validado | `validate_professional` |
+| `START` | `route_from_start` (código) | Não há ação aguardando aprovação | `call_model` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) verifica o estado | Há término ou não há tool call pendente | `END` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) verifica autenticação | Ação é agendamento e não há `authenticated_user` | `require_authentication` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) valida o destino | Ação é agendamento autenticado | `validate_professional` |
+| `call_model` | Modelo escolhe; `route_after_model` (código) valida o destino | Outra tool call | `dispatch_tools` |
+| `validate_professional` | `route_after_professional_validation` (código) | A validação terminou com erro ou limite | `END` |
+| `validate_professional` | `route_after_professional_validation` (código) | Profissional válido | `request_approval` |
+| `request_approval` | `route_after_approval` (código) | Ação aprovada | `revalidate_availability` |
+| `request_approval` | `route_after_approval` (código) | Ainda não há decisão; a proposta requer validação do profissional | `validate_professional` |
+| `request_approval` | `route_after_approval` (código) | Ainda não há decisão; o profissional já foi validado | `request_approval` |
+| `request_approval` | `route_after_approval` (código) | Resposta inválida, marcada como `approval_decision="invalid"`; mantém a ação pendente para a próxima invocação | `END` |
+| `request_approval` | `route_after_approval` (código) | Ação rejeitada, aprovação expirada ou outro término | `END` |
+| `revalidate_availability` | Lambda do grafo (código) | `pending_action` permanece definida após revalidar | `dispatch_tools` |
+| `revalidate_availability` | Lambda do grafo (código) | Proposta inválida, horário indisponível, erro ou limite | `END` |
+| `dispatch_tools` | `route_after_tools` (código) | Há motivo de término ou status final de agendamento | `END` |
+| `dispatch_tools` | `route_after_tools` (código) | Ainda há trabalho no turno | `call_model` |
 | `require_authentication` | Lambda constante do grafo | Sempre | `END` |
-| `limit_reached` | Aresta direta | Sempre | `END` |
 
-O diagrama ASCII e a lista de arestas gerada pelo script estão em
-[`arquitetura.md`](./arquitetura.md). O script deriva nos, arestas e o marcador
-de condicionalidade do grafo compilado; as condições de cada ramo estão
-explicadas na tabela acima.
+Os limites são retornados pelos próprios nós como estado terminal; não existe
+um nó `limit_reached` separado. A lista de nós e arestas extraída do objeto
+compilado está em [`arquitetura.md`](./arquitetura.md).
 
 ## Estado, leitores, escritores e reducers
 
@@ -71,25 +74,34 @@ explicadas na tabela acima.
 usa `MemorySaver` com `thread_id=conversation_id`. Nenhum campo declara reducer
 LangGraph: a atualização padrão substitui o valor do campo. Quando um nó
 acrescenta mensagens/resultados, ele copia a lista, inclui os itens e devolve
-a lista completa. Como não há ramos paralelos, não há escrita concorrente nem
-reducer de agregação.
+a lista completa. Não há ramos paralelos nem escritas concorrentes.
 
 | Campo | Escritores | Leitores | Reducer |
 |---|---|---|---|
-| `messages` | CLI, `call_model`, `dispatch_tools`, `request_approval` e falhas em `revalidate_availability` | `call_model`, `dispatch_tools`, `request_approval`, CLI | Substituição; nós concatenam manualmente |
+| `messages` | CLI, `call_model`, `dispatch_tools`, `request_approval`, erros em `revalidate_availability` | `call_model`, `dispatch_tools`, `request_approval`, CLI | Substituição; alguns nós concatenam manualmente |
 | `conversation_id` | CLI | `actions.approved_action_key`; CLI usa como `thread_id` | Substituição |
 | `round_count` | CLI reinicia por turno; `call_model` incrementa | `route_after_tools` | Substituição |
 | `pending_action` | `call_model`, edição/rejeição em `request_approval`, `dispatch_tools`, `revalidate_availability` | Roteamento, `request_approval`, `dispatch_tools`, `revalidate_availability`, CLI | Substituição |
-| `pending_message` | `call_model`; nós de ferramentas/aprovação limpam | `dispatch_tools`, `request_approval` | Substituição |
-| `approval_result` | `request_approval`; CLI limpa quando não há ação pendente; `dispatch_tools` limpa após executar | Roteamento, `dispatch_tools`, CLI | Substituição |
+| `pending_message` | `call_model`; `dispatch_tools` e `request_approval` limpam | `dispatch_tools`, `request_approval` | Substituição |
+| `approval_result` | `request_approval`; CLI e `dispatch_tools` limpam | Roteamento, `dispatch_tools`, CLI | Substituição |
 | `tool_results` | CLI inicia/limpa; `dispatch_tools` acrescenta | `call_model`, `dispatch_tools`, `booking_result_response` | Substituição; `dispatch_tools` concatena manualmente |
-| `structured_response` | `call_model`, `dispatch_tools`, `request_approval`, `revalidate_availability`, `limit_reached` | `route_after_tools` | Substituição |
-| `answer` | `call_model`, `dispatch_tools`, `request_approval`, `limit_reached` e `revalidate_availability` | CLI | Substituição |
-| `authenticated_user` | CLI após `/login` | `call_model`, `execute_tool_calls` | Substituição |
-| `approval_decision` | `request_approval`; `dispatch_tools` limpa | Aresta condicional de `request_approval`, roteamento | Substituição |
+| `structured_response` | `call_model`, `dispatch_tools`, respostas terminais | `route_after_tools` | Substituição |
+| `answer` | `call_model`, `dispatch_tools`, `request_approval`, `require_authentication`, `revalidate_availability` | CLI | Substituição |
+| `authenticated_user` | CLI após `/login` | `call_model`, roteamento, `execute_tool_calls` | Substituição |
+| `approval_decision` | `request_approval`; `dispatch_tools` limpa | `route_after_approval` | Substituição |
 | `proposal_version` | `call_model` ao propor agendamento; `request_approval` ao editar | `call_model`, `request_approval` | Substituição |
-| `approved_action_key` | `request_approval` ao aprovar; `dispatch_tools` e falhas limpam | `dispatch_tools` | Substituição |
-| `completed_action_keys` | `dispatch_tools` | `dispatch_tools` | Substituição; cópia e acréscimo manual |
+| `approved_action_key` | `request_approval` ao aprovar; `dispatch_tools` e erros limpam | `dispatch_tools` | Substituição |
+| `completed_actions` | `dispatch_tools` | `dispatch_tools` | Substituição; cópia e atualização manual |
+| `approval_expires_at` | `call_model` ao propor; `actions` ao aprovar, editar ou encerrar | `actions.request_appointment_approval` | Substituição |
+| `professional_name` | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | `request_approval`, `actions`, CLI lê o payload do interrupt | Substituição |
+| `professional_validated` | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | Roteamento, `request_approval` | Substituição |
+| `execution_deadline` | CLI inicia por turno | Nós que verificam limite; `ApiClient` recebe o mesmo deadline | Substituição |
+| `workflow_step_count` | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason` | Substituição |
+| `external_call_count` | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason`, `dispatch_tools` | Substituição |
+| `total_model_tokens` | `call_model`; CLI reinicia por turno | `call_model`, `_limit_reason` | Substituição |
+| `tool_call_counts` | `call_model`; CLI reinicia por turno | `call_model` | Substituição; o nó copia e atualiza manualmente |
+| `termination_reason` | Nós e `actions`; CLI define `user_exit` ou limpa por turno | Roteamento | Substituição |
+| `error_class` | Nós de erro; CLI limpa por turno | Consumidor do estado final | Substituição |
 
 `agent_session_cookie` e `user_session_cookie` pertencem ao `ApiClient`, não
 ao `SchedulingState`. O `thread_id` também é metadado de configuração do
@@ -97,22 +109,28 @@ checkpointer, não um campo do estado.
 
 ## Padrões e limites conhecidos
 
-- **Agente com ferramentas e loop limitado:** o modelo pode responder ou
-  escolher entre as ferramentas declaradas. O codigo valida e executa as
-  chamadas, e `MAX_TOOL_ROUNDS` limita a continuacao do loop.
-- **Workflow sequencial com aprovacao humana:** a criacao de agendamento pausa
-  antes da escrita. Depois da aprovacao, o codigo revalida a disponibilidade e
-  so entao executa a ferramenta.
-- **Roteamento determinístico em código:** autenticação, aprovação, revalidação,
-  status final e limite são avaliados pelo estado; o modelo não escolhe esses
-  destinos.
-- **Estado sem reducers customizados:** não há `Annotated` ou reducer
-  registrado no `SchedulingState`; cada atualização substitui o valor anterior.
-- **Checkpoint em memória:** `MemorySaver` permite retomar no mesmo processo,
-  mas não garante persistência após reinício.
-- **Sem paralelismo:** cada transição executa um único nó; Gestor, Secretária,
-  ingestão de políticas e RAG continuam fora do grafo implementado.
-- **Pontos pendentes:** não há prazo de expiração da aprovação nem limites
-  totais de tokens/duração. A idempotência de `completed_action_keys` depende
-  do checkpoint em memória e não cobre reinícios ou a janela entre uma escrita
-  externa e o checkpoint.
+- **Agente com ferramentas e loop limitado:** escolhido porque a mensagem
+  livre pode pedir uma consulta ou um agendamento; o modelo propõe resposta ou
+  tool call, e o código valida e executa apenas as ferramentas declaradas. Os
+  limites impedem chamadas sem controle.
+- **Workflow sequencial com aprovação humana:** usado porque a gravação altera
+  a agenda; a proposta pausa antes da escrita, o código valida o profissional
+  e revalida o horário após a aprovação.
+- **Roteamento determinístico em código:** autenticação, aprovação,
+  revalidação, término e erro dependem do estado e de regras de segurança; o
+  modelo não escolhe esses destinos.
+- **Sem paralelismo:** cada transição executa um único nó. Não há reducers de
+  agregação nem agentes Gestor/Secretária ou nós de RAG no grafo atual.
+- **Orçamento por turno:** 8 etapas, 10 chamadas externas, 6.000 tokens
+  reportados, 120 segundos; até 1.000 tokens por resposta e timeout de até 30
+  segundos por chamada. O CLI também configura `recursion_limit=32`.
+- **Término e erro:** o estado distingue conclusão normal, saída do usuário,
+  limite, ação rejeitada, aprovação expirada, loop improdutivo, erro
+  recuperável e erro fatal; a classe de erro é `recoverable` ou `fatal`.
+- **Detecção de repetição:** uma tool call de leitura idêntica é identificada
+  pelo hash de nome e argumentos; `MAX_IDENTICAL_TOOL_CALLS=1` encerra o fluxo
+  antes de executar a repetição.
+- **Aprovação e idempotência:** a aprovação expira após 120 segundos. A chave
+  identifica conversa, ferramenta e argumentos canônicos; `completed_actions`
+  evita repetir a escrita no checkpoint em memória. Não há persistência entre
+  reinícios nem proteção para a janela entre a escrita externa e o checkpoint.

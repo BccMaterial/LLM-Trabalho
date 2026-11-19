@@ -15,8 +15,9 @@ resposta referente a outra opção como aprovação.
 > **Estado da implementação:** o fluxo de agendamento usa `StateGraph`,
 > `interrupt`, `MemorySaver` e `Command(resume=...)`. O paciente confirma,
 > rejeita ou edita uma proposta; após a aprovação, o código revalida o horário
-> antes da escrita. A aprovação de documentos para RAG e as operações do
-> Gestor ainda não estão implementadas.
+> antes da escrita. A proposta expira em 120 segundos; o grafo também tem
+> limites de execução e classificação de términos/erros. A aprovação de
+> documentos para RAG e as operações do Gestor ainda não estão implementadas.
 
 ## 1. Ações que exigem intervenção
 
@@ -45,10 +46,11 @@ Respostas aceitas:
 - **editar:** valida os campos obrigatórios, atualiza a proposta e solicita
   nova aprovação.
 
-Resposta inválida mantém a interrupção e pede uma resposta aceita. Depois da
-aprovação, se a disponibilidade mudou ou a API falhou, o código não grava o
-horário antigo e encerra a tentativa com uma resposta. O grafo atual não define
-prazo de expiração da aprovação.
+Resposta inválida não aprova a ação; a tentativa termina e a proposta pendente
+pode ser retomada em outra invocação. A aprovação expira após 120 segundos,
+verificados quando a interrupção é retomada. Depois da aprovação, se a
+disponibilidade mudou ou a API falhou, o código não grava o horário antigo e
+encerra a tentativa com uma resposta.
 
 ## 3. Aprovação de documentos para o RAG
 
@@ -93,26 +95,27 @@ alterar o recurso.
 
 No fluxo implementado, `request_approval` chama `interrupt` antes da escrita.
 O CLI associa o checkpointer `MemorySaver` ao `thread_id` da conversa e retoma
-com `Command(resume=...)`. A retomada pode repetir a validação do profissional
-que precede o `interrupt`; ela não executa a escrita antes de receber a
-aprovação. A disponibilidade é revalidada em um nó posterior, antes do
-despacho da ferramenta de criação.
+com `Command(resume=...)`. `validate_professional` é um nó separado antes da
+pausa; uma retomada normal continua em `request_approval` e não repete essa
+consulta. Uma edição invalida essa validação e faz o fluxo validá-la novamente.
+A escrita só ocorre depois da aprovação e da revalidação da disponibilidade.
 
 Como o checkpointer é em memória, uma aprovação pendente não é durável após
-reinício do processo. O fluxo também não define prazo de expiração nem um
-encaminhamento automático por falta de resposta. Essas decisões continuam
-pendentes; silêncio nunca aprova a ação.
+reinício do processo. Não há timer em segundo plano: uma aprovação vencida é
+rejeitada quando alguém tenta retomar o grafo, sem executar a escrita. Silêncio
+nunca aprova a ação.
 
 ## 6. Repetição e idempotência
 
-O fluxo de agendamento gera `approved_action_key` a partir do identificador da
-conversa, da ferramenta e dos argumentos canônicos aprovados. O estado
-`completed_action_keys` impede repetir a escrita no mesmo estado/checkpoint e
-retorna um resultado indicando que a ação já havia sido executada. Essa
-proteção depende do `MemorySaver`: não persiste após reinício e não cobre a
-janela entre uma escrita externa bem-sucedida e a atualização do checkpoint.
-Idempotência persistente na API ainda está pendente. Publicação no RAG e
-alterações de recursos pelo Gestor não estão implementadas.
+O fluxo gera `approved_action_key` a partir do identificador da conversa, da
+ferramenta e dos argumentos canônicos aprovados, normalizando a identidade do
+paciente para a identidade autenticada. O dicionário `completed_actions`
+impede repetir a escrita no mesmo estado/checkpoint e retorna que a ação já
+havia sido executada, guardando apenas o identificador e os horários do
+agendamento. Essa proteção depende do `MemorySaver`: não persiste após
+reinício e não cobre a janela entre uma escrita externa bem-sucedida e a
+atualização do checkpoint. Idempotência persistente na API ainda está pendente.
+Publicação no RAG e alterações de recursos pelo Gestor não estão implementadas.
 
 ## 7. Evidências para a entrega
 
@@ -120,5 +123,5 @@ Os testes do agente cobrem aprovação, rejeição, edição, revalidação e re
 da ação aprovada. O CLI não mantém um log de auditoria dessas decisões. Não
 registrar senhas, documentos completos ou conteúdo clínico desnecessário.
 
-Prazos, perfis adicionais e tipos de recurso ainda não definidos permanecem
-decisões pendentes; não preencher esses campos com regras inventadas.
+Perfis adicionais e tipos de recurso ainda não definidos permanecem decisões
+pendentes; não preencher esses campos com regras inventadas.
