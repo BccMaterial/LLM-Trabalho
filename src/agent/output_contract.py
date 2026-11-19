@@ -118,6 +118,7 @@ class AgentOutput(BaseModel):
 
         tool_results = (info.context or {}).get("tool_results", [])
         api_references = _get_api_references(tool_results)
+        policy_references = _get_policy_references(tool_results)
         for source in self.fonte:
             if (
                 source.tipo == SourceType.API
@@ -132,6 +133,13 @@ class AgentOutput(BaseModel):
                         "A fonte da API não corresponde a um resultado disponível."
                     )
                 source.referencia = trusted_reference
+            if (
+                source.tipo == SourceType.POLICY
+                and source.referencia not in policy_references
+            ):
+                raise ValueError(
+                    "A fonte da política não corresponde a um trecho recuperado."
+                )
 
         if (
             status == OutputStatus.OPTIONS_AVAILABLE
@@ -287,6 +295,24 @@ def _get_api_references(tool_results: list[dict[str, Any]]) -> set[str]:
                 str(record["id"])
                 for record in records
                 if isinstance(record, dict) and record.get("id") is not None
+            )
+    return references
+
+
+def _get_policy_references(tool_results: list[dict[str, Any]]) -> set[str]:
+    references = set()
+    for tool_result in tool_results:
+        if tool_result["name"] != "consultar_politica":
+            continue
+        result = tool_result["result"]
+        if not isinstance(result, dict):
+            continue
+        chunks = result.get("resultados", [])
+        if isinstance(chunks, list):
+            references.update(
+                chunk["fonte"]
+                for chunk in chunks
+                if isinstance(chunk, dict) and isinstance(chunk.get("fonte"), str)
             )
     return references
 

@@ -6,6 +6,7 @@ from langgraph.types import Command
 
 from .integrations import llm
 from .integrations.api import ApiClient
+from .policy_retrieval import create_policy_retriever
 from .workflows.execution import (
     LANGGRAPH_RECURSION_LIMIT,
     TerminationReason,
@@ -29,7 +30,11 @@ def run_scheduling_flow(
 
     api_client = ApiClient()
     llm_client = llm.create_client()
-    graph = build_scheduling_graph(llm_client, api_client)
+    graph = build_scheduling_graph(
+        llm_client,
+        api_client,
+        create_policy_retriever(),
+    )
     state: SchedulingState = {
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}],
         "conversation_id": str(uuid4()),
@@ -181,7 +186,11 @@ def run_scheduling_case(
     """Executa turnos do agente sem input humano e retorna estado exportável."""
     api_client = ApiClient()
     llm_client = llm.create_client()
-    graph = build_scheduling_graph(llm_client, api_client)
+    graph = build_scheduling_graph(
+        llm_client,
+        api_client,
+        create_policy_retriever(),
+    )
     state: SchedulingState = {
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}],
         "conversation_id": str(uuid4()),

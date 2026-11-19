@@ -23,6 +23,7 @@ def test_each_cli_run_starts_an_isolated_conversation(monkeypatch, capsys):
     monkeypatch.setattr(cli, "uuid4", lambda: next(conversation_ids))
     monkeypatch.setattr(cli, "ApiClient", FakeApiClient)
     monkeypatch.setattr(cli.llm, "create_client", lambda: object())
+    monkeypatch.setattr(cli, "create_policy_retriever", lambda: object())
     monkeypatch.setattr(cli, "build_scheduling_graph", lambda *_: graph)
 
     assert cli.run_scheduling_flow("Mensagem A.", interactive=False) == (

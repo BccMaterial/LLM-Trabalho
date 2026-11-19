@@ -1,4 +1,5 @@
 from .integrations.api import ApiClient
+from .policy_retrieval import PolicyRetriever
 
 TOOLS = [
     {
@@ -76,14 +77,63 @@ TOOLS = [
     },
 ]
 
+POLICY_RETRIEVAL_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "consultar_politica",
+        "description": (
+            "Busca trechos de políticas administrativas aprovadas e vigentes. "
+            "Use para responder dúvidas sobre regras da clínica; não use para "
+            "consultar dados de pacientes, agenda ou disponibilidade."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "pergunta": {
+                    "type": "string",
+                    "description": "Pergunta administrativa a pesquisar no corpus.",
+                },
+            },
+            "required": ["pergunta"],
+            "additionalProperties": False,
+        },
+    },
+}
+
+
+def get_tool_definitions(*, include_policy_retrieval: bool = False) -> list[dict]:
+    if include_policy_retrieval:
+        return [*TOOLS, POLICY_RETRIEVAL_TOOL]
+    return TOOLS
+
 
 def execute_tool(
     client: ApiClient,
     name: str,
     arguments: dict,
     authenticated_user: dict | None = None,
+    policy_retriever: PolicyRetriever | None = None,
 ) -> dict:
     """Executa somente as ferramentas expostas ao modelo."""
+    if name == "consultar_politica":
+        if policy_retriever is None:
+            raise ValueError("A recuperação de políticas não está configurada.")
+        question = arguments["pergunta"]
+        results = policy_retriever.search(question)
+        return {
+            "consulta": question,
+            "suficiencia": "suficiente" if results else "insuficiente",
+            "resultados": [
+                {
+                    "conteudo": result.content,
+                    "fonte": result.source,
+                    "documento": result.document_id,
+                    "versao": result.version,
+                    "trecho": result.chunk_id,
+                }
+                for result in results
+            ],
+        }
     if name == "consultar_profissionais":
         return {"value": client.listar_profissionais()}
     if name == "consultar_disponibilidade":

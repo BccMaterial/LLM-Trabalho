@@ -84,6 +84,31 @@ def test_agent_output_rejects_api_source_not_present_in_tool_results():
         AgentOutput.model_validate(payload, context={"tool_results": []})
 
 
+def test_agent_output_rejects_policy_source_not_returned_by_retrieval():
+    payload = {
+        "resultado": {
+            "status": "revisao_humana_necessaria",
+            "mensagem": "A regra exige revisão humana.",
+            "acao": "encaminhada",
+        },
+        "fonte": [{"tipo": "politica", "referencia": "fonte_inventada"}],
+        "suficiencia": "insuficiente",
+    }
+
+    with pytest.raises(ValidationError, match="trecho recuperado"):
+        AgentOutput.model_validate(
+            payload,
+            context={
+                "tool_results": [
+                    {
+                        "name": "consultar_politica",
+                        "result": {"suficiencia": "insuficiente", "resultados": []},
+                    }
+                ]
+            },
+        )
+
+
 def test_agent_output_requires_api_confirmation_before_confirmed_status():
     with pytest.raises(ValidationError, match="confirmação da API"):
         AgentOutput.model_validate(

@@ -24,6 +24,7 @@ def request_with_retry(
     messages: list[dict],
     max_tokens: int | None = None,
     timeout_seconds: float = MAX_EXTERNAL_CALL_SECONDS,
+    tool_definitions: list[dict] = TOOLS,
 ):
     deadline = time.monotonic() + timeout_seconds
     for attempt in range(MAX_LLM_RETRIES):
@@ -36,7 +37,7 @@ def request_with_retry(
             return request_client.chat.completions.create(
                 model=os.environ["LLM_MODEL"],
                 messages=messages,
-                tools=TOOLS,
+                tools=tool_definitions,
                 **request_options,
             )
         except RateLimitError as error:

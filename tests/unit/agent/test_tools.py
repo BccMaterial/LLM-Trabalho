@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from src.agent import tools
 from src.agent.integrations import api
+from src.agent.policy_retrieval import PolicySearchResult
 from src.agent.workflows.execution import MAX_EXTERNAL_CALL_SECONDS
 
 
@@ -92,6 +93,43 @@ def test_booking_uses_authenticated_identity_instead_of_model_id():
     )
 
     assert result["patient_id"] == "authenticated-patient"
+
+
+def test_policy_tool_returns_only_retrieved_sources_and_sufficiency():
+    class FakeRetriever:
+        def search(self, question):
+            assert question == "De onde pode vir o encaminhamento?"
+            return [
+                PolicySearchResult(
+                    document_id="referrals",
+                    version="v1",
+                    chunk_id="section-1",
+                    content="O encaminhamento pode vir de outra clínica.",
+                    source="fixture://policies/referrals",
+                    effective_from=datetime(2026, 1, 1).date(),
+                    effective_until=None,
+                    distance=0.1,
+                    is_test_fixture=True,
+                )
+            ]
+
+    result = tools.execute_tool(
+        object(),
+        "consultar_politica",
+        {"pergunta": "De onde pode vir o encaminhamento?"},
+        policy_retriever=FakeRetriever(),
+    )
+
+    assert result["suficiencia"] == "suficiente"
+    assert result["resultados"] == [
+        {
+            "conteudo": "O encaminhamento pode vir de outra clínica.",
+            "fonte": "fixture://policies/referrals",
+            "documento": "referrals",
+            "versao": "v1",
+            "trecho": "section-1",
+        }
+    ]
 
 
 def test_create_appointment_adds_sao_paulo_offset_to_naive_datetimes():
