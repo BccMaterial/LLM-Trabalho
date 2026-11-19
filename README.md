@@ -90,8 +90,8 @@ Para chamadas à API, configure uma conta técnica própria com
 `API_AGENT_USER` e `API_AGENT_PASSWORD`. `API_USER` e `API_PASSWORD` continuam
 como fallback temporário. O login do usuário não é enviado ao LLM nem misturado
 com o cookie técnico usado pelo agente. Ele identifica o usuário para
-operações que precisam desse contexto, mas não restringe a listagem de
-agendamentos: o agente pode consultar registros de todos os pacientes.
+operações que precisam desse contexto; consultas de agenda de outros cadastros
+são recusadas pelo fluxo demonstrado.
 
 Benchmark comparativo dos modelos (usa somente casos fictícios e ferramentas simuladas):
 
@@ -116,11 +116,21 @@ poetry run python cases.py
 poetry run python cases.py --case 1
 ```
 
+Quando o agente encontra um horário disponível, o grafo pausa antes da escrita
+e aguarda a aprovação explícita do paciente. A confirmação retoma o fluxo e
+permite chamar `confirmar_agendamento`; rejeição ou ausência de autenticação
+não cria o registro.
+
 Cada execução grava `logs/cases/case-01.json` a
 `logs/cases/case-06.json`. Os arquivos incluem `run_id`, commit, timestamp,
 entrada, ferramentas, decisões e saída final. Senhas, cookies e tokens não são
 exportados. Os dados de demonstração são sintéticos e não representam uma
 clínica real.
+
+Esses arquivos são as evidências da demonstração real das issues #31 e #32.
+`docs/io.md` reproduz casos representativos, incluindo confirmação explícita
+antes da gravação, recusa de acesso a outro cadastro e bloqueio por falta de
+autenticação.
 
 Para repetir os casos três vezes, use `--repetitions 3`. Para projetar custo semestral, acrescente `--daily-volume` seguido de um volume diário definido pelo grupo; o programa não supõe esse número. As tarifas configuradas estimam o custo em faixa paga; na faixa gratuita da Groq ou do Gemini há limites de uso e as solicitações permitidas dentro deles não geram cobrança. `--dry-run` não envia chamadas.
 
@@ -138,6 +148,9 @@ A API Flask oferece recursos de usuários, profissionais e agendamentos. O agent
 O benchmark comparativo foi executado em sete cenários fictícios por modelo. O grupo escolheu Gemini 3.5 Flash-Lite para continuar o protótipo, considerando que completou os sete casos sem erros de API, executou as chamadas de ferramenta esperadas e teve menor latência. Essa decisão não aprova o modelo para uso com pacientes. Os relatórios e a análise estão em [`docs/modelos.md`](docs/modelos.md) e `logs/model-benchmark/`. Gestor e Secretária como agentes, RAG, MCP e o verificador completo continuam como etapas futuras; o workflow do Atendente já usa LangGraph.
 
 ### Exemplo observado no benchmark
+
+O benchmark usa casos fictícios e ferramentas simuladas. Ele não deve ser
+confundido com os logs de integração real em `logs/cases/`.
 
 Entrada sintética: “Quero agendar a avaliação para sexta de manhã. Que horários estão disponíveis?” O Gemini 3.5 Flash-Lite consultou a ferramenta simulada e respondeu:
 
