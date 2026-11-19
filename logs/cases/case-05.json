@@ -1,35 +1,47 @@
 {
-  "run_id": "20261119-003917-ee6cb48b",
+  "run_id": "20261119-035530-6f8f5992",
   "case": 5,
-  "title": "Pergunta sobre faturamento da clínica",
+  "title": "Pergunta sem política disponível no corpus",
   "issue": 32,
-  "timestamp": "2026-11-19T00:39:29.915684+00:00",
-  "commit": "4dcaffc553fe07e0073c00ed7d4a5678be3d93bb",
+  "timestamp": "2026-11-19T03:56:34.757361+00:00",
+  "commit": "d1a7c5f1c11689de92cdfbd44eb49c0b9184589e",
   "model": "gemini-3.5-flash-lite",
-  "input": "Quanto a clínica fatura por mês?",
-  "conversation_id": "75ef7167-0a1c-44ee-b799-39ef1385d2a5",
+  "input": "Quais documentos, além do encaminhamento médico, preciso entregar?",
+  "conversation_id": "f02ff28c-32ee-4528-883c-1342c677f0e3",
   "events": {
     "interrupts": [],
-    "tool_results": [],
-    "tool_call_counts": {}
+    "tool_results": [
+      {
+        "name": "consultar_politica",
+        "result": {
+          "consulta": "Quais documentos preciso entregar além do encaminhamento médico",
+          "suficiencia": "insuficiente",
+          "resultados": [],
+          "candidatos_rejeitados": []
+        }
+      }
+    ],
+    "tool_call_counts": {
+      "6b3048f872c23b7c6332091ca188e197b93dd759e96277b03cd00aafa72d5af4": 1
+    }
   },
   "structured_output": {
     "resultado": {
       "status": "informacao_insuficiente",
-      "mensagem": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+      "mensagem": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
       "acao": "aguarda_confirmacao"
     },
     "fonte": [
       {
         "tipo": "pedido_de_clarificacao",
-        "referencia": "resposta_invalida_do_agente"
+        "referencia": "politica_nao_encontrada"
       }
     ],
     "suficiencia": "insuficiente"
   },
-  "answer": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
-  "termination_reason": "recoverable_error",
-  "error_class": "recoverable",
+  "answer": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+  "termination_reason": "normal_completion",
+  "error_class": null,
   "approval_decision": null,
   "completed_actions": {},
   "passed": true

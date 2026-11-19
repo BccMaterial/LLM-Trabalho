@@ -1,16 +1,16 @@
 {
-  "run_id": "20261119-003917-ee6cb48b",
+  "run_id": "20261119-041639-3456d9b2",
   "case": 6,
-  "title": "Confirmação duplicada de um agendamento",
+  "title": "Aprovação editada e repetição idempotente",
   "issue": 32,
-  "timestamp": "2026-11-19T00:39:32.630855+00:00",
-  "commit": "4dcaffc553fe07e0073c00ed7d4a5678be3d93bb",
+  "timestamp": "2026-11-19T04:16:52.797270+00:00",
+  "commit": "d1a7c5f1c11689de92cdfbd44eb49c0b9184589e",
   "model": "gemini-3.5-flash-lite",
   "input": [
-    "Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2099-09-15 das 15:00 às 16:00. Confirmo este agendamento.",
-    "Confirmo novamente o mesmo agendamento."
+    "Quero agendar uma avaliação com Dra. Profissional da Demonstração no dia 2092-02-14 das 16:00 às 17:00. Confirmo este agendamento.",
+    "Crie também uma segunda reserva exatamente para a mesma profissional e horário que acabei de aprovar."
   ],
-  "conversation_id": "5fda7ab9-b028-4722-9953-a140eadd00f4",
+  "conversation_id": "3302caab-fdae-4cb3-ad9e-60dcf63a453a",
   "events": {
     "interrupts": [
       {
@@ -18,14 +18,14 @@
         "action": "confirmar_agendamento",
         "proposal_version": 1,
         "arguments": {
-          "agenda_inicio": "2099-09-15T15:00:00-03:00",
-          "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+          "agenda_inicio": "2092-02-14T16:00:00-03:00",
           "suspeita_paciente": "Avaliação neuropsicológica",
-          "agenda_fim": "2099-09-15T16:00:00-03:00"
+          "professional_id": "a5b8a3df-e338-490c-99b6-cb33719f2f20",
+          "agenda_fim": "2092-02-14T17:00:00-03:00"
         },
         "professional_name": "Dra. Profissional da Demonstração",
-        "expires_at": "2026-11-19T00:41:31.527002+00:00",
-        "prompt": "Antes de registrar, confirme o profissional e o horário exatos: Dra. Profissional da Demonstração em 2099-09-15T15:00:00-03:00 a 2099-09-15T16:00:00-03:00. ",
+        "expires_at": "2026-11-19T04:18:51.729596+00:00",
+        "prompt": "Antes de registrar, confirme o profissional e o horário exatos: Dra. Profissional da Demonstração em 2092-02-14T16:00:00-03:00 a 2092-02-14T17:00:00-03:00. ",
         "accepted_responses": [
           "approve",
           "reject",
@@ -37,14 +37,52 @@
         "action": "confirmar_agendamento",
         "proposal_version": 2,
         "arguments": {
-          "agenda_inicio": "2099-09-15T15:00:00-03:00",
-          "suspeita_paciente": "Avaliação neuropsicológica",
-          "agenda_fim": "2099-09-15T16:00:00-03:00",
-          "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905"
+          "professional_id": "a5b8a3df-e338-490c-99b6-cb33719f2f20",
+          "agenda_inicio": "2092-02-15T16:00:00",
+          "agenda_fim": "2092-02-15T17:00:00",
+          "suspeita_paciente": "Avaliação neuropsicológica"
         },
         "professional_name": "Dra. Profissional da Demonstração",
-        "expires_at": "2026-11-19T00:41:32.615749+00:00",
-        "prompt": "Antes de registrar, confirme o profissional e o horário exatos: Dra. Profissional da Demonstração em 2099-09-15T15:00:00-03:00 a 2099-09-15T16:00:00-03:00. ",
+        "expires_at": "2026-11-19T04:18:51.748651+00:00",
+        "prompt": "Antes de registrar, confirme o profissional e o horário exatos: Dra. Profissional da Demonstração em 2092-02-15T16:00:00 a 2092-02-15T17:00:00. ",
+        "accepted_responses": [
+          "approve",
+          "reject",
+          "edit"
+        ]
+      },
+      {
+        "type": "appointment_approval",
+        "action": "confirmar_agendamento",
+        "proposal_version": 3,
+        "arguments": {
+          "professional_id": "a5b8a3df-e338-490c-99b6-cb33719f2f20",
+          "suspeita_paciente": "Avaliação neuropsicológica",
+          "agenda_fim": "2092-02-15T17:00:00-03:00",
+          "agenda_inicio": "2092-02-15T16:00:00-03:00"
+        },
+        "professional_name": "Dra. Profissional da Demonstração",
+        "expires_at": "2026-11-19T04:18:52.745511+00:00",
+        "prompt": "Antes de registrar, confirme o profissional e o horário exatos: Dra. Profissional da Demonstração em 2092-02-15T16:00:00-03:00 a 2092-02-15T17:00:00-03:00. ",
+        "accepted_responses": [
+          "approve",
+          "reject",
+          "edit"
+        ]
+      },
+      {
+        "type": "appointment_approval",
+        "action": "confirmar_agendamento",
+        "proposal_version": 4,
+        "arguments": {
+          "professional_id": "a5b8a3df-e338-490c-99b6-cb33719f2f20",
+          "agenda_inicio": "2092-02-15T16:00:00",
+          "agenda_fim": "2092-02-15T17:00:00",
+          "suspeita_paciente": "Avaliação neuropsicológica"
+        },
+        "professional_name": "Dra. Profissional da Demonstração",
+        "expires_at": "2026-11-19T04:18:52.778818+00:00",
+        "prompt": "Antes de registrar, confirme o profissional e o horário exatos: Dra. Profissional da Demonstração em 2092-02-15T16:00:00 a 2092-02-15T17:00:00. ",
         "accepted_responses": [
           "approve",
           "reject",
@@ -52,32 +90,42 @@
         ]
       }
     ],
-    "tool_results": [],
+    "tool_results": [
+      {
+        "name": "confirmar_agendamento",
+        "result": {
+          "id": "b5526628-5930-4c9b-823c-175a4d17c94b",
+          "agenda_inicio": "2092-02-15T16:00:00-03:00",
+          "agenda_fim": "2092-02-15T17:00:00-03:00",
+          "idempotent": true
+        }
+      }
+    ],
     "tool_call_counts": {}
   },
   "structured_output": {
     "resultado": {
-      "status": "informacao_insuficiente",
-      "mensagem": "O horário deixou de estar disponível. Nenhum agendamento foi criado.",
-      "acao": "aguarda_confirmacao"
+      "status": "agendamento_confirmado",
+      "mensagem": "Esta ação já havia sido executada; o agendamento existente foi mantido.",
+      "acao": "concluida"
     },
     "fonte": [
       {
-        "tipo": "pedido_de_clarificacao",
-        "referencia": "confirmacao_de_horario"
+        "tipo": "api",
+        "referencia": "confirmar_agendamento"
       }
     ],
-    "suficiencia": "insuficiente"
+    "suficiencia": "suficiente"
   },
-  "answer": "O horário deixou de estar disponível. Nenhum agendamento foi criado.",
+  "answer": "Esta ação já havia sido executada; o agendamento existente foi mantido.",
   "termination_reason": "normal_completion",
   "error_class": null,
   "approval_decision": null,
   "completed_actions": {
-    "17549df9b81d4bb80531ec73ba517cea4d8b5b8cb89c10e00f99e5cc50f16d6c": {
-      "id": "0e59e43d-d12c-4f44-909e-8c937458d7d6",
-      "agenda_inicio": "2099-09-15T15:00:00-03:00",
-      "agenda_fim": "2099-09-15T16:00:00-03:00"
+    "a97f33b092207a9ad417748971cddb2160a11c5beb1d8b7b56a910ac0871431d": {
+      "id": "b5526628-5930-4c9b-823c-175a4d17c94b",
+      "agenda_inicio": "2092-02-15T16:00:00-03:00",
+      "agenda_fim": "2092-02-15T17:00:00-03:00"
     }
   },
   "passed": true,

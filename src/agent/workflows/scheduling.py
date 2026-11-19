@@ -407,6 +407,20 @@ def build_scheduling_graph(
         tool_results = list(state["tool_results"])
         approved_key = state.get("approved_action_key")
         completed_actions = dict(state.get("completed_actions") or {})
+        confirmation_call = next(
+            (
+                tool_call
+                for tool_call in state["pending_action"] or []
+                if tool_call["function"]["name"] == "confirmar_agendamento"
+            ),
+            None,
+        )
+        if confirmation_call and not approved_key:
+            approved_key = actions.approved_action_key(
+                state["conversation_id"],
+                confirmation_call,
+                state.get("authenticated_user"),
+            )
         if approved_key and approved_key in completed_actions:
             result = dict(completed_actions[approved_key])
             result["idempotent"] = True
@@ -697,6 +711,12 @@ def build_scheduling_graph(
             )
         approved_key = state.get("approved_action_key")
         completed_actions = state.get("completed_actions") or {}
+        if confirmation_call and not approved_key:
+            approved_key = actions.approved_action_key(
+                state["conversation_id"],
+                confirmation_call,
+                state.get("authenticated_user"),
+            )
         if approved_key and approved_key in completed_actions:
             # A repeated approval for an action already applied in this
             # checkpoint must reach dispatch_tools' idempotency guard. A new
@@ -704,6 +724,7 @@ def build_scheduling_graph(
             # conflict because the first write occupied that slot.
             return {
                 "pending_action": state["pending_action"],
+                "approved_action_key": approved_key,
                 **_budget_update(state, workflow_steps=1, external_calls=0),
             }
         try:
