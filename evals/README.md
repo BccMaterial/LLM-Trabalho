@@ -46,6 +46,23 @@ ocorreu nos logs atuais.
 - Casos dos YAMLs acadêmicos que usam ferramentas ausentes, como
   `simular_estado_clinica` e `agendar_exames`, não foram incluídos como se fossem
   capacidades do agente atual.
-- O dataset define critérios verificáveis; o runner, a comparação entre
-  versões, a rubrica/juiz e as métricas de execução pertencem às Issues #56,
-  #57 e #61.
+- O dataset define critérios verificáveis; o runner com injeção de falhas
+  pertence à Issue #57 e as métricas de execução à Issue #61.
+
+## Níveis de avaliação e juiz (Issue #56)
+
+O mapeamento de propriedades para nível determinístico, trajetória, resultado
+ou juiz LLM está em [`docs/evals.md`](../docs/evals.md). A rubrica binária e o
+prompt cego são `judge_validation.json` e `judge_prompt.txt`; os rótulos e
+justificativas são rascunhos pendentes de assinatura dos revisores. O limiar de
+17/20 foi fixado antes da rodada do juiz, cujas respostas brutas ficam em
+`judge_runs/`. A matriz, as regras de classificação de desacordos e a decisão
+preliminar estão em `judge_validation.json`.
+
+```bash
+poetry run python scripts/validate_judge.py --dry-run
+```
+
+`--call-judge` gera uma nova rodada sem alterar o pré-registro; `--apply-run`
+consolida uma rodada concluída e recalcula a matriz. Nenhum comando altera o
+limiar. As saídas `syn-*` são fixtures sintéticas, não execuções do agente.
