@@ -54,7 +54,12 @@ def verify_pre_registration(validation: dict[str, Any]) -> None:
     assert pre["threshold_ratio"] == 0.85, "razão do limiar foi alterada"
     assert pre["threshold"] == round(pre["sample_size"] * pre["threshold_ratio"])
     assert negatives >= 7, "amostra não tem pelo menos 7 rótulos NÃO"
-    assert validation["labels"]["status"] == "rascunho_pendente_de_assinatura"
+    labels = validation["labels"]
+    assert (
+        labels["status"] == "revisado"
+    ), "os rótulos humanos ainda não foram revisados"
+    assert labels.get("reviewed_by"), "revisor humano não registrado"
+    assert labels.get("reviewed_at"), "data da revisão humana não registrada"
     assert all(
         case["humano"]["decisao"] in DECISOES and case["humano"]["justificativa"]
         for case in cases
@@ -149,15 +154,15 @@ def build_decision(
 ) -> dict[str, Any]:
     threshold = validation["pre_registration"]["threshold"]
     adopted = matrix["acordos"] >= threshold
+    labels = validation["labels"]
+    reviewers = ", ".join(labels["reviewed_by"])
     return {
         "status": "juiz_adotado" if adopted else "juiz_nao_adotado",
         "acordos": matrix["acordos"],
         "limiar": threshold,
         "regra": "acordos >= limiar, fixado antes da medição",
-        "rotulos": validation["labels"]["status"],
-        "observacao": (
-            "Decisão preliminar: depende da assinatura dos rótulos humanos pelos revisores."
-        ),
+        "rotulos": labels["status"],
+        "observacao": f"Rótulos revisados por {reviewers} em {labels['reviewed_at']}.",
     }
 
 

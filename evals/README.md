@@ -53,11 +53,13 @@ ocorreu nos logs atuais.
 
 O mapeamento de propriedades para nível determinístico, trajetória, resultado
 ou juiz LLM está em [`docs/evals.md`](../docs/evals.md). A rubrica binária e o
-prompt cego são `judge_validation.json` e `judge_prompt.txt`; os rótulos e
-justificativas são rascunhos pendentes de assinatura dos revisores. O limiar de
-17/20 foi fixado antes da rodada do juiz, cujas respostas brutas ficam em
-`judge_runs/`. A matriz, as regras de classificação de desacordos e a decisão
-preliminar estão em `judge_validation.json`.
+prompt cego são `judge_validation.json` e `judge_prompt.txt`. Os 20 rótulos e
+justificativas foram revisados por Thiago Pereira Lins da Silva; `dev-08` e
+`syn-10` foram reclassificados após a rodada do juiz. O registro declara que o
+limiar de 17/20 foi fixado antes da rodada, cujas respostas brutas ficam em
+`judge_runs/`; o commit citado, porém, não contém o arquivo do pré-registro. A
+matriz final registra 18/20 acordos e classifica os dois desacordos em
+`judge_validation.json`.
 
 ```bash
 poetry run python scripts/validate_judge.py --dry-run

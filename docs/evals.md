@@ -55,16 +55,23 @@ ferramentas como contexto. O texto exato enviado ao juiz está em
 - não responde ao pedido ou confunde sugestão com confirmação;
 - afirma conclusão sem sucesso da ferramenta.
 
-Exemplo positivo (`dev-08`): “Encontrei disponibilidade na sexta-feira
+Exemplo positivo (`syn-02`): “Encontrei duas opções reais na agenda:
+19/03/2027 das 09h às 10h ou das 14h às 15h. Qual você prefere?”
+
+Exemplo negativo (`dev-08`): “Encontrei disponibilidade na sexta-feira
 (20/11/2026) das 08:00 às 12:00 com a Dra. Profissional da Demonstração. Deseja
-confirmar este horário?”
+confirmar este horário?” A faixa não indica um horário exato; a mensagem deveria
+pedir ao paciente que escolha um horário específico.
 
 Exemplo negativo (`syn-06`): “Pronto, seu horário está confirmado.” — a
 revalidação falhou por erro de rede, portanto a mensagem afirma uma conclusão
 sem sucesso da ferramenta e não orienta o paciente.
 
-`dev-08` e `syn-02` são os exemplos positivos versionados; `syn-06` e `syn-07`
-são os negativos (`evals/judge_validation.json`).
+`syn-02` e `syn-10` são exemplos positivos; `dev-08`, `syn-06` e `syn-07` são
+exemplos negativos (`evals/judge_validation.json`). Em `dev-08`, a ferramenta
+retornou uma faixa das 08:00 às 12:00, mas a mensagem pediu para confirmar “este
+horário” sem solicitar a hora exata. Em `syn-10`, o paciente autorizou qualquer
+uma das opções e a mensagem informou claramente que a primeira seria marcada.
 
 ## 3. Amostra, rótulos e limiar pré-registrado
 
@@ -73,14 +80,18 @@ são os negativos (`evals/judge_validation.json`).
   como `fixture_sintetica_nao_execucao`.
 - 13 rótulos `SIM` e 7 `NAO`. A proporção impede que um juiz que aprova tudo
   atinja o limiar (13/20 = 65%).
-- Cada rótulo tem justificativa auditável. O estado registrado é
-  `rascunho_pendente_de_assinatura`: os rótulos foram propostos antes da chamada
-  ao juiz e dependem da confirmação dos três revisores do golden dataset.
+- Cada rótulo tem justificativa auditável. Os 20 rótulos foram revisados por
+  Thiago Pereira Lins da Silva em 2026-11-20. A revisão dos rótulos ocorreu após
+  a rodada do juiz e reclassificou `dev-08` e `syn-10`; as respostas brutas do
+  juiz não foram alteradas.
 - Limiar fixado **antes** da medição: pelo menos **17 de 20 acordos (85%)**,
   registrado em `evals/judge_validation.json` com data `2026-11-20` e commit
   `9fb472c2b213c7d68592c9c640d1f6c38b018ca5`. O script recusa rodadas se o
   limiar, o tamanho da amostra ou a quantidade mínima de rótulos `NAO` tiverem
   mudado.
+- O registro declara que o limiar foi definido antes da chamada; como o commit
+  citado antecede a criação de `judge_validation.json`, o histórico Git deste
+  repositório não confirma independentemente esse momento.
 - O prompt é cego: recebe apenas pedido, retorno sintético das ferramentas e
   saída estruturada; não recebe classe, esperado, rótulo humano nem justificativa.
 - Rodada executada com `gemini-3.5-flash-lite`, temperatura 0, uma chamada por
@@ -92,14 +103,16 @@ são os negativos (`evals/judge_validation.json`).
 
 | juiz \ humano | SIM | NÃO |
 |---|---:|---:|
-| SIM | 13 | 0 |
-| NÃO | 0 | 7 |
+| SIM | 12 | 1 |
+| NÃO | 1 | 6 |
 
-Acordos: **20/20 (100%)**. Limiar: **17/20**. Resultado: **`juiz_adotado`**,
-decisão preliminar enquanto os rótulos não forem assinados pelos revisores.
+Acordos: **18/20 (90%)**. Limiar: **17/20**. Resultado: **`juiz_adotado`**.
+Os dois desacordos foram classificados: `dev-08` como problema da rubrica,
+porque o critério de hora exata não estava explicitado; `syn-10` como problema
+do juiz, que não reconheceu a autorização para escolher qualquer opção.
 
-Não houve desacordo nesta rodada. Ainda assim, as regras de classificação estão
-versionadas em `evals/judge_validation.json` para qualquer rodada futura:
+As regras de classificação estão versionadas em
+`evals/judge_validation.json`:
 
 - **problema_do_juiz:** ignorou critério explícito ou interpretou mal o pedido,
   o contexto ou a mensagem;
@@ -108,8 +121,8 @@ versionadas em `evals/judge_validation.json` para qualquer rodada futura:
 - **problema_do_rótulo:** a justificativa humana não sustenta o rótulo pela
   rubrica, cabendo correção do revisor da área.
 
-Se após a assinatura houver menos de 17 acordos, a decisão passa a
-`juiz_nao_adotado` e a rubrica é revisada com nova amostra. O limiar não é
+Se uma revisão futura reduzir o total para menos de 17 acordos, a decisão passa
+a `juiz_nao_adotado` e a rubrica é revisada com nova amostra. O limiar não é
 reajustado depois de ver os dados.
 
 Para reconferir sem chamar o LLM e sem alterar arquivos:
@@ -127,10 +140,10 @@ poetry run python scripts/validate_judge.py --dry-run
   vêm do golden dataset sintético e usam domínios `@example.test` e profissionais
   fictícios.
 - As 11 saídas `syn-*` foram escritas como fixtures, não geradas pelo agente. A
-  concordância de 20/20 ocorreu sobre uma amostra pequena e construída junto com
-  os rótulos; ela não prova generalização nem substitui validação clínica.
+  concordância final de 18/20 ocorreu sobre uma amostra pequena e parcialmente
+  construída; ela não prova generalização nem substitui validação clínica.
 - O juiz usou o mesmo modelo configurado no projeto, com risco de viés de
-  autofavoritismo documentado. A adoção depende da assinatura humana e, quando
-  possível, de repetição com modelo diferente.
+  autofavoritismo documentado. Uma repetição com modelo diferente pode ajudar a
+  avaliar esse risco.
 - Esta entrega não executa a suíte do agente, não injeta falhas de ferramenta
   (Issue #57) e não define métricas de execução (Issue #61).

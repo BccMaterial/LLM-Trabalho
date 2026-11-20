@@ -28,6 +28,12 @@ def test_pre_registration_and_labelled_sample():
     assert VALIDATION["pre_registration"]["threshold_ratio"] == 0.85
     assert len(cases) == 20
     assert labels == {"SIM": 13, "NAO": 7}
+    assert VALIDATION["labels"]["status"] == "revisado"
+    assert VALIDATION["labels"]["reviewed_by"] == ["Thiago Pereira Lins da Silva"]
+    assert VALIDATION["labels"]["reviewed_at"] == "2026-11-20"
+    human_labels = {case["case_id"]: case["humano"]["decisao"] for case in cases}
+    assert human_labels["dev-08-entrada-ambigua"] == "NAO"
+    assert human_labels["syn-10-escolha-sem-especificacao"] == "SIM"
     assert {case["case_id"] for case in cases} == {
         case["id"] for case in GOLDEN["cases"]
     }
@@ -63,11 +69,16 @@ def test_matrix_and_decision_match_versioned_result():
 
     assert matrix == VALIDATION["matrix"]
     assert decision == VALIDATION["decision"]
-    assert matrix["acordos"] == 20
-    assert matrix["desacordos"] == 0
+    assert matrix["juiz_sim_humano_sim"] == 12
+    assert matrix["juiz_sim_humano_nao"] == 1
+    assert matrix["juiz_nao_humano_sim"] == 1
+    assert matrix["juiz_nao_humano_nao"] == 6
+    assert matrix["acordos"] == 18
+    assert matrix["desacordos"] == 2
+    assert matrix["acuracia"] == 0.9
     assert decision["status"] == "juiz_adotado"
     assert decision["limiar"] == 17
-    assert decision["rotulos"] == "rascunho_pendente_de_assinatura"
+    assert decision["rotulos"] == "revisado"
 
 
 def test_judge_run_is_auditable_and_normalises_accents():
@@ -105,6 +116,12 @@ def test_disagreements_and_no_real_personal_data():
         if case["juiz"]["decisao"] != case["humano"]["decisao"]
     ]
     assert len(disagreements) == len(VALIDATION["disagreements"])
+    assert {
+        item["case_id"]: item["classificacao"] for item in VALIDATION["disagreements"]
+    } == {
+        "dev-08-entrada-ambigua": "problema_da_rubrica",
+        "syn-10-escolha-sem-especificacao": "problema_do_juiz",
+    }
     for item in VALIDATION["disagreements"]:
         assert item["classificacao"] in {
             "problema_do_juiz",

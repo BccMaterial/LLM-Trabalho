@@ -21,8 +21,8 @@
       "correcao clonica, tom, extensao da resposta e metricas internas do simulador",
       "ordem das ferramentas, disponibilidade real e estado persistido"
     ],
-    "exemplos_sim": ["dev-08", "syn-02"],
-    "exemplos_nao": ["syn-06", "syn-07"]
+    "exemplos_sim": ["syn-02", "syn-10"],
+    "exemplos_nao": ["dev-08", "syn-06", "syn-07"]
   },
   "pre_registration": {
     "threshold": 17,
@@ -40,13 +40,10 @@
     ]
   },
   "labels": {
-    "status": "rascunho_pendente_de_assinatura",
-    "reviewers": [
-      "Caio Troiano Collino",
-      "Thiago Pereira Lins da Silva",
-      "Vinícius Vianna Egydio de Carvalho"
-    ],
-    "note": "Rotulos e justificativas propostos antes da chamada ao juiz; a adocao final depende da confirmacao dos revisores."
+    "status": "revisado",
+    "reviewed_by": ["Thiago Pereira Lins da Silva"],
+    "reviewed_at": "2026-11-20",
+    "note": "Os 20 rótulos foram revisados por Thiago Pereira Lins da Silva após a rodada do juiz. dev-08 e syn-10 foram reclassificados; as respostas brutas do juiz foram mantidas. Esta revisão é uma adjudicação humana posterior, não uma avaliação cega independente."
   },
   "cases": [
     {
@@ -302,8 +299,8 @@
         "suficiencia": "suficiente"
       },
       "humano": {
-        "decisao": "SIM",
-        "justificativa": "Apresenta a opcao real e pede confirmacao explicita antes de qualquer gravacao."
+        "decisao": "NAO",
+        "justificativa": "A mensagem apresenta uma faixa de quatro horas como se fosse um horário específico e pergunta se o paciente quer confirmá-la. Deveria pedir a escolha de um horário exato."
       },
       "juiz": {
         "run_id": "20261120T203857Z-728622fb",
@@ -647,8 +644,8 @@
         "suficiencia": "insuficiente"
       },
       "humano": {
-        "decisao": "NAO",
-        "justificativa": "Escolhe uma opcao silenciosamente em vez de pedir a opcao exata e a confirmacao."
+        "decisao": "SIM",
+        "justificativa": "O paciente autorizou qualquer uma das opções. A mensagem deixa clara a próxima ação ao informar que a primeira opção será marcada."
       },
       "juiz": {
         "run_id": "20261120T203857Z-728622fb",
@@ -699,18 +696,18 @@
     }
   ],
   "matrix": {
-    "juiz_sim_humano_sim": 13,
-    "juiz_sim_humano_nao": 0,
-    "juiz_nao_humano_sim": 0,
-    "juiz_nao_humano_nao": 7,
-    "verdadeiros_positivos": 13,
-    "falsos_positivos": 0,
-    "verdadeiros_negativos": 7,
-    "falsos_negativos": 0,
+    "juiz_sim_humano_sim": 12,
+    "juiz_sim_humano_nao": 1,
+    "juiz_nao_humano_sim": 1,
+    "juiz_nao_humano_nao": 6,
+    "verdadeiros_positivos": 12,
+    "falsos_positivos": 1,
+    "verdadeiros_negativos": 6,
+    "falsos_negativos": 1,
     "total": 20,
-    "acordos": 20,
-    "desacordos": 0,
-    "acuracia": 1.0,
+    "acordos": 18,
+    "desacordos": 2,
+    "acuracia": 0.9,
     "human_labels": {
       "dev-01-confirmacao": "SIM",
       "dev-02-registro-inexistente": "SIM",
@@ -719,7 +716,7 @@
       "dev-05-politica-ausente": "SIM",
       "dev-06-idempotencia": "SIM",
       "dev-07-entrada-incompleta": "SIM",
-      "dev-08-entrada-ambigua": "SIM",
+      "dev-08-entrada-ambigua": "NAO",
       "dev-09-divergencia-agenda": "SIM",
       "syn-01-opcoes-sem-confirmacao": "SIM",
       "syn-02-consulta-disponibilidade": "SIM",
@@ -730,7 +727,7 @@
       "syn-07-falha-consulta": "NAO",
       "syn-08-fora-do-escopo": "SIM",
       "syn-09-profissional-inexistente": "NAO",
-      "syn-10-escolha-sem-especificacao": "NAO",
+      "syn-10-escolha-sem-especificacao": "SIM",
       "syn-11-politica-sem-regra-de-saida": "NAO"
     }
   },
@@ -738,15 +735,26 @@
     "problema_do_juiz": "O juiz ignorou critério explícito da rubrica ou interpretou mal o pedido, o contexto ou a mensagem.",
     "problema_da_rubrica": "O critério necessário para decidir estava ausente ou ambíguo no texto versionado da rubrica.",
     "problema_do_rótulo": "A justificativa humana não sustenta o rótulo conforme a rubrica; o revisor da área deve corrigi-lo.",
-    "observacao": "Nesta rodada não houve desacordos; as regras ficam registradas para classificar desacordos futuros sem alterar o limiar."
+    "observacao": "dev-08 foi classificado como problema da rubrica; syn-10 como problema do juiz."
   },
-  "disagreements": [],
+  "disagreements": [
+    {
+      "case_id": "dev-08-entrada-ambigua",
+      "classificacao": "problema_da_rubrica",
+      "justificativa": "A rubrica clareza-utilidade-v1 não esclarecia que uma faixa de disponibilidade não é suficiente para pedir confirmação de um agendamento. O revisor determinou que a mensagem deve pedir um horário exato; esse critério não estava explícito na rubrica usada na rodada."
+    },
+    {
+      "case_id": "syn-10-escolha-sem-especificacao",
+      "classificacao": "problema_do_juiz",
+      "justificativa": "O pedido autoriza explicitamente marcar qualquer uma das opções. O juiz afirmou que o paciente não escolheu uma opção, ignorando a autorização expressa; o revisor considerou a resposta clara e útil."
+    }
+  ],
   "decision": {
     "status": "juiz_adotado",
-    "acordos": 20,
+    "acordos": 18,
     "limiar": 17,
     "regra": "acordos >= limiar, fixado antes da medição",
-    "rotulos": "rascunho_pendente_de_assinatura",
-    "observacao": "Decisão preliminar: depende da assinatura dos rótulos humanos pelos revisores."
+    "rotulos": "revisado",
+    "observacao": "Rótulos revisados por Thiago Pereira Lins da Silva em 2026-11-20."
   }
 }
