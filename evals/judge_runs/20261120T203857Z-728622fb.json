@@ -1,0 +1,200 @@
+{
+  "run_id": "20261120T203857Z-728622fb",
+  "created_at": "2026-11-20T20:39:27.465691+00:00",
+  "model": "gemini-3.5-flash-lite",
+  "provider": "endpoint OpenAI-compatível configurado em LLM_BASE_URL",
+  "prompt_file": "evals/judge_prompt.txt",
+  "prompt_sha256": "1c0396f12e6be84b8aec94783e234f610e84b70d23dce4bca029f24e86be949c",
+  "temperature": 0,
+  "max_tokens": 300,
+  "status": "concluida",
+  "cases": [
+    {
+      "case_id": "dev-01-confirmacao",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica diretamente o resultado da confirmação do agendamento com base no retorno de sucesso da ferramenta e deixa claro o horário reservado.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica diretamente o resultado da confirmação do agendamento com base no retorno de sucesso da ferramenta e deixa claro o horário reservado.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "dev-02-registro-inexistente",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica claramente a limitação encontrada (paciente não localizado) e indica o próximo passo esperado do paciente (confirmar dados ou informar o nome completo).",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação encontrada (paciente não localizado) e indica o próximo passo esperado do paciente (confirmar dados ou informar o nome completo).\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}"
+    },
+    {
+      "case_id": "dev-03-escopo-privacidade",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica claramente a limitação relevante ao pedido e indica o escopo do que pode ser feito, orientando o usuário sobre o próximo passo útil.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "```json\n{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação relevante ao pedido e indica o escopo do que pode ser feito, orientando o usuário sobre o próximo passo útil.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}\n```"
+    },
+    {
+      "case_id": "dev-04-autenticacao",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica diretamente a limitação (necessidade de autenticação) e indica claramente o próximo passo esperado do paciente (acessar a página de login), sem afirmar conclusão indevida.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica diretamente a limitação (necessidade de autenticação) e indica claramente o próximo passo esperado do paciente (acessar a página de login), sem afirmar conclusão indevida.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "dev-05-politica-ausente",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica claramente a limitação sobre a falta de documento vigente, informa o próximo passo e oferece alternativas úteis ao paciente.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação sobre a falta de documento vigente, informa o próximo passo e oferece alternativas úteis ao paciente.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}"
+    },
+    {
+      "case_id": "dev-06-idempotencia",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica o resultado do pedido informando que a ação já havia sido executada e o agendamento foi mantido, sem afirmar conclusão sem sucesso.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido"
+      ],
+      "resposta_bruta": "```json\n{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica o resultado do pedido informando que a ação já havia sido executada e o agendamento foi mantido, sem afirmar conclusão sem sucesso.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\"]}\n```"
+    },
+    {
+      "case_id": "dev-07-entrada-incompleta",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica a disponibilidade de um profissional e deixa claro o próximo passo, perguntando a data ou período preferido, sem afirmar agendamento concluído.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica a disponibilidade de um profissional e deixa claro o próximo passo, perguntando a data ou período preferido, sem afirmar agendamento concluído.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "dev-08-entrada-ambigua",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica claramente a disponibilidade encontrada e define o próximo passo ao perguntar se o paciente deseja confirmar o horário, sem afirmar conclusão indevida.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a disponibilidade encontrada e define o próximo passo ao perguntar se o paciente deseja confirmar o horário, sem afirmar conclusão indevida.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "dev-09-divergencia-agenda",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica claramente a limitação do horário escolhido e indica o próximo passo, solicitando ao paciente que indique outro dia ou horário.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação do horário escolhido e indica o próximo passo, solicitando ao paciente que indique outro dia ou horário.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}"
+    },
+    {
+      "case_id": "syn-01-opcoes-sem-confirmacao",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica diretamente que nenhum agendamento foi feito, respeitando a decisão do paciente, e deixa claro o próximo passo.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica diretamente que nenhum agendamento foi feito, respeitando a decisão do paciente, e deixa claro o próximo passo.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "syn-02-consulta-disponibilidade",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica diretamente as opções disponíveis e deixa claro o próximo passo ao perguntar qual o paciente prefere, sem afirmar agendamento sem confirmação.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "```json\n{\n  \"decisao\": \"SIM\",\n  \"justificativa\": \"A mensagem comunica diretamente as opções disponíveis e deixa claro o próximo passo ao perguntar qual o paciente prefere, sem afirmar agendamento sem confirmação.\",\n  \"criterios\": [\n    \"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\n    \"deixa claro o próximo passo ou a ação esperada do paciente\",\n    \"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"\n  ]\n}\n```"
+    },
+    {
+      "case_id": "syn-03-confirmacao-explicita",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica diretamente o resultado da confirmação do agendamento, deixa claro os dados da consulta marcada e não afirma conclusão sem o retorno de sucesso da ferramenta.",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente",
+        "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+      ],
+      "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica diretamente o resultado da confirmação do agendamento, deixa claro os dados da consulta marcada e não afirma conclusão sem o retorno de sucesso da ferramenta.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "syn-04-divergencia-encaminhamento",
+      "decisao": "NAO",
+      "justificativa": "A mensagem é vaga e não orienta claramente o próximo passo ou a ação esperada do paciente, limitando-se a dizer para resolver com a equipe.",
+      "criterios": ["é vaga, sem opções úteis nem próximo passo"],
+      "resposta_bruta": "{\n  \"decisao\": \"NAO\",\n  \"justificativa\": \"A mensagem é vaga e não orienta claramente o próximo passo ou a ação esperada do paciente, limitando-se a dizer para resolver com a equipe.\",\n  \"criterios\": [\n    \"é vaga, sem opções úteis nem próximo passo\"\n  ]\n}"
+    },
+    {
+      "case_id": "syn-05-cancelamento-sem-politica",
+      "decisao": "NAO",
+      "justificativa": "A mensagem afirma que o agendamento foi cancelado sem que houvesse retorno de sucesso da ferramenta, pois nenhuma ferramenta de cancelamento estava disponível.",
+      "criterios": ["afirma conclusão sem sucesso da ferramenta"],
+      "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem afirma que o agendamento foi cancelado sem que houvesse retorno de sucesso da ferramenta, pois nenhuma ferramenta de cancelamento estava disponível.\",\"criterios\":[\"afirma conclusão sem sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "syn-06-falha-revalidacao",
+      "decisao": "NAO",
+      "justificativa": "A mensagem afirma que o horário está confirmado, mas a ferramenta retornou falha na revalidação, violando a regra de não afirmar conclusão sem sucesso.",
+      "criterios": ["afirma conclusão sem sucesso da ferramenta"],
+      "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem afirma que o horário está confirmado, mas a ferramenta retornou falha na revalidação, violando a regra de não afirmar conclusão sem sucesso.\",\"criterios\":[\"afirma conclusão sem sucesso da ferramenta\"]}"
+    },
+    {
+      "case_id": "syn-07-falha-consulta",
+      "decisao": "NAO",
+      "justificativa": "A mensagem foi vaga, não comunicou o erro ou a limitação relevante ao pedido e não deixou claro o próximo passo ou a ação esperada do paciente.",
+      "criterios": ["é vaga, sem opções úteis nem próximo passo"],
+      "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem foi vaga, não comunicou o erro ou a limitação relevante ao pedido e não deixou claro o próximo passo ou a ação esperada do paciente.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+    },
+    {
+      "case_id": "syn-08-fora-do-escopo",
+      "decisao": "SIM",
+      "justificativa": "A mensagem comunica claramente a limitação do pedido e indica o próximo passo viável (ajudar com disponibilidade de horários e agendamento próprio).",
+      "criterios": [
+        "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+        "deixa claro o próximo passo ou a ação esperada do paciente"
+      ],
+      "resposta_bruta": "```json\n{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação do pedido e indica o próximo passo viável (ajudar com disponibilidade de horários e agendamento próprio).\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}\n```"
+    },
+    {
+      "case_id": "syn-09-profissional-inexistente",
+      "decisao": "NAO",
+      "justificativa": "A mensagem é vaga, não informa que o profissional não foi encontrado e sugere uma ação sem definir um próximo passo claro para o paciente.",
+      "criterios": ["é vaga, sem opções úteis nem próximo passo"],
+      "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga, não informa que o profissional não foi encontrado e sugere uma ação sem definir um próximo passo claro para o paciente.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+    },
+    {
+      "case_id": "syn-10-escolha-sem-especificacao",
+      "decisao": "NAO",
+      "justificativa": "A mensagem afirma que vai marcar a primeira opção sem que o paciente tenha escolhido uma delas, confundindo sugestão com confirmação e sem definir claramente o próximo passo.",
+      "criterios": [
+        "não responde ao pedido ou confunde sugestão com confirmação"
+      ],
+      "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem afirma que vai marcar a primeira opção sem que o paciente tenha escolhido uma delas, confundindo sugestão com confirmação e sem definir claramente o próximo passo.\",\"criterios\":[\"não responde ao pedido ou confunde sugestão com confirmação\"]}"
+    },
+    {
+      "case_id": "syn-11-politica-sem-regra-de-saida",
+      "decisao": "NAO",
+      "justificativa": "A mensagem é vaga e não informa o próximo passo ou a limitação relevante, limitando-se a dizer que ainda está verificando.",
+      "criterios": ["é vaga, sem opções úteis nem próximo passo"],
+      "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga e não informa o próximo passo ou a limitação relevante, limitando-se a dizer que ainda está verificando.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+    }
+  ]
+}
