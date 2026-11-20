@@ -2,44 +2,84 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.invalid/llm-trabalho/evals/golden-dataset.schema.json",
   "type": "object",
-  "required": ["dataset_version", "schema_version", "normative_contract", "entrypoint", "reviewers", "cases"],
+  "required": [
+    "dataset_version",
+    "schema_version",
+    "normative_contract",
+    "entrypoint",
+    "reviewers",
+    "cases"
+  ],
   "properties": {
-    "dataset_version": {"type": "string"},
-    "schema_version": {"type": "string"},
-    "title": {"type": "string"},
-    "normative_contract": {"const": "src/agent/output_contract.py"},
-    "entrypoint": {"const": "src.agent.cli.run_scheduling_case"},
-    "reviewers": {"type": "array", "minItems": 3, "items": {"type": "string", "minLength": 1}},
+    "dataset_version": { "type": "string" },
+    "schema_version": { "type": "string" },
+    "title": { "type": "string" },
+    "normative_contract": { "const": "src/agent/output_contract.py" },
+    "entrypoint": { "const": "src.agent.cli.run_scheduling_case" },
+    "reviewers": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 1 }
+    },
     "cases": {
       "type": "array",
       "minItems": 20,
-      "items": {"$ref": "#/$defs/case"}
+      "items": { "$ref": "#/$defs/case" }
     }
   },
   "$defs": {
     "case": {
       "type": "object",
-      "required": ["id", "origem", "classe", "por_que_existe", "entrada", "esperado"],
+      "required": [
+        "id",
+        "origem",
+        "classe",
+        "por_que_existe",
+        "entrada",
+        "esperado"
+      ],
       "properties": {
-        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$"},
-        "origem": {"enum": ["desenvolvimento", "sintetico"]},
-        "classe": {"type": "string", "minLength": 1},
-        "por_que_existe": {"type": "string", "minLength": 1},
-        "entrada": {"type": "object", "minProperties": 1},
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+        "origem": { "enum": ["desenvolvimento", "sintetico"] },
+        "classe": { "type": "string", "minLength": 1 },
+        "por_que_existe": { "type": "string", "minLength": 1 },
+        "entrada": { "type": "object", "minProperties": 1 },
         "esperado": {
           "type": "object",
           "required": ["status", "suficiencia", "ferramentas", "efeito"],
           "properties": {
-            "status": {"enum": ["opcoes_disponiveis", "agendamento_confirmado", "encaminhamento_pendente", "solicitacao_encaminhada", "revisao_humana_necessaria", "informacao_insuficiente", "consulta_indisponivel", "fora_do_escopo", "agendamento_nao_confirmado"]},
-            "suficiencia": {"enum": ["suficiente", "insuficiente"]},
-            "ferramentas": {"type": "array", "items": {"enum": ["consultar_profissionais", "consultar_disponibilidade", "confirmar_agendamento", "consultar_politica"]}},
-            "efeito": {"type": "string", "minLength": 1},
-            "criterios": {"type": "array", "items": {"type": "string"}}
+            "status": {
+              "enum": [
+                "opcoes_disponiveis",
+                "agendamento_confirmado",
+                "encaminhamento_pendente",
+                "solicitacao_encaminhada",
+                "revisao_humana_necessaria",
+                "informacao_insuficiente",
+                "consulta_indisponivel",
+                "fora_do_escopo",
+                "agendamento_nao_confirmado"
+              ]
+            },
+            "suficiencia": { "enum": ["suficiente", "insuficiente"] },
+            "ferramentas": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "consultar_profissionais",
+                  "consultar_disponibilidade",
+                  "confirmar_agendamento",
+                  "consultar_politica"
+                ]
+              }
+            },
+            "efeito": { "type": "string", "minLength": 1 },
+            "criterios": { "type": "array", "items": { "type": "string" } }
           },
           "additionalProperties": true
         },
-        "evidencia": {"type": "object"},
-        "revisao": {"type": "object"}
+        "evidencia": { "type": "object" },
+        "revisao": { "type": "object" }
       },
       "additionalProperties": true
     }
