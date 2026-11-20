@@ -1,68 +1,40 @@
 # Instruções para agentes
 
-## Build, test e lint
+## Fluxo de trabalho
 
-Use Poetry a partir da raiz e priorize os comandos do `task`:
+- Após **toda** alteração de código, execute `poetry run task lint:fix` na raiz (`isort . && black .`). Não fique no ciclo check/fix: `poetry run task lint:check` apenas ao preparar o relatório do PR.
+- Commits em inglês no padrão Conventional Commits; PRs em português com resumo do trabalho.
+
+## Comandos (Poetry na raiz)
 
 ```bash
 poetry install
-poetry run task dev:api
-poetry run task dev:agent
+poetry run task dev            # sobe PostgreSQL + API (Docker) e aplica migrations
+poetry run task dev:api        # python -m src.api.app
+poetry run task dev:agent      # python -m src.agent.app: popula dados sintéticos e abre a CLI (exige API no ar)
+poetry run task migrations:up  # aplica migrations via POST /api/migrations
 poetry run task test
-poetry run task lint:check
-poetry run task lint:fix
-```
-
-Para executar um teste específico:
-
-```bash
-poetry run pytest tests/integration/api/appointment/test_appointment_post.py -q
 poetry run pytest tests/integration/api/appointment/test_appointment_post.py::test_create_appointment_defaults_to_pending -q
 ```
 
-Configure as variáveis de `.env.example`; a API exige `DATABASE_URL` e o
-agente exige `LLM_BASE_URL` e `OPENAI_API_KEY` (`LLM_MODEL` é opcional).
-API e PostgreSQL podem ser iniciados com:
+- `.env` (ver `.env.example`) é obrigatório até para testes: `src/api/app.py` cria `app = create_app()` no import e exige `DATABASE_URL` carregada por `load_dotenv()` do diretório atual. A API também usa `PASSWORD_PEPPER` e `ADMIN_API_TOKEN`; o agente usa `LLM_BASE_URL`, `OPENAI_API_KEY`, `API_BASE_URL`, `API_AGENT_USER`/`API_AGENT_PASSWORD` (fallback temporário `API_USER`/`API_PASSWORD`) e, opcionalmente, `POLICY_INDEX_PATH` (padrão `~/.cache/llm-trabalho/policy-index`); o benchmark usa `GROQ_API_KEY`/`GEMINI_API_KEY`. Nunca versionar segredos nem dados clínicos reais.
 
-```bash
-docker compose --env-file .env -f infra/compose.yaml up --build
-```
+## Arquitetura
 
-## Arquitetura do código
+- API: `src/api/app.py` registra as blueprints e injeta banco/migrations em `app.extensions`; controllers tratam HTTP, services concentram regras, views formatam JSON e models definem o domínio SQLAlchemy. Autenticação em `src/api/middlewares` (cookie `HttpOnly` ou Bearer administrativo) e autorização por role em `src/api/policies`, não nas controllers nem nos services.
+- Migrations Alembic em `infra/alembic/versions` usam `Base.metadata` de `src/api/models/__init__.py`, com `upgrade()` e `downgrade()`. No fluxo normal são aplicadas pela API (`POST /api/migrations` com Bearer `ADMIN_API_TOKEN`), não pelo CLI do Alembic.
+- Agente: `src/agent/app.py` → `src/agent/cli.py` (`run_scheduling_flow` interativa; `run_scheduling_case` para execução sem humano). O fluxo real é `build_scheduling_graph` em `src/agent/workflows/scheduling.py` (LangGraph com `MemorySaver`). `poetry run python conferir_grafo.py` mostra nós e arestas sem chamar LLM ou API.
+- Agendamento só é gravado após aprovação explícita: `interrupt()` em `src/agent/actions.py`, retomado com `Command(resume={"decision": "approve"|"reject"|"edit", ...})`. O horário é revalidado antes da escrita e a idempotência vive no checkpoint em memória (não sobrevive a reinício do processo).
+- Ferramentas em `src/agent/tools.py`, saída validada em `src/agent/output_contract.py`, prompts versionados em `src/prompts` via `load_prompt`. O RAG é a ferramenta `consultar_politica` dentro de `dispatch_tools`, não um nó do grafo; o índice local ainda não contém políticas oficiais. Dados de paciente e agenda vêm da API, nunca do RAG.
+- `docs/arquitetura.md` descreve o desenho-alvo: Gestor, Secretária, fila, verificador completo e grade de horários livres ainda não existem.
 
-`src/api/app.py` cria a aplicação Flask, registra as blueprints e injeta as
-dependências de banco e migrations em `app.extensions`. Controllers em
-`src/api/controllers` tratam HTTP e validação de entrada; services em
-`src/api/services` concentram operações e regras; views em `src/api/views`
-formatam JSON; models em `src/api/models` definem o domínio SQLAlchemy.
+## Testes e evidências
 
-O middleware em `src/api/middlewares` autentica requisições com sessão em
-cookie `HttpOnly` ou Bearer token administrativo. Policies em
-`src/api/policies` mantêm as decisões de autorização por role separadas do
-middleware e dos services. Migrations Alembic ficam em
-`infra/alembic/versions`, usam `Base.metadata` de
-`src/api/models/__init__.py` e precisam de `upgrade()` e `downgrade()`.
+- Unitários espelham `src` (`tests/unit/api`, `tests/unit/agent`, `tests/unit/prompts`, `tests/unit/evals`); integração em `tests/integration/api/<recurso>/`, separados por método HTTP e por role em `access/`. Cubra sucesso e falha: autenticação, autorização, validação e conflitos.
+- Fixtures criam SQLite temporário e aplicam migrations pelo `test_client`; não exigem PostgreSQL. `pythonpath = ["src", "."]` permite imports `api.*`, `src.agent.*` e `cases`. Compartilhe dependências por `app.extensions`.
+- `evals/golden_dataset.json` (20 casos) tem teste de forma e cobertura; o contrato normativo é `src/agent/output_contract.py`, não `benchmarks/response.schema.json`. Renomear ferramentas exige atualizar dataset e teste.
+- `poetry run python cases.py --case N` e `poetry run python -m src.agent.benchmark` fazem chamadas reais (e possivelmente pagas) e gravam em `logs/`; use `--dry-run` no benchmark antes de uma rodada completa. Ferramentas de casos acadêmicos como `simular_estado_clinica` e `agendar_exames` não existem no agente.
 
-`src/agent` é um protótipo separado de conectividade com LLM, ainda não
-integrado à API ou a um fluxo conversacional. O desenho-alvo descrito em
-`docs/arquitetura.md` e o contrato em `docs/io.md` não significam que agenda,
-pacientes e os três agentes já estejam implementados; registros mutáveis de
-pacientes devem vir da API, não do RAG proposto.
+## Respostas ao paciente
 
-## Convenções
-
-- Mantenha rotas nas blueprints, formatação JSON nas views, operações
-  reutilizáveis nos services e autorização nas policies. Compartilhe
-  dependências por `app.extensions`.
-- Testes unitários seguem os caminhos de `src`. Testes de integração são
-  divididos por método (`test_*_get.py`, `test_*_post.py`, etc.) e por acesso
-  em `access/`, com um arquivo por role testada. Cubra caminhos felizes e
-  tristes, incluindo autenticação, autorização, validação e conflitos.
-- Os testes usam imports `api.*`, pois `src` está no `pythonpath`; fixtures
-  podem injetar banco SQLite e token via `create_app`.
-- Respostas para pacientes seguem `docs/io.md`: português, `fonte`,
-  `suficiencia`, clarificação de entradas incompletas/ambíguas e nenhuma
-  invenção clínica ou de política. Não exponha segredos nem conteúdo clínico
-  em logs; agendamento exige confirmação explícita.
-- PRs devem ser abertos em português com resumo do trabalho. Commits seguem
-  Conventional Commits e são escritos em inglês.
+- Siga `docs/io.md`: português, `resultado`/`fonte`/`suficiencia` validados, clarificação de entradas incompletas ou ambíguas e nenhuma invenção clínica ou de política. Não exponha segredos nem conteúdo clínico em logs; sem confirmação explícita não há agendamento.
