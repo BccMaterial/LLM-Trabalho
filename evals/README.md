@@ -34,9 +34,9 @@ centrais de confirmação, falha de ferramenta e divergência aparecem mais de
 uma vez; classes auxiliares preservam distinções úteis para cortes posteriores.
 
 Os casos de falha de ferramenta definem falhas controladas de consulta ou
-revalidação. A Issue #57 deverá fornecer o mecanismo de injeção/fixação dessas
-falhas ao executar a suíte; este arquivo não finge que uma rede indisponível
-ocorreu nos logs atuais.
+revalidação. O runner em `src/judge/fixtures.py` injeta essas falhas apenas nos
+casos marcados, sem copiar a lógica do agente; este arquivo não finge que uma
+rede indisponível ocorreu nos logs atuais.
 
 ## Limites
 
@@ -47,7 +47,8 @@ ocorreu nos logs atuais.
   `simular_estado_clinica` e `agendar_exames`, não foram incluídos como se fossem
   capacidades do agente atual.
 - O dataset define critérios verificáveis; o runner com injeção de falhas
-  pertence à Issue #57 e as métricas de execução à Issue #61.
+  pertence à Issue #57. As métricas de execução são registradas em `runs/` e
+  consolidadas pelo comparador em `docs/evals-comparison.md`.
 
 ## Níveis de avaliação e juiz (Issue #56)
 

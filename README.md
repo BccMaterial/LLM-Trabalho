@@ -147,6 +147,23 @@ Execução dos testes automatizados:
 poetry run task test
 ```
 
+### Suíte versionada do agente
+
+Com a API local no ar, a suíte executa os 20 casos do golden dataset no agente
+real, grava evidências em `evals/runs/` e compara versões:
+
+```bash
+poetry run python -m src.judge.run_suite --version "v1" --change "descrição da mudança" --output-dir evals/runs
+poetry run python -m src.judge.compare_runs --before evals/runs/<antes> --after evals/runs/<depois> --output docs/evals-comparison.md
+```
+
+O comando usa `LLM_*` para o agente e `JUDGE_LLM_*` para o juiz, sem fallback
+para a variável antiga. `--dry-run` lista os casos e os adaptadores sem chamar
+API ou LLM. Para conferir a rubrica sem chamadas externas, use
+`poetry run python -m src.judge.validate --dry-run`. As duas rodadas versionadas
+da Issue #57, a mudança no prompt e a interpretação das regressões estão em
+[`docs/evals-comparison.md`](docs/evals-comparison.md).
+
 ## Estado do projeto
 
 A API Flask oferece recursos de usuários, profissionais e agendamentos. O agente Python conversa em turnos e consulta/grava pela API HTTP; a demonstração cria registros sintéticos pela API. O código exige aprovação explícita e revalida o horário antes da escrita, mas o sistema não é pronto para uso por uma clínica: a consulta verifica conflitos em um intervalo específico e não calcula uma grade real de horários livres. A idempotência depende do checkpoint em memória. Não use dados reais.

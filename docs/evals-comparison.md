@@ -36,3 +36,25 @@ Regressões:
 Avisos de comparabilidade:
 - o prompt do agente mudou entre as rodadas
 
+## Interpretação
+
+As duas rodadas usaram o mesmo dataset, contrato, modelo do agente e modelo do
+juiz; a única mudança de código entre elas foi o prompt v2. O ganho em
+`entrada_ambigua` é coerente com a mudança: `syn-10` passou a pedir uma opção
+exata em vez de aceitar “tanto faz”. As duas regressões merecem acompanhamento:
+`dev-03` caiu em uma recuperação de erro do LLM (`recoverable_error`) que
+produziu uma resposta genérica em vez da recusa de privacidade esperada, e
+`dev-07` deixou de executar `consultar_profissionais` antes de pedir a data.
+Nenhuma das duas foi causalmente atribuída ao prompt sem uma repetição; ambas
+podem ser variação estocástica do modelo. A mudança não resolveu os casos de
+gravação, que ainda falharam por não chamarem `confirmar_agendamento` ou por
+contradizerem o retorno da API. Antes de adotar o prompt v2, é necessário
+repetir as rodadas e investigar se as regressões desaparecem; a queda de 5 pontos
+percentuais não autoriza adotá-lo com base nestas duas execuções.
+
+## Evidências
+
+- `evals/runs/20261121T011533Z-96dca654/`: baseline com o prompt anterior.
+- `evals/runs/20261121T012140Z-78b88b74/`: rodada com o prompt v2.
+- Cada diretório contém `run.json` (versão, commit, hashes, credenciais sem
+  valores), `results.json` (por caso) e `summary.json` (métricas agregadas).

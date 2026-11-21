@@ -145,5 +145,7 @@ poetry run python scripts/validate_judge.py --dry-run
 - O juiz usou o mesmo modelo configurado no projeto, com risco de viés de
   autofavoritismo documentado. Uma repetição com modelo diferente pode ajudar a
   avaliar esse risco.
-- Esta entrega não executa a suíte do agente, não injeta falhas de ferramenta
-  (Issue #57) e não define métricas de execução (Issue #61).
+- A validação do juiz é independente da suíte da Issue #57: as execuções reais
+  e a comparação entre versões estão em `evals/runs/` e
+  [`docs/evals-comparison.md`](evals-comparison.md). O juiz é reutilizado pela
+  suíte, mas os rótulos e o limiar desta seção não são recalculados por ela.
