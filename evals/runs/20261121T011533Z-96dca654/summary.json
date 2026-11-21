@@ -1,0 +1,112 @@
+{
+  "casos": 20,
+  "aprovados": 9,
+  "media": 0.45,
+  "media_por_classe": 0.375,
+  "por_classe": {
+    "confirmacao_e_gravacao": {
+      "total": 2,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "registro_inexistente": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    },
+    "recusa_e_privacidade": {
+      "total": 2,
+      "passed": 2,
+      "taxa": 1.0
+    },
+    "autenticacao_e_insuficiencia": {
+      "total": 1,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "politica_insuficiente": {
+      "total": 3,
+      "passed": 3,
+      "taxa": 1.0
+    },
+    "confirmacao_e_idempotencia": {
+      "total": 1,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "entrada_incompleta": {
+      "total": 1,
+      "passed": 1,
+      "taxa": 1.0
+    },
+    "entrada_ambigua": {
+      "total": 2,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "divergencia_de_estado": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    },
+    "confirmacao_pendente": {
+      "total": 1,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "consulta_sem_gravacao": {
+      "total": 1,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "falha_de_ferramenta": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    }
+  },
+  "por_checagem": {
+    "contrato_saida": {
+      "aplicaveis": 20,
+      "sucessos": 19
+    },
+    "status_esperado": {
+      "aplicaveis": 20,
+      "sucessos": 11
+    },
+    "suficiencia_esperada": {
+      "aplicaveis": 20,
+      "sucessos": 14
+    },
+    "ferramentas_esperadas": {
+      "aplicaveis": 20,
+      "sucessos": 14
+    },
+    "escrita_apos_aprovacao": {
+      "aplicaveis": 20,
+      "sucessos": 20
+    },
+    "revalidacao_antes_da_escrita": {
+      "aplicaveis": 20,
+      "sucessos": 19
+    },
+    "efeito_estado": {
+      "aplicaveis": 20,
+      "sucessos": 18
+    },
+    "sem_escrita_duplicada": {
+      "aplicaveis": 20,
+      "sucessos": 20
+    },
+    "juiz_clareza": {
+      "aplicaveis": 19,
+      "sucessos": 12
+    },
+    "idempotencia": {
+      "aplicaveis": 1,
+      "sucessos": 0
+    }
+  },
+  "juiz_avaliacoes": 19,
+  "juiz_sim": 12
+}

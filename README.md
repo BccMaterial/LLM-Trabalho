@@ -49,8 +49,11 @@ Com isso, as dependências do projeto serão instaladas.
 Após a instalação, preencha os valores da `.env` com base no `.env.example`:
 ```bash
 LLM_BASE_URL="<YOUR_LLM_BASE_URL>"
-OPENAI_API_KEY="<YOUR_OPENAI_API_KEY>"
+LLM_API_KEY="<YOUR_LLM_API_KEY>"
 LLM_MODEL="<YOUR_LLM_MODEL>"
+JUDGE_LLM_BASE_URL="<YOUR_JUDGE_LLM_BASE_URL>"
+JUDGE_LLM_API_KEY="<YOUR_JUDGE_LLM_API_KEY>"
+JUDGE_LLM_MODEL="<YOUR_JUDGE_LLM_MODEL>"
 ```
 Para a API, configure também `DATABASE_URL`, `PASSWORD_PEPPER` e `ADMIN_API_TOKEN` conforme o `.env.example`. Não versionar nem registrar os valores secretos.
 
@@ -143,6 +146,29 @@ Execução dos testes automatizados:
 ```bash
 poetry run task test
 ```
+
+### Suíte versionada do agente
+
+Com a API local no ar, a suíte executa os 20 casos do golden dataset no agente
+real, grava evidências em `evals/runs/` e compara versões:
+
+```bash
+poetry run python -m src.judge.run_suite --version "v1" --change "descrição da mudança" --output-dir evals/runs
+poetry run python -m src.judge.compare_runs --before evals/runs/<antes> --after evals/runs/<depois> --output docs/evals-comparison.md
+```
+
+O comando usa `LLM_*` para o agente e `JUDGE_LLM_*` para o juiz, sem fallback
+para a variável antiga. Antes de cada rodada, a suíte remove agendamentos
+`Pendente` que ocupam os slots congelados pelo dataset (inclusive resíduos de
+execuções antigas) e registra os IDs limpos em `run.json`. Há um intervalo de 2 s
+entre casos para reduzir `429`; o juiz tenta novamente com backoff. Erros `429`
+inesperados do provedor são marcados como `inconclusivo` e ficam fora do
+denominador da taxa; falhas injetadas pelos casos continuam sendo avaliadas
+normalmente. `--dry-run` lista os casos e os adaptadores sem chamar API ou LLM.
+Para conferir a rubrica sem chamadas externas, use
+`poetry run python -m src.judge.validate --dry-run`. As rodadas versionadas da
+Issue #57, a mudança no prompt e a interpretação das regressões estão em
+[`docs/evals-comparison.md`](docs/evals-comparison.md).
 
 ## Estado do projeto
 

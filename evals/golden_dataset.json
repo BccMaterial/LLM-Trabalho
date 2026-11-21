@@ -1,5 +1,5 @@
 {
-  "dataset_version": "1.0.0",
+  "dataset_version": "1.1.0",
   "schema_version": "1.0.0",
   "title": "Golden dataset do agente Atendente",
   "normative_contract": "src/agent/output_contract.py",
@@ -51,11 +51,14 @@
         "login": "fixture_do_log"
       },
       "esperado": {
-        "status": "informacao_insuficiente",
+        "status": "consulta_indisponivel",
         "suficiencia": "insuficiente",
         "ferramentas": ["consultar_disponibilidade"],
         "efeito": "nenhuma gravação",
-        "criterios": ["informar registro inexistente", "não inventar horários"]
+        "criterios": [
+          "informar que a consulta não pôde ser concluída",
+          "não inventar horários"
+        ]
       },
       "evidencia": {
         "tipo": "log_versionado",
@@ -103,7 +106,7 @@
       "esperado": {
         "status": "informacao_insuficiente",
         "suficiencia": "insuficiente",
-        "ferramentas": ["consultar_profissionais", "consultar_disponibilidade"],
+        "ferramentas": [],
         "efeito": "nenhuma gravação",
         "criterios": [
           "solicitar autenticação",
@@ -159,6 +162,7 @@
         "decisoes": [
           { "decision": "edit" },
           { "decision": "approve" },
+          { "decision": "edit" },
           { "decision": "approve" }
         ]
       },
@@ -206,17 +210,20 @@
       "id": "dev-08-entrada-ambigua",
       "origem": "desenvolvimento",
       "classe": "entrada_ambigua",
-      "por_que_existe": "Verifica tratamento de referência temporal ambígua sem confirmação de horário.",
+      "por_que_existe": "Verifica tratamento de referência temporal ambígua sem confirmação de horário; a API atual não devolve grade de horários.",
       "entrada": {
         "mensagens": ["Quero marcar na sexta de manhã."],
         "login": "fixture_do_log"
       },
       "esperado": {
-        "status": "opcoes_disponiveis",
-        "suficiencia": "suficiente",
+        "status": "informacao_insuficiente",
+        "suficiencia": "insuficiente",
         "ferramentas": ["consultar_profissionais", "consultar_disponibilidade"],
-        "efeito": "nenhuma gravação; apenas opções retornadas pela consulta",
-        "criterios": ["não confirmar reserva sem escolha explícita"]
+        "efeito": "nenhuma gravação; pedido de data e horário exatos",
+        "criterios": [
+          "não confirmar reserva sem escolha explícita",
+          "pedir a data e o horário exatos"
+        ]
       },
       "evidencia": {
         "tipo": "log_versionado",
@@ -266,7 +273,7 @@
         "login": "fixture_sintetico"
       },
       "esperado": {
-        "status": "agendamento_nao_confirmado",
+        "status": "informacao_insuficiente",
         "suficiencia": "insuficiente",
         "ferramentas": [],
         "efeito": "nenhuma gravação",
@@ -281,7 +288,7 @@
       "id": "syn-02-consulta-disponibilidade",
       "origem": "sintetico",
       "classe": "consulta_sem_gravacao",
-      "por_que_existe": "Garante que uma pergunta por horários consulte a API e apresente opções sem escrever.",
+      "por_que_existe": "Garante que uma pergunta vaga por horários consulte a API e peça a data e o horário exatos, sem escrever.",
       "entrada": {
         "mensagens": [
           "Quero agendar a avaliação para sexta de manhã. Que horários estão disponíveis?"
@@ -289,11 +296,11 @@
         "login": "fixture_sintetico"
       },
       "esperado": {
-        "status": "opcoes_disponiveis",
-        "suficiencia": "suficiente",
-        "ferramentas": ["consultar_disponibilidade"],
+        "status": "informacao_insuficiente",
+        "suficiencia": "insuficiente",
+        "ferramentas": ["consultar_profissionais", "consultar_disponibilidade"],
         "efeito": "nenhuma gravação",
-        "criterios": ["oferecer somente horários retornados", "pedir escolha"]
+        "criterios": ["pedir data e horário exatos", "não oferecer horário não retornado"]
       },
       "revisao": {
         "revisores": "os três contribuidores",

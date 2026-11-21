@@ -200,6 +200,26 @@ def insufficient_response(message: str, reference: str) -> AgentOutput:
     )
 
 
+def api_unavailable_response(
+    message: str,
+    reference: str,
+    tool_results: list[dict[str, Any]] | None = None,
+) -> AgentOutput:
+    """Saída para falha de consulta, com fonte de API rastreável."""
+    return AgentOutput.model_validate(
+        {
+            "resultado": {
+                "status": OutputStatus.API_UNAVAILABLE,
+                "mensagem": message,
+                "acao": OutputAction.NONE,
+            },
+            "fonte": [{"tipo": SourceType.API, "referencia": reference}],
+            "suficiencia": Sufficiency.INSUFFICIENT,
+        },
+        context={"tool_results": tool_results or []},
+    )
+
+
 def booking_result_response(
     tool_results: list[dict[str, Any]],
 ) -> AgentOutput | None:

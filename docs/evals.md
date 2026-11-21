@@ -3,8 +3,9 @@
 Este documento fecha a Issue #56 para o agente **Atendente**, único agente
 implementado no repositório. Ele define em que nível cada propriedade é medida,
 justifica o uso de juiz LLM, registra a rubrica e os rótulos e documenta a
-validação do juiz. O benchmark de modelos em `logs/model-benchmark/` e a futura
-suíte de execução da Issue #57 não substituem esta validação.
+validação do juiz. O benchmark de modelos em `logs/model-benchmark/` e a suíte
+de execução da Issue #57 não substituem esta validação: a suíte reutiliza o juiz
+já adotado, mas não recalcula rótulos nem limiar.
 
 ## 1. Propriedades e níveis escolhidos
 
@@ -145,5 +146,12 @@ poetry run python scripts/validate_judge.py --dry-run
 - O juiz usou o mesmo modelo configurado no projeto, com risco de viés de
   autofavoritismo documentado. Uma repetição com modelo diferente pode ajudar a
   avaliar esse risco.
-- Esta entrega não executa a suíte do agente, não injeta falhas de ferramenta
-  (Issue #57) e não define métricas de execução (Issue #61).
+- A validação do juiz é independente da suíte da Issue #57: as execuções reais
+  e a comparação entre versões estão em `evals/runs/` e
+  [`docs/evals-comparison.md`](evals-comparison.md). O juiz é reutilizado pela
+  suíte, mas os rótulos e o limiar desta seção não são recalculados por ela.
+- Na suíte, o juiz tenta novamente em caso de `429` com backoff. Falhas
+  inesperadas do provedor que produzem apenas o fallback genérico de "falha
+  temporária" são registradas como `inconclusivo` e ficam fora do denominador;
+  falhas injetadas pelos casos continuam sendo avaliadas. Quando o juiz falha,
+  `juiz_clareza` fica `null` em vez de contar como uma resposta `NÃO`.
