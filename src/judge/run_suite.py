@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import subprocess
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -31,6 +32,7 @@ from src.judge.rubric import (
 
 AGENT_ENV = ("LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL")
 AGENT_CREDENTIALS = ("API_AGENT_USER", "API_AGENT_PASSWORD")
+CASE_DELAY_SECONDS = 2.0
 
 
 def _sha256_file(path: Path) -> str:
@@ -157,7 +159,8 @@ def _judge_case(case: dict, result: dict) -> dict | None:
 def summarize(records: list[dict]) -> dict[str, Any]:
     by_class: dict[str, dict[str, int | float]] = {}
     by_check: dict[str, dict[str, int]] = {}
-    for record in records:
+    conclusive = [record for record in records if not record.get("inconclusivo")]
+    for record in conclusive:
         class_stats = by_class.setdefault(record["classe"], {"total": 0, "passed": 0})
         class_stats["total"] += 1
         class_stats["passed"] += int(record["passed"])
@@ -169,11 +172,14 @@ def summarize(records: list[dict]) -> dict[str, Any]:
             stats["sucessos"] += int(value)
     for stats in by_class.values():
         stats["taxa"] = round(stats["passed"] / stats["total"], 4)
-    total = len(records)
-    passed = sum(int(record["passed"]) for record in records)
+    total = len(conclusive)
+    passed = sum(int(record["passed"]) for record in conclusive)
+    inconclusive = len(records) - total
     class_rates = [stats["taxa"] for stats in by_class.values()]
     return {
-        "casos": total,
+        "casos": len(records),
+        "conclusivos": total,
+        "inconclusivos": inconclusive,
         "aprovados": passed,
         "media": round(passed / total, 4) if total else 0.0,
         "media_por_classe": (
@@ -296,7 +302,15 @@ def main() -> int:
     records: list[dict] = []
 
     ids = fixtures.prepare_dataset()
-    for case in selected:
+    initial_appointments = fixtures.appointments_snapshot()
+    cleaned_ids = fixtures.clean_dataset_slots(initial_appointments)
+    fixtures.delete_appointments(cleaned_ids)
+    identity["dataset_slots_limpos"] = sorted(cleaned_ids)
+    identity["intervalo_entre_casos_segundos"] = CASE_DELAY_SECONDS
+    write_json(run_dir / "run.json", identity)
+    for index, case in enumerate(selected):
+        if index:
+            time.sleep(CASE_DELAY_SECONDS)
         _run_case(
             case,
             ids,

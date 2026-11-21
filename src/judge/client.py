@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import os
+import time
 
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 
 from .rubric import JUDGE_MAX_TOKENS, JUDGE_TEMPERATURE, ROOT
 
@@ -54,10 +55,18 @@ def judge_identity() -> dict[str, str]:
 
 
 def judge_message(prompt: str) -> str:
-    response = create_client().chat.completions.create(
-        model=os.environ["JUDGE_LLM_MODEL"],
-        messages=[{"role": "user", "content": prompt}],
-        temperature=JUDGE_TEMPERATURE,
-        max_tokens=JUDGE_MAX_TOKENS,
-    )
-    return response.choices[0].message.content or ""
+    """Chama o juiz com backoff explícito para limites de requisição."""
+    for attempt in range(4):
+        try:
+            response = create_client().chat.completions.create(
+                model=os.environ["JUDGE_LLM_MODEL"],
+                messages=[{"role": "user", "content": prompt}],
+                temperature=JUDGE_TEMPERATURE,
+                max_tokens=JUDGE_MAX_TOKENS,
+            )
+            return response.choices[0].message.content or ""
+        except RateLimitError:
+            if attempt == 3:
+                raise
+            time.sleep(2**attempt)
+    raise RuntimeError("juiz não respondeu")

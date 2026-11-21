@@ -1,8 +1,16 @@
 # Golden dataset do agente
 
-`golden_dataset.json` é o conjunto versionado da Issue #55. Ele contém 20
-casos, todos com entrada, comportamento esperado, origem, classe e justificativa.
-O schema formal está em `golden_dataset.schema.json`.
+`golden_dataset.json` é o conjunto versionado da Issue #55, na versão **1.1.0**.
+Ele contém 20 casos, todos com entrada, comportamento esperado, origem, classe e
+justificativa. O schema formal está em `golden_dataset.schema.json`.
+
+A versão 1.1.0 realinha as expectativas com a API atual: `dev-02` aceita
+`consulta_indisponivel` quando o cadastro não existe; `dev-04` não exige
+ferramentas antes da autenticação; `dev-06` restaura as quatro decisões do log
+original (`edit`, `approve`, `edit`, `approve`); `dev-08` e `syn-02` pedem data e
+hora exatas porque a API não devolve uma grade de horários livres; `syn-01`
+aceita `informacao_insuficiente`. `syn-04` permanece como fixture parcial: o
+campo de encaminhamento não existe na API usada pelo agente.
 
 ## Proveniência e revisão
 
@@ -49,6 +57,13 @@ rede indisponível ocorreu nos logs atuais.
 - O dataset define critérios verificáveis; o runner com injeção de falhas
   pertence à Issue #57. As métricas de execução são registradas em `runs/` e
   consolidadas pelo comparador em `docs/evals-comparison.md`.
+- Slots congelados no dataset são limpos no início de cada rodada quando já
+  estão ocupados por agendamentos `Pendente` de execuções anteriores. Essa
+  limpeza não apaga agendamentos com outros status nem o conflito preparado por
+  `dev-09` dentro da própria rodada.
+- O agente não implementa uma grade real de horários livres; a API responde
+  apenas se um intervalo informado está disponível. Por isso os casos ambíguos
+  esperam um pedido de data/hora exata, não uma lista de opções.
 
 ## Níveis de avaliação e juiz (Issue #56)
 

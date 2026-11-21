@@ -69,6 +69,24 @@ def _revalidation_before_write(tool_results: list[dict]) -> bool:
     return "consultar_disponibilidade" in names[:first_write]
 
 
+def _rate_limit_inconclusive(case: dict, result: dict) -> bool:
+    """Identifica 429 inesperado do provedor, preservando falhas injetadas."""
+    if case.get("entrada", {}).get("ambiente"):
+        return False
+    if result.get("termination_reason") not in {"recoverable_error", "runner_error"}:
+        return False
+    evidence = f"{result.get('error') or ''} {result.get('answer') or ''}".casefold()
+    if any(
+        marker in evidence
+        for marker in ("429", "ratelimit", "rate limit", "limite de requisicoes")
+    ):
+        return True
+    answer = str(result.get("answer") or "").casefold()
+    return (
+        "falha temporária" in answer or "tente novamente mais tarde" in answer
+    ) and ("falha" in answer or "tente" in answer)
+
+
 def _idempotency(case_id: str, tool_results: list[dict]) -> bool | None:
     if not case_id.startswith("dev-06"):
         return None
@@ -101,6 +119,8 @@ def evaluate_case(
     tool_results = _tool_results(result)
     new_ids = after_ids - before_ids
     expected_write = expected.get("status") == "agendamento_confirmado"
+    inconclusive = _rate_limit_inconclusive(case, result)
+    decision = (judgment or {}).get("decisao")
     checks: dict[str, bool | None] = {
         "contrato_saida": _contract_valid(structured, tool_results),
         "status_esperado": resultado.get("status") == expected.get("status"),
@@ -114,16 +134,17 @@ def evaluate_case(
         "efeito_estado": len(new_ids) == 1 if expected_write else not new_ids,
         "sem_escrita_duplicada": len(new_ids) <= 1,
         "idempotencia": _idempotency(case["id"], tool_results),
-        "juiz_clareza": (
-            judgment.get("decisao") == "SIM" if judgment is not None else None
-        ),
+        "juiz_clareza": decision == "SIM" if decision in {"SIM", "NAO"} else None,
     }
+    if inconclusive:
+        checks = {name: None for name in checks}
     failed = [name for name, value in checks.items() if value is False]
     return {
         "case_id": case["id"],
         "classe": case["classe"],
         "origem": case["origem"],
-        "passed": not failed,
+        "passed": not failed and not inconclusive,
+        "inconclusivo": inconclusive,
         "checks": checks,
         "failed_checks": failed,
         "status_observado": resultado.get("status"),

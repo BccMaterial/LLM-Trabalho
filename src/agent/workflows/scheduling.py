@@ -13,6 +13,7 @@ from .. import actions, tools
 from ..integrations import llm
 from ..output_contract import (
     InvalidAgentOutputError,
+    api_unavailable_response,
     booking_result_response,
     insufficient_response,
     validate_agent_output,
@@ -399,6 +400,9 @@ def build_scheduling_graph(
             "pending_action": None,
             "pending_message": None,
             "answer": answer,
+            "structured_response": insufficient_response(
+                answer, "autenticacao_necessaria"
+            ).model_dump(mode="json"),
             "termination_reason": TerminationReason.NORMAL_COMPLETION.value,
         }
 
@@ -466,7 +470,45 @@ def build_scheduling_graph(
                     authenticated_user=state.get("authenticated_user"),
                 )
             except (RuntimeError, TimeoutError, ConnectionError) as error:
-                return _error_update(error, state, attempted_tool_calls)
+                update = _error_update(error, state, attempted_tool_calls)
+                availability_calls = [
+                    call
+                    for call in state["pending_action"] or []
+                    if call["function"]["name"] == "consultar_disponibilidade"
+                ]
+                if availability_calls:
+                    failed_results = []
+                    for call in availability_calls:
+                        try:
+                            arguments = json.loads(call["function"]["arguments"])
+                        except (TypeError, ValueError):
+                            arguments = {}
+                        failed_results.append(
+                            {
+                                "name": "consultar_disponibilidade",
+                                "arguments": arguments,
+                                "result": {
+                                    "erro": "falha_de_rede",
+                                    "mensagem": "A consulta não pôde ser concluída.",
+                                },
+                            }
+                        )
+                    answer = (
+                        "Não foi possível consultar a disponibilidade na API. "
+                        "Nenhum horário foi oferecido e nenhum agendamento foi "
+                        "criado; tente novamente mais tarde."
+                    )
+                    output = api_unavailable_response(
+                        answer, "consultar_disponibilidade", failed_results
+                    )
+                    update.update(
+                        {
+                            "answer": answer,
+                            "structured_response": output.model_dump(mode="json"),
+                            "tool_results": failed_results,
+                        }
+                    )
+                return update
             except (FatalExecutionError, ValueError, TypeError, KeyError) as error:
                 return _error_update(error, state, attempted_tool_calls)
             budget_update = _budget_update(
@@ -643,6 +685,16 @@ def build_scheduling_graph(
             ),
             None,
         )
+        professional_result = {
+            "name": "consultar_profissionais",
+            "arguments": {},
+            "result": {
+                "value": [
+                    {"id": item.get("id"), "nome": item.get("nome")}
+                    for item in professionals
+                ]
+            },
+        }
         if professional is None:
             names = [item["nome"] for item in professionals if item.get("nome")]
             if names:
@@ -669,10 +721,15 @@ def build_scheduling_graph(
             update["structured_response"] = insufficient_response(
                 answer, "escolha_de_profissional"
             ).model_dump(mode="json")
+            update["tool_results"] = [
+                *state["tool_results"],
+                professional_result,
+            ]
             return update
         return {
             "professional_name": professional["nome"],
             "professional_validated": True,
+            "tool_results": [*state["tool_results"], professional_result],
             **_budget_update(state, workflow_steps=1, external_calls=1),
         }
 
@@ -758,6 +815,15 @@ def build_scheduling_graph(
                 "um horário disponíveis para tentar novamente."
             )
             output = insufficient_response(answer, "revalidacao_de_horario")
+            failed_result = {
+                "name": "consultar_disponibilidade",
+                "arguments": {
+                    "professional_id": arguments.get("professional_id"),
+                    "agenda_inicio": arguments.get("agenda_inicio"),
+                    "agenda_fim": arguments.get("agenda_fim"),
+                },
+                "result": {"erro": "falha_de_rede"},
+            }
             return {
                 "messages": state["messages"]
                 + [{"role": "assistant", "content": answer}],
@@ -766,6 +832,7 @@ def build_scheduling_graph(
                 "approval_result": None,
                 "approval_decision": "revalidation_failed",
                 "approved_action_key": None,
+                "tool_results": [*state["tool_results"], failed_result],
                 **_budget_update(state, workflow_steps=1, external_calls=1),
                 "structured_response": output.model_dump(mode="json"),
                 "answer": answer,
@@ -774,6 +841,17 @@ def build_scheduling_graph(
             }
         except (ValueError, TypeError, KeyError) as error:
             return _error_update(error, state)
+        availability_arguments = {
+            "professional_id": arguments.get("professional_id"),
+            "agenda_inicio": arguments.get("agenda_inicio"),
+            "agenda_fim": arguments.get("agenda_fim"),
+        }
+        availability_result = {
+            "name": "consultar_disponibilidade",
+            "arguments": availability_arguments,
+            "result": availability,
+        }
+        tool_results = [*state["tool_results"], availability_result]
         if availability.get("disponibilidade") != "disponivel":
             answer = (
                 "O horário deixou de estar disponível. "
@@ -786,6 +864,7 @@ def build_scheduling_graph(
                 "approval_result": None,
                 "approval_decision": None,
                 "approved_action_key": None,
+                "tool_results": tool_results,
                 **_budget_update(state, workflow_steps=1, external_calls=1),
                 "structured_response": output.model_dump(mode="json"),
                 "answer": answer,
@@ -793,6 +872,7 @@ def build_scheduling_graph(
             }
         return {
             "pending_action": state["pending_action"],
+            "tool_results": tool_results,
             **_budget_update(state, workflow_steps=1, external_calls=1),
         }
 

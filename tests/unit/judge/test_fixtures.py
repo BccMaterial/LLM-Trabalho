@@ -38,3 +38,24 @@ def test_consultation_failure_is_active_from_the_start(monkeypatch):
             execution.client.consultar_agendamentos()
 
     assert fixtures.ApiClient.consultar_agendamentos is not None
+
+
+def test_clean_dataset_slots_removes_only_overlapping_pending_appointments():
+    appointments = {
+        "contaminado": {
+            "status": "Pendente",
+            "agenda_inicio": "2095-05-01T15:00:00+00:00",
+            "agenda_fim": "2095-05-01T16:00:00+00:00",
+        },
+        "fora_do_slot": {
+            "status": "Pendente",
+            "agenda_inicio": "2095-05-01T16:00:00+00:00",
+            "agenda_fim": "2095-05-01T17:00:00+00:00",
+        },
+        "confirmado": {
+            "status": "Confirmado",
+            "agenda_inicio": "2095-05-01T15:00:00+00:00",
+            "agenda_fim": "2095-05-01T16:00:00+00:00",
+        },
+    }
+    assert fixtures.clean_dataset_slots(appointments) == {"contaminado"}

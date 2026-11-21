@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 from copy import deepcopy
+from datetime import datetime
 from typing import Any, Iterator
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -26,6 +27,15 @@ CONFLICT_SLOT = {
     "agenda_inicio": "2091-04-23T15:00:00-03:00",
     "agenda_fim": "2091-04-23T16:00:00-03:00",
 }
+DATASET_SLOTS = (
+    ("2095-05-01T12:00:00-03:00", "2095-05-01T13:00:00-03:00"),
+    ("2093-05-10T10:00:00-03:00", "2093-05-10T11:00:00-03:00"),
+    ("2090-11-20T16:00:00-03:00", "2090-11-20T17:00:00-03:00"),
+    ("2098-05-27T08:00:00-03:00", "2098-05-27T09:00:00-03:00"),
+    ("2098-05-28T08:00:00-03:00", "2098-05-28T09:00:00-03:00"),
+    ("2091-04-23T15:00:00-03:00", "2091-04-23T16:00:00-03:00"),
+    ("2027-03-19T09:00:00-03:00", "2027-03-19T10:00:00-03:00"),
+)
 PRIOR_CONTEXT = {
     "syn-03-confirmacao-explicita": [
         "Quero agendar a avaliação para 19 de março de 2027, das 9h às 10h. "
@@ -95,6 +105,26 @@ def appointments_snapshot() -> dict[str, dict]:
 def delete_appointments(ids: set[str]) -> None:
     for appointment_id in ids:
         _admin_request(f"/api/appointments/{appointment_id}", method="DELETE")
+
+
+def clean_dataset_slots(appointments: dict[str, dict]) -> set[str]:
+    """Remove agendamentos pendentes que ocupem slots congelados pelo dataset."""
+    slots = [
+        (datetime.fromisoformat(start), datetime.fromisoformat(end))
+        for start, end in DATASET_SLOTS
+    ]
+    cleaned: set[str] = set()
+    for appointment_id, appointment in appointments.items():
+        if appointment.get("status") != "Pendente":
+            continue
+        try:
+            start = datetime.fromisoformat(appointment["agenda_inicio"])
+            end = datetime.fromisoformat(appointment["agenda_fim"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if any(start < slot_end and end > slot_start for slot_start, slot_end in slots):
+            cleaned.add(appointment_id)
+    return cleaned
 
 
 def new_appointment_ids(before: dict[str, dict], after: dict[str, dict]) -> set[str]:

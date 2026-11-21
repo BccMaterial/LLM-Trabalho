@@ -158,10 +158,16 @@ poetry run python -m src.judge.compare_runs --before evals/runs/<antes> --after 
 ```
 
 O comando usa `LLM_*` para o agente e `JUDGE_LLM_*` para o juiz, sem fallback
-para a variável antiga. `--dry-run` lista os casos e os adaptadores sem chamar
-API ou LLM. Para conferir a rubrica sem chamadas externas, use
-`poetry run python -m src.judge.validate --dry-run`. As duas rodadas versionadas
-da Issue #57, a mudança no prompt e a interpretação das regressões estão em
+para a variável antiga. Antes de cada rodada, a suíte remove agendamentos
+`Pendente` que ocupam os slots congelados pelo dataset (inclusive resíduos de
+execuções antigas) e registra os IDs limpos em `run.json`. Há um intervalo de 2 s
+entre casos para reduzir `429`; o juiz tenta novamente com backoff. Erros `429`
+inesperados do provedor são marcados como `inconclusivo` e ficam fora do
+denominador da taxa; falhas injetadas pelos casos continuam sendo avaliadas
+normalmente. `--dry-run` lista os casos e os adaptadores sem chamar API ou LLM.
+Para conferir a rubrica sem chamadas externas, use
+`poetry run python -m src.judge.validate --dry-run`. As rodadas versionadas da
+Issue #57, a mudança no prompt e a interpretação das regressões estão em
 [`docs/evals-comparison.md`](docs/evals-comparison.md).
 
 ## Estado do projeto

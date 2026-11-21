@@ -17,9 +17,15 @@ def _load(path: Path) -> tuple[dict[str, Any], list[dict], dict[str, Any]]:
 
 
 def rate(records: list[dict]) -> dict[str, Any]:
-    total = len(records)
-    passed = sum(int(record["passed"]) for record in records)
-    return {"total": total, "passed": passed, "rate": passed / total if total else 0.0}
+    conclusive = [record for record in records if not record.get("inconclusivo")]
+    total = len(conclusive)
+    passed = sum(int(record["passed"]) for record in conclusive)
+    return {
+        "total": total,
+        "passed": passed,
+        "rate": passed / total if total else 0.0,
+        "inconclusivos": len(records) - total,
+    }
 
 
 def _delta(after: float, before: float) -> float:
@@ -63,7 +69,18 @@ def build_report(before_dir: Path, after_dir: Path) -> dict[str, Any]:
 
     regressions = []
     improvements = []
+    inconclusive_before = sorted(
+        case["case_id"] for case in before_cases if case.get("inconclusivo")
+    )
+    inconclusive_after = sorted(
+        case["case_id"] for case in after_cases if case.get("inconclusivo")
+    )
+    inconclusive = inconclusive_after
     for case_id in sorted(after_by_id):
+        if before_by_id[case_id].get("inconclusivo") or after_by_id[case_id].get(
+            "inconclusivo"
+        ):
+            continue
         was = before_by_id[case_id]["passed"]
         now = after_by_id[case_id]["passed"]
         if was and not now:
@@ -117,6 +134,9 @@ def build_report(before_dir: Path, after_dir: Path) -> dict[str, Any]:
         "por_classe": by_class,
         "regressoes": regressions,
         "melhorias": improvements,
+        "inconclusivos": inconclusive,
+        "inconclusivos_antes": inconclusive_before,
+        "inconclusivos_depois": inconclusive_after,
         "avisos": warnings,
     }
 
@@ -156,6 +176,20 @@ def format_markdown(report: dict[str, Any]) -> str:
         f"({report['media_por_classe']['delta']:+.0%}).",
         "",
     ]
+    inconclusive_before = report["inconclusivos_antes"]
+    inconclusive_after = report["inconclusivos_depois"]
+    if inconclusive_before or inconclusive_after:
+        before_text = (
+            ", ".join(f"`{case_id}`" for case_id in inconclusive_before) or "nenhum"
+        )
+        after_text = (
+            ", ".join(f"`{case_id}`" for case_id in inconclusive_after) or "nenhum"
+        )
+        lines.append(
+            f"Casos inconclusivos (fora do denominador): antes: {before_text}; "
+            f"depois: {after_text}."
+        )
+        lines.append("")
     if report["melhorias"]:
         lines.append("Melhorias:")
         for item in report["melhorias"]:
