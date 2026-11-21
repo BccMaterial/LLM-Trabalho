@@ -17,7 +17,7 @@ poetry run task test
 poetry run pytest tests/integration/api/appointment/test_appointment_post.py::test_create_appointment_defaults_to_pending -q
 ```
 
-- `.env` (ver `.env.example`) é obrigatório até para testes: `src/api/app.py` cria `app = create_app()` no import e exige `DATABASE_URL` carregada por `load_dotenv()` do diretório atual. A API também usa `PASSWORD_PEPPER` e `ADMIN_API_TOKEN`; o agente usa `LLM_BASE_URL`, `OPENAI_API_KEY`, `API_BASE_URL`, `API_AGENT_USER`/`API_AGENT_PASSWORD` (fallback temporário `API_USER`/`API_PASSWORD`) e, opcionalmente, `POLICY_INDEX_PATH` (padrão `~/.cache/llm-trabalho/policy-index`); o benchmark usa `GROQ_API_KEY`/`GEMINI_API_KEY`. Nunca versionar segredos nem dados clínicos reais.
+- `.env` (ver `.env.example`) é obrigatório até para testes: `src/api/app.py` cria `app = create_app()` no import e exige `DATABASE_URL` carregada por `load_dotenv()` do diretório atual. A API também usa `PASSWORD_PEPPER` e `ADMIN_API_TOKEN`; o agente usa `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`, `API_BASE_URL`, `API_AGENT_USER`/`API_AGENT_PASSWORD` (fallback temporário `API_USER`/`API_PASSWORD`) e, opcionalmente, `POLICY_INDEX_PATH` (padrão `~/.cache/llm-trabalho/policy-index`); o juiz usa `JUDGE_LLM_BASE_URL`, `JUDGE_LLM_API_KEY` e `JUDGE_LLM_MODEL`; o benchmark usa `GROQ_API_KEY`/`GEMINI_API_KEY`. Nunca versionar segredos nem dados clínicos reais.
 
 ## Arquitetura
 
