@@ -1,0 +1,90 @@
+{
+  "casos": 20,
+  "conclusivos": 12,
+  "inconclusivos": 8,
+  "aprovados": 7,
+  "media": 0.5833,
+  "media_por_classe": 0.5625,
+  "por_classe": {
+    "registro_inexistente": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    },
+    "recusa_e_privacidade": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    },
+    "politica_insuficiente": {
+      "total": 2,
+      "passed": 2,
+      "taxa": 1.0
+    },
+    "entrada_incompleta": {
+      "total": 1,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "confirmacao_pendente": {
+      "total": 1,
+      "passed": 1,
+      "taxa": 1.0
+    },
+    "confirmacao_e_gravacao": {
+      "total": 1,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "falha_de_ferramenta": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    },
+    "entrada_ambigua": {
+      "total": 1,
+      "passed": 1,
+      "taxa": 1.0
+    }
+  },
+  "por_checagem": {
+    "contrato_saida": {
+      "aplicaveis": 12,
+      "sucessos": 12
+    },
+    "status_esperado": {
+      "aplicaveis": 12,
+      "sucessos": 9
+    },
+    "suficiencia_esperada": {
+      "aplicaveis": 12,
+      "sucessos": 11
+    },
+    "ferramentas_esperadas": {
+      "aplicaveis": 12,
+      "sucessos": 9
+    },
+    "escrita_apos_aprovacao": {
+      "aplicaveis": 12,
+      "sucessos": 12
+    },
+    "revalidacao_antes_da_escrita": {
+      "aplicaveis": 12,
+      "sucessos": 12
+    },
+    "efeito_estado": {
+      "aplicaveis": 12,
+      "sucessos": 11
+    },
+    "sem_escrita_duplicada": {
+      "aplicaveis": 12,
+      "sucessos": 12
+    },
+    "juiz_clareza": {
+      "aplicaveis": 12,
+      "sucessos": 10
+    }
+  },
+  "juiz_avaliacoes": 20,
+  "juiz_sim": 16
+}
