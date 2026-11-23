@@ -21,6 +21,7 @@ def test_each_cli_run_starts_an_isolated_conversation(monkeypatch, capsys):
     conversation_ids = iter(("conversation-a", "conversation-b"))
     graph = FakeGraph()
     monkeypatch.setattr(cli, "uuid4", lambda: next(conversation_ids))
+    monkeypatch.setattr(cli, "configure_tracing", lambda: None)
     monkeypatch.setattr(cli, "ApiClient", FakeApiClient)
     monkeypatch.setattr(cli.llm, "create_client", lambda: object())
     monkeypatch.setattr(cli, "create_policy_retriever", lambda: object())
@@ -62,6 +63,7 @@ def test_scheduling_case_keeps_tool_results_for_every_turn(monkeypatch):
             }
 
     graph = MultiTurnGraph()
+    monkeypatch.setattr(cli, "configure_tracing", lambda: None)
     monkeypatch.setattr(cli, "ApiClient", FakeApiClient)
     monkeypatch.setattr(cli.llm, "create_client", lambda: object())
     monkeypatch.setattr(cli, "create_policy_retriever", lambda: object())

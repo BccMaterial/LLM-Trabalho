@@ -4,6 +4,7 @@ import time
 from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
 from ...network_security import validate_service_base_url
+from ..observability import mark_span_error, set_token_usage, tracer
 from ..tools import TOOLS
 from ..workflows.execution import MAX_EXTERNAL_CALL_SECONDS
 
@@ -31,7 +32,49 @@ def request_with_retry(
     timeout_seconds: float = MAX_EXTERNAL_CALL_SECONDS,
     tool_definitions: list[dict] = TOOLS,
 ):
+    model = os.environ["LLM_MODEL"]
+    with tracer().start_as_current_span(
+        "chat",
+        attributes={
+            "gen_ai.operation.name": "chat",
+            "gen_ai.provider.name": "openai",
+            "gen_ai.request.model": model,
+        },
+    ) as span:
+        try:
+            response = _request_with_retry(
+                llm_client,
+                messages,
+                max_tokens=max_tokens,
+                timeout_seconds=timeout_seconds,
+                tool_definitions=tool_definitions,
+            )
+        except Exception as error:
+            mark_span_error(span, error)
+            raise
+
+        response_model = getattr(response, "model", None)
+        if isinstance(response_model, str):
+            span.set_attribute("gen_ai.response.model", response_model)
+        usage = getattr(response, "usage", None)
+        set_token_usage(span, usage)
+        choices = getattr(response, "choices", None) or []
+        if choices:
+            finish_reason = getattr(choices[0], "finish_reason", None)
+            if isinstance(finish_reason, str):
+                span.set_attribute("gen_ai.response.finish_reasons", [finish_reason])
+        return response
+
+
+def _request_with_retry(
+    llm_client: OpenAI,
+    messages: list[dict],
+    max_tokens: int | None = None,
+    timeout_seconds: float = MAX_EXTERNAL_CALL_SECONDS,
+    tool_definitions: list[dict] = TOOLS,
+):
     deadline = time.monotonic() + timeout_seconds
+    model = os.environ["LLM_MODEL"]
     for attempt in range(MAX_LLM_RETRIES):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
@@ -40,7 +83,7 @@ def request_with_retry(
             request_options = {"max_tokens": max_tokens} if max_tokens else {}
             request_client = llm_client.with_options(timeout=remaining)
             return request_client.chat.completions.create(
-                model=os.environ["LLM_MODEL"],
+                model=model,
                 messages=messages,
                 tools=tool_definitions,
                 **request_options,

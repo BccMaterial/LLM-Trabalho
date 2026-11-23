@@ -96,6 +96,27 @@ com o cookie técnico usado pelo agente. Ele identifica o usuário para
 operações que precisam desse contexto; consultas de agenda de outros cadastros
 são recusadas pelo fluxo demonstrado.
 
+### Traces locais do agente
+
+O Compose também inicia Jaeger. Em um terminal, suba os serviços:
+
+```bash
+docker compose --env-file .env -f infra/compose.yaml up --build -d
+```
+
+Em outro terminal, execute o agente como descrito acima. As invocações do
+grafo, chamadas ao modelo e ferramentas são exportadas por OTLP/gRPC para
+`http://localhost:4317`. Abra <http://localhost:16686>, selecione o serviço
+`llm-trabalho-agent`, filtre pela operação `invoke_agent` e pela hora da
+execução e abra um resultado para inspecionar sua árvore de spans.
+
+Para usar outro coletor, defina `OTEL_EXPORTER_OTLP_ENDPOINT` no ambiente do
+agente. A instrumentação registra somente metadados minimizados; não exporta
+mensagens, argumentos ou resultados completos. O Jaeger local é temporário e
+não tem autenticação. Consulte [docs/observabilidade.md](docs/observabilidade.md)
+para sinais de falha, escopo dos dados, acesso e a lacuna de retenção
+institucional. Use apenas dados sintéticos.
+
 Benchmark comparativo dos modelos (usa somente casos fictícios e ferramentas simuladas):
 
 1. Copie as chaves de API da Groq e Gemini para `GROQ_API_KEY` e `GEMINI_API_KEY` no `.env` local. A mesma chave Groq é usada pelo GPT-OSS 20B e Qwen 3.8 27B. Nunca coloque as chaves no repositório.

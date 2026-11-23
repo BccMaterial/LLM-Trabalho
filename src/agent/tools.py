@@ -1,4 +1,9 @@
+import json
+
+from opentelemetry.trace import Status, StatusCode
+
 from .integrations.api import ApiClient
+from .observability import mark_span_error, tracer
 from .policy_retrieval import (
     MIN_POLICY_QUERY_COVERAGE,
     PolicyRetriever,
@@ -97,6 +102,10 @@ POLICY_RETRIEVAL_TOOL = {
     },
 }
 
+KNOWN_TOOL_NAMES = frozenset(
+    tool["function"]["name"] for tool in [*TOOLS, POLICY_RETRIEVAL_TOOL]
+)
+
 
 def get_tool_definitions(*, include_policy_retrieval: bool = False) -> list[dict]:
     if include_policy_retrieval:
@@ -105,6 +114,58 @@ def get_tool_definitions(*, include_policy_retrieval: bool = False) -> list[dict
 
 
 def execute_tool(
+    client: ApiClient,
+    name: str,
+    arguments: dict,
+    authenticated_user: dict | None = None,
+    policy_retriever: PolicyRetriever | None = None,
+) -> dict:
+    with tracer().start_as_current_span(
+        "execute_tool",
+        attributes={
+            "gen_ai.operation.name": "execute_tool",
+            "gen_ai.tool.name": name if name in KNOWN_TOOL_NAMES else "unknown",
+        },
+    ) as span:
+        try:
+            result = _execute_tool(
+                client,
+                name,
+                arguments,
+                authenticated_user=authenticated_user,
+                policy_retriever=policy_retriever,
+            )
+        except Exception as error:
+            mark_span_error(span, error)
+            raise
+
+        has_tool_error = "erro" in result
+        span.set_attribute(
+            "app.tool.result.status",
+            "error" if has_tool_error else "success",
+        )
+        if has_tool_error:
+            span.set_status(Status(StatusCode.ERROR))
+        if name == "consultar_politica":
+            references = []
+            for policy in result.get("resultados", []):
+                reference = [
+                    policy.get("documento"),
+                    policy.get("versao"),
+                    policy.get("trecho"),
+                ]
+                if all(isinstance(part, str) and part for part in reference):
+                    references.append(reference)
+            span.set_attribute("app.context.policy.reference_count", len(references))
+            if references:
+                span.set_attribute(
+                    "app.context.policy.references",
+                    json.dumps(sorted(references), ensure_ascii=True),
+                )
+        return result
+
+
+def _execute_tool(
     client: ApiClient,
     name: str,
     arguments: dict,

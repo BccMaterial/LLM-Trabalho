@@ -6,6 +6,7 @@ from langgraph.types import Command
 
 from .integrations import llm
 from .integrations.api import ApiClient
+from .observability import configure_tracing, invoke_agent
 from .policy_retrieval import create_policy_retriever
 from .workflows.execution import (
     LANGGRAPH_RECURSION_LIMIT,
@@ -28,6 +29,7 @@ def run_scheduling_flow(
     if not interactive and user_message is None:
         raise ValueError("Informe user_message quando interactive for False.")
 
+    configure_tracing()
     api_client = ApiClient()
     llm_client = llm.create_client()
     graph = build_scheduling_graph(
@@ -65,6 +67,7 @@ def run_scheduling_flow(
     if interactive:
         print("Modo convidado ativo. Use /login para autenticar ou /help.")
 
+    turn_index = 0
     while True:
         if user_message is None:
             try:
@@ -102,6 +105,7 @@ def run_scheduling_flow(
                 continue
 
         state["messages"].append({"role": "user", "content": user_message})
+        turn_index += 1
         state["round_count"] = 0
         state["tool_results"] = []
         state["workflow_step_count"] = 0
@@ -118,7 +122,13 @@ def run_scheduling_flow(
             "configurable": {"thread_id": state["conversation_id"]},
             "recursion_limit": LANGGRAPH_RECURSION_LIMIT,
         }
-        result = graph.invoke(state, config)
+        result = invoke_agent(
+            graph,
+            state,
+            config,
+            mode="interactive",
+            turn_index=turn_index,
+        )
         interrupts = result.get("__interrupt__") if isinstance(result, dict) else None
         while interrupts:
             interrupt_value = interrupts[0].value
@@ -163,7 +173,14 @@ def run_scheduling_flow(
                 }
             else:
                 resume = {"decision": "invalid"}
-            result = graph.invoke(Command(resume=resume), config)
+            result = invoke_agent(
+                graph,
+                Command(resume=resume),
+                config,
+                mode="interactive",
+                turn_index=turn_index,
+                approval_decision=resume.get("decision"),
+            )
             interrupts = (
                 result.get("__interrupt__") if isinstance(result, dict) else None
             )
@@ -184,6 +201,7 @@ def run_scheduling_case(
     approval_decisions: list[dict] | None = None,
 ) -> dict:
     """Executa turnos do agente sem input humano e retorna estado exportável."""
+    configure_tracing()
     api_client = ApiClient()
     llm_client = llm.create_client()
     graph = build_scheduling_graph(
@@ -227,7 +245,7 @@ def run_scheduling_case(
     interrupt_events: list[dict] = []
     turn_events: list[dict] = []
     all_tool_results: list[dict] = []
-    for user_message in user_messages:
+    for turn_index, user_message in enumerate(user_messages, start=1):
         state["messages"].append({"role": "user", "content": user_message})
         state["round_count"] = 0
         state["tool_results"] = []
@@ -246,7 +264,13 @@ def run_scheduling_case(
             "configurable": {"thread_id": state["conversation_id"]},
             "recursion_limit": LANGGRAPH_RECURSION_LIMIT,
         }
-        result = graph.invoke(state, config)
+        result = invoke_agent(
+            graph,
+            state,
+            config,
+            mode="case",
+            turn_index=turn_index,
+        )
         turn_interrupts: list[dict] = []
         while isinstance(result, dict) and result.get("__interrupt__"):
             interrupt_value = result["__interrupt__"][0].value
@@ -256,7 +280,14 @@ def run_scheduling_case(
             interrupt_events.append(interrupt_event)
             turn_interrupts.append(interrupt_event)
             resume = decisions.pop(0) if decisions else {"decision": "reject"}
-            result = graph.invoke(Command(resume=resume), config)
+            result = invoke_agent(
+                graph,
+                Command(resume=resume),
+                config,
+                mode="case",
+                turn_index=turn_index,
+                approval_decision=resume.get("decision"),
+            )
         state = result
         turn_tool_results = state.get("tool_results") or []
         all_tool_results.extend(turn_tool_results)
