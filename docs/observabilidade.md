@@ -133,5 +133,32 @@ analisador também informa:
 - **Responsável pelo sistema:** versões, commits, cobertura de traces e IDs para
   reconstrução no Jaeger.
 
-As rodadas e traces desta branch ainda não foram medidos; nenhum valor de SLI,
-latência ou custo é alegado sem a execução real dos comandos acima.
+### Medição registrada (issue #61)
+
+Três rodadas completas do dataset sintético (20 casos cada) foram executadas em
+checkout commitado e limpo, com juiz adotado e Jaeger ativo, sobre o commit
+`e003a35` (versão `issue-61`): `20261123T222130Z-495029bb`,
+`20261123T222701Z-90d97a20` e `20261123T223256Z-cea46135`. A terceira rodada foi
+necessária para atingir o mínimo de 30 execuções válidas.
+
+A janela é a coorte das 37 execuções válidas ligadas a traces e à versão
+`issue-61`; 23 execuções inconclusivas foram excluídas pelo avaliador. O **SLI
+observado e medido é 51,35%** (19 boas de 37), abaixo do alvo pré-definido de 90%
+— status `missed`. O orçamento de erro é de 3 falhas permitidas, com 18
+consumidas. O alvo não foi ajustado ao resultado.
+
+Latência p50/p95 das somas dos spans `invoke_agent`: 1845,169 / 22012,471 ms.
+Términos: 24 `normal_completion` e 13 `recoverable_error`.
+`consultar_disponibilidade` teve 6 erros em 13 chamadas (46,15%). Tokens: 143.593
+de entrada e 4.887 de saída, com uso completo em 33 de 37 execuções (89%); por
+isso o custo médio e o total ficaram sem valor preenchido — a estimativa parcial
+não é uma fatura.
+
+Parte dos erros pode ter sido causada por indisponibilidade (limite/timeout da LLM
+e falhas de rede na API local). Os traces não permitem atribuir individualmente
+todas as falhas a essa causa: algumas são divergências reais de status, escopo,
+suficiência, ferramentas ou efeito no estado. O relatório commitado em
+`evals/observability/measurement.json` e `.md` não contém conteúdo de conversa e
+permite recalcular as métricas. O resultado negativo é registrado como evidência;
+a melhoria do SLI depende de estabilizar o ambiente e corrigir as falhas
+sistemáticas do agente, sem alterar o alvo.
