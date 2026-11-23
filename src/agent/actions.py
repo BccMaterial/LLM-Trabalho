@@ -2,6 +2,7 @@ import hashlib
 import json
 import re
 import unicodedata
+from datetime import datetime, timezone
 from typing import Any
 
 from langgraph.types import interrupt
@@ -44,6 +45,34 @@ REQUIRED_BOOKING_FIELDS = {
     "agenda_fim",
     "suspeita_paciente",
 }
+
+
+def _approval_events(
+    state: dict,
+    decision: str,
+    arguments: dict,
+    *,
+    edited_arguments: dict | None = None,
+    actor_id: str | None = None,
+) -> list[dict]:
+    authenticated_user = state.get("authenticated_user")
+    if actor_id is None:
+        actor_id = (
+            str(authenticated_user["id"])
+            if isinstance(authenticated_user, dict) and authenticated_user.get("id")
+            else "unknown"
+        )
+    event = {
+        "actor_id": actor_id,
+        "action": "confirmar_agendamento",
+        "decision": decision,
+        "occurred_at": datetime.now(timezone.utc).isoformat(),
+        "proposal_version": state.get("proposal_version", 0),
+        "arguments": arguments,
+    }
+    if edited_arguments is not None:
+        event["edited_arguments"] = edited_arguments
+    return [*(state.get("approval_events") or []), event]
 
 
 def parse_approval_response(message: str) -> bool | None:
@@ -144,6 +173,12 @@ def request_appointment_approval(state: dict) -> dict:
     )
 
     if deadline_expired(state.get("approval_expires_at")):
+        approval_events = _approval_events(
+            state,
+            "expired",
+            arguments,
+            actor_id="system",
+        )
         answer = (
             "A aprovação expirou. Nenhum agendamento foi criado; "
             "solicite uma nova proposta para continuar."
@@ -155,6 +190,7 @@ def request_appointment_approval(state: dict) -> dict:
             "pending_message": None,
             "approval_result": False,
             "approval_decision": "expired",
+            "approval_events": approval_events,
             "approved_action_key": None,
             "approval_expires_at": None,
             "termination_reason": TerminationReason.APPROVAL_EXPIRED.value,
@@ -164,6 +200,7 @@ def request_appointment_approval(state: dict) -> dict:
 
     decision = resume.get("decision")
     if decision == "approve":
+        approval_events = _approval_events(state, "approve", arguments)
         approved_key = approved_action_key(
             state["conversation_id"],
             confirmation_call,
@@ -175,6 +212,7 @@ def request_appointment_approval(state: dict) -> dict:
             "messages": state["messages"],
             "approval_result": True,
             "approval_decision": "approve",
+            "approval_events": approval_events,
             "approved_action_key": approved_key,
             "approval_expires_at": None,
             "termination_reason": None,
@@ -183,6 +221,7 @@ def request_appointment_approval(state: dict) -> dict:
         }
 
     if decision == "reject":
+        approval_events = _approval_events(state, "reject", arguments)
         answer = "O agendamento não foi criado porque o paciente recusou."
         messages = list(state["messages"])
         if state["pending_message"]:
@@ -207,6 +246,7 @@ def request_appointment_approval(state: dict) -> dict:
             "pending_message": None,
             "approval_result": False,
             "approval_decision": "reject",
+            "approval_events": approval_events,
             "structured_response": output.model_dump(mode="json"),
             "approval_expires_at": None,
             "termination_reason": TerminationReason.ACTION_REJECTED.value,
@@ -217,6 +257,12 @@ def request_appointment_approval(state: dict) -> dict:
         edited_arguments = resume["arguments"]
         invalid_reason = _validate_edited_booking(edited_arguments)
         if invalid_reason is None:
+            approval_events = _approval_events(
+                state,
+                "edit",
+                arguments,
+                edited_arguments=edited_arguments,
+            )
             edited_call = dict(confirmation_call)
             edited_call["function"] = dict(confirmation_call["function"])
             edited_call["function"]["arguments"] = json.dumps(
@@ -228,6 +274,7 @@ def request_appointment_approval(state: dict) -> dict:
                 "proposal_version": state["proposal_version"] + 1,
                 "approval_result": None,
                 "approval_decision": None,
+                "approval_events": approval_events,
                 "approved_action_key": None,
                 "approval_expires_at": new_approval_deadline(),
                 "professional_name": None,
@@ -239,11 +286,13 @@ def request_appointment_approval(state: dict) -> dict:
         answer = "Resposta inválida. Responda aprovar, rejeitar ou editar."
 
     output = insufficient_response(answer, "confirmacao_de_horario")
+    approval_events = _approval_events(state, "invalid", arguments)
     return {
         "messages": state["messages"] + [{"role": "assistant", "content": answer}],
         "pending_action": pending_actions,
         "approval_result": None,
         "approval_decision": "invalid",
+        "approval_events": approval_events,
         "termination_reason": None,
         "structured_response": output.model_dump(mode="json"),
         "answer": answer,

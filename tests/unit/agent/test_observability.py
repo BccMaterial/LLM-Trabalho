@@ -23,7 +23,12 @@ def span_exporter():
     provider.shutdown()
 
 
-def test_agent_trace_captures_minimized_genai_spans(monkeypatch, span_exporter):
+@pytest.mark.parametrize("capture_payloads", [False, True])
+def test_agent_trace_captures_genai_spans(
+    monkeypatch,
+    span_exporter,
+    capture_payloads,
+):
     private_text = "paciente-identificavel"
     policy_result = {
         "consulta": private_text,
@@ -70,6 +75,16 @@ def test_agent_trace_captures_minimized_genai_spans(monkeypatch, span_exporter):
                     }
                 ],
                 "approval_decision": "approve",
+                "approval_events": [
+                    {
+                        "actor_id": "synthetic-patient",
+                        "action": "confirmar_agendamento",
+                        "decision": "approve",
+                        "occurred_at": "2026-01-01T00:00:00+00:00",
+                        "proposal_version": 2,
+                        "arguments": {"agenda_inicio": private_text},
+                    }
+                ],
                 "proposal_version": 2,
                 "structured_response": {
                     "resultado": {
@@ -85,7 +100,7 @@ def test_agent_trace_captures_minimized_genai_spans(monkeypatch, span_exporter):
     span_exporter.clear()
     invoke_agent(
         Graph(),
-        {"messages": [{"content": private_text}]},
+        {"messages": [{"role": "user", "content": private_text}]},
         {},
         mode="case",
         turn_index=1,
@@ -94,6 +109,7 @@ def test_agent_trace_captures_minimized_genai_spans(monkeypatch, span_exporter):
             case_id="case-demo",
             version="issue-61",
             commit="a" * 40,
+            capture_synthetic_payloads=capture_payloads,
         ),
     )
 
@@ -123,11 +139,39 @@ def test_agent_trace_captures_minimized_genai_spans(monkeypatch, span_exporter):
     assert chat.attributes["gen_ai.usage.output_tokens"] == 8
     assert tool.attributes["gen_ai.tool.name"] == "consultar_politica"
 
+    if capture_payloads:
+        assert json.loads(root.attributes["app.evaluation.input"]) == [
+            {"role": "user", "content": private_text}
+        ]
+        assert (
+            json.loads(root.attributes["app.evaluation.output"])["resultado"][
+                "mensagem"
+            ]
+            == private_text
+        )
+        approval = json.loads(root.attributes["app.evaluation.approvals"])[0]
+        assert approval["actor_id"] == "synthetic-patient"
+        assert approval["decision"] == "approve"
+        assert approval["arguments"] == {"agenda_inicio": private_text}
+        assert approval["occurred_at"] == "2026-01-01T00:00:00+00:00"
+        assert json.loads(tool.attributes["app.evaluation.tool.arguments"]) == {
+            "pergunta": private_text
+        }
+        assert json.loads(tool.attributes["app.evaluation.tool.result"]) == (
+            policy_result
+        )
+    else:
+        assert "app.evaluation.input" not in root.attributes
+        assert "app.evaluation.output" not in root.attributes
+        assert "app.evaluation.approvals" not in root.attributes
+        assert "app.evaluation.tool.arguments" not in tool.attributes
+        assert "app.evaluation.tool.result" not in tool.attributes
+
     exported_attributes = json.dumps(
         [dict(span.attributes) for span in spans],
         ensure_ascii=True,
     )
-    assert private_text not in exported_attributes
+    assert (private_text in exported_attributes) is capture_payloads
 
 
 def test_tool_exception_is_signaled_without_exporting_its_message(

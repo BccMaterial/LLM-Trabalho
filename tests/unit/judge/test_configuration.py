@@ -57,3 +57,17 @@ def test_run_identity_records_agent_prompt_and_separate_models(monkeypatch):
     assert len(identity["dataset_sha256"]) == 64
     assert identity["version"] == "v1"
     assert identity["change"] == "mudança"
+
+
+def test_synthetic_trace_payload_capture_rejects_production_cases():
+    with pytest.raises(ValueError, match="só é permitida"):
+        run_suite._validate_synthetic_payload_capture(
+            [{"id": "prod-01", "origem": "producao"}]
+        )
+
+    run_suite._validate_synthetic_payload_capture(
+        [
+            {"id": "dev-01", "origem": "desenvolvimento"},
+            {"id": "syn-01", "origem": "sintetico"},
+        ]
+    )

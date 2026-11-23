@@ -2,6 +2,7 @@ import atexit
 import json
 import os
 import tomllib
+from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -17,6 +18,10 @@ from opentelemetry.trace import Status, StatusCode
 SERVICE_NAME_VALUE = "llm-trabalho-agent"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _provider: TracerProvider | None = None
+_capture_synthetic_trace_payloads: ContextVar[bool] = ContextVar(
+    "capture_synthetic_trace_payloads",
+    default=False,
+)
 
 
 @dataclass(frozen=True)
@@ -25,6 +30,11 @@ class EvaluationTraceContext:
     case_id: str
     version: str
     commit: str
+    capture_synthetic_payloads: bool = False
+
+
+def synthetic_trace_payloads_enabled() -> bool:
+    return _capture_synthetic_trace_payloads.get()
 
 
 @lru_cache(maxsize=1)
@@ -91,7 +101,12 @@ def set_token_usage(span: Span, usage: Any) -> None:
             span.set_attribute(attribute, value)
 
 
-def set_root_result(span: Span, result: Any) -> None:
+def set_root_result(
+    span: Span,
+    result: Any,
+    *,
+    capture_synthetic_payloads: bool = False,
+) -> None:
     if not isinstance(result, dict):
         return
 
@@ -157,9 +172,21 @@ def set_root_result(span: Span, result: Any) -> None:
             if isinstance(version, int) and version >= 0:
                 span.set_attribute("app.approval.proposal_version", version)
 
+    approval_events = result.get("approval_events")
+    if capture_synthetic_payloads and isinstance(approval_events, list):
+        span.set_attribute(
+            "app.evaluation.approvals",
+            json.dumps(approval_events, ensure_ascii=True, sort_keys=True),
+        )
+
     output = result.get("structured_response")
     if not isinstance(output, dict):
         return
+    if capture_synthetic_payloads:
+        span.set_attribute(
+            "app.evaluation.output",
+            json.dumps(output, ensure_ascii=True, sort_keys=True),
+        )
     output_result = output.get("resultado")
     if isinstance(output_result, dict):
         for key, attribute in (
@@ -203,6 +230,10 @@ def invoke_agent(
         "app.turn.index": turn_index,
         "app.approval.resumed": approval_decision is not None,
     }
+    capture_synthetic_payloads = bool(
+        evaluation_context and evaluation_context.capture_synthetic_payloads
+    )
+    attributes["app.evaluation.payload_capture"] = capture_synthetic_payloads
     if approval_decision is not None:
         attributes["app.approval.resume_decision"] = (
             approval_decision
@@ -223,10 +254,32 @@ def invoke_agent(
         "invoke_agent",
         attributes=attributes,
     ) as span:
+        capture_token = _capture_synthetic_trace_payloads.set(
+            capture_synthetic_payloads
+        )
         try:
+            if capture_synthetic_payloads and isinstance(graph_input, dict):
+                user_messages = [
+                    {"role": "user", "content": message["content"]}
+                    for message in graph_input.get("messages", [])
+                    if isinstance(message, dict)
+                    and message.get("role") == "user"
+                    and isinstance(message.get("content"), str)
+                ]
+                span.set_attribute(
+                    "app.evaluation.input",
+                    json.dumps(user_messages, ensure_ascii=True),
+                )
             result = graph.invoke(graph_input, config)
         except Exception as error:
             mark_span_error(span, error)
             raise
-        set_root_result(span, result)
-        return result
+        else:
+            set_root_result(
+                span,
+                result,
+                capture_synthetic_payloads=capture_synthetic_payloads,
+            )
+            return result
+        finally:
+            _capture_synthetic_trace_payloads.reset(capture_token)

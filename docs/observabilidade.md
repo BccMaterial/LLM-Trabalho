@@ -36,14 +36,22 @@ somente documento, versão e trecho.
 `chat` usa os atributos semânticos GenAI `gen_ai.operation.name`,
 `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`,
 `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` e
-`gen_ai.response.finish_reasons`. `execute_tool` registra o nome semântico da
-ferramenta, sucesso/falha e, para busca de política, a contagem e referências
-minimizadas.
+`gen_ai.response.finish_reasons`. `execute_tool` registra o nome semântico da ferramenta, sucesso/falha e, para
+busca de política, a contagem e referências minimizadas.
 
-Nenhum span recebe prompts, mensagens do paciente, conteúdo recuperado,
-argumentos ou resultados completos das ferramentas, identificadores de
-pacientes/agendamentos, referências livres da saída, credenciais ou texto de
+Por padrão, nenhum span recebe prompts, mensagens do paciente, conteúdo
+recuperado, argumentos ou resultados completos das ferramentas, identificadores
+de pacientes/agendamentos, referências livres da saída, credenciais ou texto de
 exceção. Falhas registram somente tipo de exceção e status do span.
+
+A suíte de avaliação oferece `--capture-synthetic-payloads` para incluir nos
+traces de avaliação a entrada, a saída estruturada, argumentos/resultados de
+ferramentas e eventos de aprovação (ator, decisão, instante UTC, versão e
+argumentos aprovados). A opção é desativada por padrão e a suíte recusa ativá-la
+se algum caso selecionado não tiver origem `desenvolvimento` ou `sintetico`.
+O estado da rodada registra se a opção foi usada. Isso se destina apenas a
+avaliações locais com dados sintéticos; não habilita payloads em execuções
+normais do agente e não deve ser usado com dados reais.
 
 ## Falhas e sinais
 

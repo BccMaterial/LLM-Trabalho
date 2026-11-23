@@ -59,20 +59,22 @@ git log --all --full-history --oneline -- .env
 git log --all --full-history --format= --name-only -- '*.env' '.env.*'
 .env.example
 
+git log --all -S "OPENAI_API_KEY=" --oneline
+(correspondências de nomes de variáveis e placeholders; nenhuma chave real identificada)
+
 git ls-files --error-unmatch .env
 tracked_env_file=no
 
-Test-Path .env
-False
 ```
 
-Portanto, não foi encontrada chave em um arquivo `.env` no histórico disponível
-para esta verificação e não há chave identificada para revogar. Isso não prova
-que segredos nunca tenham sido copiados para outro caminho, refs remotas não
-obtidas ou serviços externos. `.env.example` contém placeholders e valores de
-desenvolvimento; não deve ser reutilizado como configuração de produção. Se uma
-chave for encontrada em outra revisão ou serviço, revogue-a no provedor e
-substitua-a antes de retomar o uso.
+Não foi encontrada chave real no histórico local pesquisado; as correspondências
+de `OPENAI_API_KEY=` são nomes de variáveis e placeholders. O arquivo `.env` não
+está versionado. Isso não prova que segredos nunca tenham sido copiados para
+outro caminho, refs remotas não obtidas, arquivos locais ignorados ou serviços
+externos. `.env.example` contém placeholders e valores de desenvolvimento; não
+deve ser reutilizado como configuração de produção. Se uma chave for encontrada
+em outra revisão ou serviço, revogue-a no provedor e substitua-a antes de
+retomar o uso.
 
 ## Fluxo e inventário de dados
 
@@ -82,7 +84,7 @@ substitua-a antes de retomar o uso.
 | API e banco | Cadastro tem nome, username, CPF e e-mail. Agendamento guarda paciente, profissional, horário e `suspeita_paciente`, que pode revelar dado de saúde. Finalidade: autenticação e operação da agenda. | **LACUNA:** mesma definição pelo controlador; finalidade técnica não estabelece, por si só, base legal. | Não há prazo de retenção/exclusão definido pelo projeto (**LACUNA**). A retenção física segue a configuração externa do banco, sem política de expurgo implementada aqui. |
 | Estado/checkpoint do agente | Mensagens, argumentos de ferramentas, proposta pendente e resultados necessários para retomar o fluxo. Pode conter conteúdo livre e dados retornados pela API. | **LACUNA** para dados reais; uso somente sintético no protótipo. | `MemorySaver` mantém o checkpoint na memória do processo, sem prazo por conversa ou exclusão seletiva; termina ao encerrar o processo. Não é armazenamento durável. |
 | Índice RAG | Trechos e metadados de documentos de política; a recuperação não escreve mensagens ou dados de pacientes. O corpus disponível é de demonstração/fixtures, não política oficial da clínica. | **LACUNA** para documentos reais: definir autorização, finalidade e base antes de indexá-los. | Chroma persiste localmente no diretório configurado (`POLICY_INDEX_PATH` ou cache do usuário); não há expiração automática (**LACUNA**). |
-| Traces e avaliações | O benchmark grava respostas, chamadas/argumentos de ferramenta, erros, tokens e métricas em `logs/model-benchmark`; a suíte do juiz pode guardar respostas e contextos em `evals/judge_runs`. Hoje são dados sintéticos. | **LACUNA** se entradas reais forem introduzidas; elas não devem ser usadas nesses artefatos. | Arquivos locais, sem prazo de retenção/expurgo definido (**LACUNA**). Não registrar ou versionar traces com dados reais. |
+| Traces e avaliações | Por padrão, traces guardam atributos minimizados; `--capture-synthetic-payloads` opt-in inclui mensagens, respostas, argumentos/resultados de ferramentas e eventos de aprovação, e a suíte rejeita casos que não sejam de desenvolvimento/sintéticos. O benchmark e a suíte também podem gravar respostas/contextos em `logs/model-benchmark` e `evals/judge_runs`. | **LACUNA** se entradas reais forem introduzidas; não habilitar captura nem usar dados reais nesses artefatos. | Jaeger local é volátil; arquivos locais não têm prazo de retenção/expurgo definido (**LACUNA**). Não registrar ou versionar traces com dados reais. |
 | Provedor LLM | A aplicação envia mensagens da conversa e resultados de ferramenta ao endpoint configurado para gerar resposta. | **LACUNA:** clínica deve aprovar provedor, finalidade, contrato e base legal antes de dados reais. | Retenção, treinamento, região, suboperadores e exclusão dependem do provedor/configuração; não são verificáveis pelo código (**LACUNA**). TLS não resolve essas questões. |
 
 ## Risco aceito e limites

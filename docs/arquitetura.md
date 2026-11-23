@@ -149,7 +149,7 @@ O controlador mantém um estado mínimo para retomar o fluxo:
 - `conversation_id` e `patient_id` autenticado, quando disponível;
 - rota(s), etapa atual e identificador da tarefa;
 - preferência de horário, encaminhamento (estado/status, não cópia do documento), prioridade e versão do critério, se autorizados;
-- opções devolvidas pela API, opção escolhida, confirmação explícita e resultado da escrita;
+- opções devolvidas pela API, opção escolhida, confirmação explícita, resultado da escrita e evento de aprovação com ator, instante, decisão, versão e argumentos aprovados;
 - pendências, fonte consultada, suficiência, tentativas e erro de ferramenta.
 
 Agentes recebem apenas os campos necessários para sua tarefa. Não se copia laudo ou histórico completo para o estado, prompt ou log. O conteúdo clínico permanece na API oficial, sujeito às regras institucionais de acesso e retenção.

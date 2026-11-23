@@ -3,7 +3,11 @@ import json
 from opentelemetry.trace import Status, StatusCode
 
 from .integrations.api import ApiClient
-from .observability import mark_span_error, tracer
+from .observability import (
+    mark_span_error,
+    synthetic_trace_payloads_enabled,
+    tracer,
+)
 from .policy_retrieval import (
     MIN_POLICY_QUERY_COVERAGE,
     PolicyRetriever,
@@ -127,6 +131,12 @@ def execute_tool(
             "gen_ai.tool.name": name if name in KNOWN_TOOL_NAMES else "unknown",
         },
     ) as span:
+        capture_payloads = synthetic_trace_payloads_enabled()
+        if capture_payloads:
+            span.set_attribute(
+                "app.evaluation.tool.arguments",
+                json.dumps(arguments, ensure_ascii=True, sort_keys=True),
+            )
         try:
             result = _execute_tool(
                 client,
@@ -137,8 +147,18 @@ def execute_tool(
             )
         except Exception as error:
             mark_span_error(span, error)
+            if capture_payloads:
+                span.set_attribute(
+                    "app.evaluation.tool.error_type",
+                    type(error).__name__,
+                )
             raise
 
+        if capture_payloads:
+            span.set_attribute(
+                "app.evaluation.tool.result",
+                json.dumps(result, ensure_ascii=True, sort_keys=True),
+            )
         has_tool_error = "erro" in result
         span.set_attribute(
             "app.tool.result.status",

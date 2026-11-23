@@ -55,17 +55,14 @@ não tem autoridade clínica.
 operações administrativas ao agente; a criação exige a sessão do próprio
 paciente. A mesma PR exige HTTPS para endpoints remotos e mantém HTTP apenas em
 loopback local. Esses controles e testes estão na
-[PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71); essa PR ainda é
-uma dependência separada desta branch.
-Os controles server-side detalhados nela não fazem parte do commit-base desta
-branch e não devem ser considerados implantados até que a PR seja integrada e
-validada.
+[PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71), já integrada à
+base atual.
 
 **Credenciais:** `LLM_API_KEY`, `API_AGENT_USER`/`API_AGENT_PASSWORD` (ou o
 fallback temporário `API_USER`/`API_PASSWORD`) e, na avaliação, as credenciais
 do juiz são configuração local. Os valores não pertencem a este documento,
-ao trace nem ao repositório. O arquivo `.env` não existe neste ambiente; por
-isso não é possível identificar o modelo/endpoints ativos de uma instalação.
+ao trace nem ao repositório. A configuração local não é evidência versionada;
+por isso este card não identifica modelo/endpoints ativos de uma instalação.
 
 **Limites por execução:** até 8 etapas do workflow, 10 chamadas externas, 12.000
 tokens reportados, 120 s por turno, 1.000 tokens de saída por chamada, 30 s
@@ -206,6 +203,12 @@ são reconstruídos pelos artefatos versionados imutáveis correlacionados pelo
 produção, qualquer ampliação de payload em trace exige decisão prévia de
 privacidade, base legal e retenção.
 
+A suíte também dispõe de `--capture-synthetic-payloads`, desativado por padrão,
+que inclui entrada, saída, ferramentas e eventos de aprovação somente quando
+todos os casos selecionados são de desenvolvimento/sintéticos. A opção não
+altera o trace histórico acima; ainda é necessário executar uma avaliação nova
+com Jaeger ativo para produzir e verificar evidência com esses atributos.
+
 ## 8. Limites conhecidos
 
 - Um único Atendente; não há os três agentes do desenho-alvo, fila clínica,
@@ -292,22 +295,22 @@ canal de incidente, evidência a preservar e aprovação para reativar.
 | 20/11/2026 | #56 — `548d415` | Níveis de avaliação, rubrica e validação do juiz |
 | 20–21/11/2026 | #57 — `e755617`, `4553f6d` | Suíte de execução, realinhamento do dataset e comparação 15/18 → 17/20 |
 | 23/11/2026 | #59 — `dfa8140`, [PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71), merge `4f2798e` | Menor privilégio, autorização e HTTPS; controles integrados à `main`, com esta branch empilhada sobre a base de #61 |
-| 23/11/2026 | #60 — `629d26c`, [PR #72](https://github.com/BccMaterial/LLM-Trabalho/pull/72) | Spans GenAI minimizados e exportação OTLP; evidência na base/PR separada |
-| 23/11/2026 | #61 — `e003a35`, `4bf91dd`, `6aebbfa`, [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) | Correlação, medição SLO/latência/custo e relatório observado; PR aberta |
-| 23/11/2026 | #62 — `3ceef6e`, [PR #73](https://github.com/BccMaterial/LLM-Trabalho/pull/73) | Documentação reprodutível da Entrega 3; PR aberta |
-| 23/11/2026 | #58 — `0571932`, [PR #75](https://github.com/BccMaterial/LLM-Trabalho/pull/75) | Consolida model card, evidências disponíveis e lacunas/correções |
+| 23/11/2026 | #60 — `629d26c`, [PR #72](https://github.com/BccMaterial/LLM-Trabalho/pull/72) | Spans GenAI minimizados e exportação OTLP; PR integrada |
+| 23/11/2026 | #61 — `e003a35`, `4bf91dd`, `6aebbfa`, [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) | Correlação, medição SLO/latência/custo e relatório observado; PR integrada |
+| 23/11/2026 | #62 — `3ceef6e`, [PR #73](https://github.com/BccMaterial/LLM-Trabalho/pull/73) | Documentação reprodutível da Entrega 3; PR integrada |
+| 23/11/2026 | #58 — `0571932`, [PR #75](https://github.com/BccMaterial/LLM-Trabalho/pull/75) | Consolida model card, evidências disponíveis e lacunas/correções; PR integrada |
 
 ## 13. Lacunas e correções propostas
 
 | Lacuna | Impacto | Correção proposta | Evidência/dependência |
 |---|---|---|---|
-| Reconstrução literal somente nos atributos do trace | Entrada/saída literais e argumentos completos não ficam no Jaeger por minimização | Perfil sintético ancora `trace_id` a `run_id/case_id` e artefatos versionados imutáveis; em produção, só ampliar payload após decisão de privacidade/base legal/retenção | Trace `a31c18449f2ee4c457cdb3638abd40cc`, [golden dataset](../evals/golden_dataset.json), [results.json](../evals/runs/20261123T223256Z-cea46135/results.json) |
+| Payloads literais ausentes por padrão nos traces | A reconstrução sintética exigia consultar artefatos correlacionados fora do trace | Perfil de captura opt-in inclui entrada/saída, ferramentas e eventos de aprovação apenas para casos sintéticos; falta gerar e verificar um trace com a instrumentação atual. Em produção, não habilitar sem decisão de privacidade/base legal/retenção | [observabilidade](./observabilidade.md), trace histórico `a31c18449f2ee4c457cdb3638abd40cc` |
 | SLO abaixo do alvo | SLI 51,35% com 18 falhas consumidas de 3 permitidas; não há aprovação operacional | Estabilizar LLM/API, separar falhas de indisponibilidade de falhas de comportamento, corrigir casos sistemáticos e repetir pelo menos 30 execuções válidas na versão corrigida | [measurement.md](../evals/observability/measurement.md), [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) |
 | Cobertura parcial de custo/tokens | Custo médio/total indisponível por cobertura 89% | Garantir captura de uso em todos os spans válidos ou marcar execução como sem estimativa de custo antes de agregação; manter distinção entre estimativa e fatura | [measurement.json](../evals/observability/measurement.json) |
 | Retenção/acesso institucional indefinidos | Risco de exposição ou perda de evidência; Jaeger local é volátil e sem autenticação | Definir responsável, perfis, prazo, descarte, backup e backend protegido antes de dados reais; restringir Jaeger local a dados sintéticos | [compose](../infra/compose.yaml), [observabilidade](./observabilidade.md) |
 | Autoridade de suspensão não designada | Sem gatilho institucional claro para interromper/religar o sistema | Nomear responsáveis clínico e técnico, definir critérios de suspensão, canal de incidente, preservação de evidência e aprovação de reativação | Campo 10; decisão institucional pendente |
 | Base legal/privacidade/retenção de dados reais | Não é possível tratar dados de pacientes com segurança jurídica | Controlador da clínica deve aprovar base legal, finalidade, contrato/DPA com provedores, região, retenção e minimização antes de qualquer piloto real | Campo 6; decisão institucional pendente |
-| Controles #59 em PR/base separada | Risco de leitura do card como se todos os controles já estivessem na mesma linha de release | Manter rastreabilidade por PR/commit; só declarar controle implantado após merge, validação e configuração do ambiente | [PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71), `docs/seguranca.md` |
+| Captura de payloads em traces | Payloads sintéticos podem conter dados sensíveis se a opção for usada fora do escopo de avaliação | Opção desativada por padrão; suíte rejeita casos que não sejam de desenvolvimento/sintéticos; manter Jaeger local e nunca usar dados reais | [observabilidade](./observabilidade.md), `docs/seguranca.md` |
 
 ## Lacunas e correções propostas
 
