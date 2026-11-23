@@ -21,3 +21,10 @@ services:
       - database
     ports:
       - "5000:5000"
+  jaeger:
+    image: "jaegertracing/all-in-one:1.76.0"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "127.0.0.1:16686:16686"
+      - "127.0.0.1:4317:4317"
