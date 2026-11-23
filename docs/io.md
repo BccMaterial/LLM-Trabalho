@@ -238,19 +238,71 @@ editado e a repetição retornou o mesmo identificador com `idempotent: true`.
 ### Caso 7 — entrada incompleta
 
 **Log:** [`logs/cases/case-07.json`](../logs/cases/case-07.json)
+**Run ID:** `20261119-040004-1908092f`
+**Commit:** `d1a7c5f1c11689de92cdfbd44eb49c0b9184589e`
+**Data:** `2026-11-19T04:00:18.583514+00:00`
 **Entrada:** “Quero marcar minha avaliação.”
 
-O agente pediu explicitamente data ou período antes de continuar a agenda.
-Nenhuma escrita foi tentada.
+O agente consultou os profissionais e pediu a data ou o período que faltava.
+Nenhuma escrita foi tentada. Saída estruturada registrada:
+
+```json
+{
+  "resultado": {
+    "status": "informacao_insuficiente",
+    "mensagem": "Temos a Dra. Profissional da Demonstração disponível. Qual data ou período você prefere para o agendamento?",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {
+      "tipo": "api",
+      "referencia": "consultar_profissionais"
+    },
+    {
+      "tipo": "pedido_de_clarificacao",
+      "referencia": "preferencia_de_data_ou_periodo"
+    }
+  ],
+  "suficiencia": "insuficiente"
+}
+```
+
+O campo `suficiencia` e a pergunta explícita mostram que o agente não tratou a
+entrada incompleta como autorização para gravar um agendamento.
 
 ### Caso 8 — entrada ambígua
 
 **Log:** [`logs/cases/case-08.json`](../logs/cases/case-08.json)
+**Run ID:** `20261119-041456-32035f0a`
+**Commit:** `d1a7c5f1c11689de92cdfbd44eb49c0b9184589e`
+**Data:** `2026-11-19T04:15:08.806358+00:00`
 **Entrada:** “Quero marcar na sexta de manhã.”
 
-A mensagem não identificava uma data exata. O sistema declarou a sexta-feira
-escolhida a partir da data atual, mostrou a opção disponível e pediu confirmação;
-a escolha não foi apresentada como dado confirmado pelo paciente.
+A execução declarou a sexta-feira escolhida a partir da data atual e pediu
+confirmação. A saída completa registrada foi:
+
+```json
+{
+  "resultado": {
+    "status": "opcoes_disponiveis",
+    "mensagem": "Encontrei disponibilidade na sexta-feira (20/11/2026) das 08:00 às 12:00 com a Dra. Profissional da Demonstração. Deseja confirmar este horário?",
+    "acao": "aguarda_confirmacao"
+  },
+  "fonte": [
+    {
+      "tipo": "api",
+      "referencia": "consultar_disponibilidade"
+    }
+  ],
+  "suficiencia": "suficiente"
+}
+```
+
+O log mostra que nenhuma reserva foi gravada antes da confirmação. Esta saída
+é evidência histórica, não uma afirmação de que a API fornece horários livres
+específicos: ela retornou apenas a disponibilidade do intervalo das 08:00 às
+12:00. O golden dataset posterior registra essa limitação e espera data e
+horário exatos antes de apresentar uma opção confirmável.
 
 ### Caso 9 — afirmação divergente da agenda
 
