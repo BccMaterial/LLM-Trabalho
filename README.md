@@ -110,6 +110,12 @@ grafo, chamadas ao modelo e ferramentas são exportadas por OTLP/gRPC para
 `llm-trabalho-agent`, filtre pela operação `invoke_agent` e pela hora da
 execução e abra um resultado para inspecionar sua árvore de spans.
 
+Também é possível consultar os traces recentes pela API do Jaeger:
+
+```powershell
+Invoke-RestMethod -Uri "http://localhost:16686/api/traces?service=llm-trabalho-agent&operation=invoke_agent&lookback=1h&limit=20"
+```
+
 Para usar outro coletor, defina `OTEL_EXPORTER_OTLP_ENDPOINT` no ambiente do
 agente. A instrumentação registra somente metadados minimizados; não exporta
 mensagens, argumentos ou resultados completos. O Jaeger local é temporário e
@@ -170,13 +176,36 @@ poetry run task test
 
 ### Suíte versionada do agente
 
-Com a API local no ar, a suíte executa os 20 casos do golden dataset no agente
-real, grava evidências em `evals/runs/` e compara versões:
+Com as variáveis do agente e do juiz configuradas e a API local no ar, a suíte
+executa os 20 casos do golden dataset no agente real e grava uma pasta por
+rodada em `evals/runs/`. Confira a seleção de casos sem chamadas externas:
 
 ```bash
-poetry run python -m src.judge.run_suite --version "v1" --change "descrição da mudança" --output-dir evals/runs
-poetry run python -m src.judge.compare_runs --before evals/runs/<antes> --after evals/runs/<depois> --output docs/evals-comparison.md
+poetry run python -m src.judge.run_suite --version "v2" --change "mudança avaliada" --dry-run
 ```
+
+Para uma avaliação real, execute `run_suite` no checkout da revisão de
+referência e novamente no checkout da revisão candidata, usando rótulos
+`--version` e descrições `--change` distintos. Cada execução imprime o
+diretório criado; preserve esses diretórios para a comparação.
+
+```bash
+# Na revisão de referência:
+poetry run python -m src.judge.run_suite --version "v1" --change "linha de base" --output-dir evals/runs
+# Na revisão candidata:
+poetry run python -m src.judge.run_suite --version "v2" --change "mudança avaliada" --output-dir evals/runs
+```
+
+O comando a seguir reproduz a comparação das duas rodadas já versionadas:
+
+```bash
+poetry run python -m src.judge.compare_runs --before evals/runs/20261121T020151Z-eaaccc1c --after evals/runs/20261121T020604Z-760891ad
+```
+
+Para comparar rodadas novas, use como `--before` e `--after` os diretórios
+impressos por `run_suite`. Sem `--output`, o comparador imprime as métricas e
+deltas no terminal; evite apontá-lo diretamente para
+`docs/evals-comparison.md`, que também contém a interpretação revisada.
 
 O comando usa `LLM_*` para o agente e `JUDGE_LLM_*` para o juiz, sem fallback
 para a variável antiga. Antes de cada rodada, a suíte remove agendamentos
@@ -185,11 +214,13 @@ execuções antigas) e registra os IDs limpos em `run.json`. Há um intervalo de
 entre casos para reduzir `429`; o juiz tenta novamente com backoff. Erros `429`
 inesperados do provedor são marcados como `inconclusivo` e ficam fora do
 denominador da taxa; falhas injetadas pelos casos continuam sendo avaliadas
-normalmente. `--dry-run` lista os casos e os adaptadores sem chamar API ou LLM.
-Para conferir a rubrica sem chamadas externas, use
+normalmente. Para conferir a rubrica sem chamadas externas, use
 `poetry run python -m src.judge.validate --dry-run`. As rodadas versionadas da
 Issue #57, a mudança no prompt e a interpretação das regressões estão em
 [`docs/evals-comparison.md`](docs/evals-comparison.md).
+Os níveis de avaliação e a validação do juiz estão em
+[`docs/evals.md`](docs/evals.md); o histórico das lacunas e correções desde a
+Parte 2 está em [`docs/mudancas.md`](docs/mudancas.md).
 
 ## Estado do projeto
 

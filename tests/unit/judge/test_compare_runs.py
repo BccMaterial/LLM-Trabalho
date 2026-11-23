@@ -1,3 +1,6 @@
+import sys
+from io import BytesIO, TextIOWrapper
+
 from src.judge.compare_runs import build_report, format_markdown
 from src.judge.rubric import write_json
 
@@ -105,3 +108,26 @@ def test_comparison_rejects_different_datasets(tmp_path):
         assert "datasets diferentes" in str(error)
     else:
         raise AssertionError("comparação deveria rejeitar datasets diferentes")
+
+
+def test_compare_cli_uses_utf8_for_unicode_output(monkeypatch, tmp_path):
+    before = tmp_path / "antes"
+    after = tmp_path / "depois"
+    records = [_record("a", "classe-a", True)]
+    _run(before, version="v1", commit="a" * 12, change="baseline", records=records)
+    _run(after, version="v2", commit="b" * 12, change="nova", records=records)
+    output = BytesIO()
+    stream = TextIOWrapper(output, encoding="cp1252")
+    monkeypatch.setattr(sys, "stdout", stream)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["compare_runs.py", "--before", str(before), "--after", str(after)],
+    )
+
+    from src.judge.compare_runs import main
+
+    assert main() == 0
+    stream.flush()
+    assert stream.encoding == "utf-8"
+    assert "→" in output.getvalue().decode("utf-8")

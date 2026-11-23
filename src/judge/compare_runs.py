@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -224,6 +225,8 @@ def main() -> int:
     after = args.after if args.after.is_absolute() else ROOT / args.after
     report = build_report(before, after)
     markdown = format_markdown(report)
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     print(markdown)
     if args.output:
         output = args.output if args.output.is_absolute() else ROOT / args.output
