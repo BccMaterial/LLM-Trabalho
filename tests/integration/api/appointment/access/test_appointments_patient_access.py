@@ -15,4 +15,36 @@ def test_patient_can_only_read_own_appointments(
     assert own_response.status_code == 200
     assert [item["id"] for item in own_response.get_json()["value"]] == [own["id"]]
     assert other_response.status_code == 403
-    assert session_client.post("/api/appointments", json={}).status_code == 403
+    assert (
+        session_client.get(
+            "/api/appointments/availability",
+            query_string={
+                "professional_id": own["professional_id"],
+                "agenda_inicio": own["agenda_inicio"],
+                "agenda_fim": own["agenda_fim"],
+            },
+        ).status_code
+        == 403
+    )
+    own_booking = session_client.post(
+        "/api/appointments",
+        json={
+            "patient_id": patient["id"],
+            "professional_id": own["professional_id"],
+            "agenda_inicio": "2026-12-01T12:00:00+00:00",
+            "agenda_fim": "2026-12-01T13:00:00+00:00",
+            "suspeita_paciente": "Avaliação inicial",
+        },
+    )
+    other_booking = session_client.post(
+        "/api/appointments",
+        json={
+            "patient_id": other_patient["id"],
+            "professional_id": own["professional_id"],
+            "agenda_inicio": "2026-12-01T13:00:00+00:00",
+            "agenda_fim": "2026-12-01T14:00:00+00:00",
+            "suspeita_paciente": "Avaliação inicial",
+        },
+    )
+    assert own_booking.status_code == 201
+    assert other_booking.status_code == 403

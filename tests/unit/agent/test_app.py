@@ -36,7 +36,11 @@ class FakeToolCall:
         arguments=None,
     ):
         self.name = name
-        self.arguments = arguments or {"patient_id": "paciente-demo"}
+        self.arguments = arguments or {
+            "professional_id": "professional-1",
+            "agenda_inicio": "2027-01-15T10:00:00-03:00",
+            "agenda_fim": "2027-01-15T11:00:00-03:00",
+        }
 
     def model_dump(self, exclude_none=True):
         return {
@@ -56,18 +60,18 @@ class FakeApiClient:
 
     def consultar_agendamentos(
         self,
-        patient_id=None,
         professional_id=None,
         agenda_inicio=None,
         agenda_fim=None,
     ):
-        self.calls.append(patient_id)
-        if agenda_inicio and agenda_fim:
-            return {
-                "disponibilidade": "disponivel",
-                "value": [],
+        self.calls.append(
+            {
+                "professional_id": professional_id,
+                "agenda_inicio": agenda_inicio,
+                "agenda_fim": agenda_fim,
             }
-        return {"value": [{"id": "appointment-1"}]}
+        )
+        return {"disponibilidade": "disponivel"}
 
     def criar_agendamento(self, **fields):
         self.appointments.append(fields)
@@ -213,13 +217,23 @@ def test_scheduling_graph_dispatches_tool_without_logging_result(monkeypatch, ca
 
     result = graph.invoke(_state(), _config())
 
-    assert api_client.calls == ["paciente-demo"]
+    assert api_client.calls == [
+        {
+            "professional_id": "professional-1",
+            "agenda_inicio": "2027-01-15T10:00:00-03:00",
+            "agenda_fim": "2027-01-15T11:00:00-03:00",
+        }
+    ]
     assert result["answer"] == "Encontrei um agendamento."
     assert result["tool_results"] == [
         {
             "name": "consultar_disponibilidade",
-            "arguments": {"patient_id": "paciente-demo"},
-            "result": {"value": [{"id": "appointment-1"}]},
+            "arguments": {
+                "professional_id": "professional-1",
+                "agenda_inicio": "2027-01-15T10:00:00-03:00",
+                "agenda_fim": "2027-01-15T11:00:00-03:00",
+            },
+            "result": {"disponibilidade": "disponivel"},
         }
     ]
     assert result["messages"][-2]["role"] == "tool"
@@ -608,7 +622,6 @@ def test_scheduling_graph_revalidates_availability_before_booking(monkeypatch):
     class UnavailableApiClient(FakeApiClient):
         def consultar_agendamentos(
             self,
-            patient_id=None,
             professional_id=None,
             agenda_inicio=None,
             agenda_fim=None,
@@ -889,7 +902,13 @@ def test_scheduling_graph_detects_repeated_read_tool_calls(monkeypatch):
 
     result = build_scheduling_graph(object(), api_client).invoke(_state(), _config())
 
-    assert api_client.calls == ["paciente-demo"]
+    assert api_client.calls == [
+        {
+            "professional_id": "professional-1",
+            "agenda_inicio": "2027-01-15T10:00:00-03:00",
+            "agenda_fim": "2027-01-15T11:00:00-03:00",
+        }
+    ]
     assert result["termination_reason"] == "unproductive_loop"
 
 

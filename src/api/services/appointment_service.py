@@ -77,6 +77,25 @@ class AppointmentService:
         return PaginationService.paginate(session, statement, parameters, request_url)
 
     @staticmethod
+    def is_professional_available(
+        session: Session,
+        professional_id: UUID,
+        start: datetime,
+        end: datetime,
+    ) -> bool:
+        statement = (
+            select(Appointment.id)
+            .where(
+                Appointment.professional_id == professional_id,
+                Appointment.status == "Pendente",
+                Appointment.agenda_inicio < end,
+                Appointment.agenda_fim > start,
+            )
+            .limit(1)
+        )
+        return session.scalar(statement) is None
+
+    @staticmethod
     def get(session: Session, appointment_id: UUID) -> Appointment | None:
         return session.get(Appointment, appointment_id)
 

@@ -5,6 +5,8 @@ from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
 
+from ..network_security import validate_service_base_url
+
 load_dotenv()
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
@@ -16,8 +18,12 @@ PROFESSIONAL_CPF = "11144477735"
 
 def _request(path: str, method: str = "GET", payload: dict | None = None) -> dict:
     data = json.dumps(payload).encode() if payload is not None else None
+    base_url = validate_service_base_url(
+        os.getenv("API_BASE_URL", API_BASE_URL).rstrip("/"),
+        setting_name="API_BASE_URL",
+    )
     request = Request(
-        f"{API_BASE_URL}{path}",
+        f"{base_url}{path}",
         data=data,
         headers={
             "Authorization": f"Bearer {os.environ['ADMIN_API_TOKEN']}",

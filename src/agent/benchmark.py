@@ -109,9 +109,9 @@ def _valid_tool_arguments(name: str, arguments: Any) -> bool:
     if name == "consultar_profissionais":
         return not arguments
     if name == "consultar_disponibilidade":
-        return set(arguments).issubset({"patient_id"}) and all(
-            isinstance(value, str) for value in arguments.values()
-        )
+        return set(arguments).issubset(
+            {"professional_id", "agenda_inicio", "agenda_fim"}
+        ) and all(isinstance(value, str) for value in arguments.values())
     if name == WRITE_TOOL:
         required = {
             "patient_id",
@@ -146,14 +146,6 @@ def _mock_tool(
             {"tipo": "api", "referencia": "profissionais_demo"},
         )
     if name == "consultar_disponibilidade":
-        if arguments.get("patient_id") not in (None, SYNTHETIC_PATIENT_ID):
-            return (
-                {
-                    "simulado": True,
-                    "erro": "Paciente não encontrado na API de demonstração.",
-                },
-                {"tipo": "api", "referencia": "cadastro_nao_encontrado_demo"},
-            )
         return (
             {
                 "simulado": True,

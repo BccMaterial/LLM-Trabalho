@@ -30,6 +30,15 @@ def test_judge_client_rejects_old_variable_name(monkeypatch):
         client.create_client()
 
 
+def test_judge_client_rejects_remote_http(monkeypatch):
+    monkeypatch.setenv("JUDGE_LLM_BASE_URL", "http://judge.example.test/v1")
+    monkeypatch.setenv("JUDGE_LLM_API_KEY", "judge-key")
+    monkeypatch.setenv("JUDGE_LLM_MODEL", "judge-model")
+
+    with pytest.raises(RuntimeError, match="deve usar HTTPS"):
+        client.create_client()
+
+
 def test_run_identity_records_agent_prompt_and_separate_models(monkeypatch):
     for name, value in {
         "LLM_BASE_URL": "https://agente.example.test/v1",

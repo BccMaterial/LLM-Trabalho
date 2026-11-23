@@ -3,6 +3,7 @@ import time
 
 from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 
+from ..network_security import validate_service_base_url
 from .tools import TOOLS
 
 MAX_LLM_RETRIES = 5
@@ -11,7 +12,10 @@ RETRY_BACKOFF_SECONDS = 5
 
 def create_client() -> OpenAI:
     return OpenAI(
-        base_url=os.environ["LLM_BASE_URL"],
+        base_url=validate_service_base_url(
+            os.environ["LLM_BASE_URL"],
+            setting_name="LLM_BASE_URL",
+        ),
         api_key=os.environ["LLM_API_KEY"],
     )
 

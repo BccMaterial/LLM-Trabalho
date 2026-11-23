@@ -8,6 +8,7 @@ import time
 from dotenv import load_dotenv
 from openai import OpenAI, RateLimitError
 
+from ..network_security import validate_service_base_url
 from .rubric import JUDGE_MAX_TOKENS, JUDGE_TEMPERATURE, ROOT
 
 REQUIRED_ENV = (
@@ -32,7 +33,10 @@ def create_client() -> OpenAI:
     if missing:
         raise RuntimeError(f"variáveis ausentes para o juiz: {', '.join(missing)}")
     return OpenAI(
-        base_url=os.environ["JUDGE_LLM_BASE_URL"],
+        base_url=validate_service_base_url(
+            os.environ["JUDGE_LLM_BASE_URL"],
+            setting_name="JUDGE_LLM_BASE_URL",
+        ),
         api_key=os.environ["JUDGE_LLM_API_KEY"],
         timeout=60,
         max_retries=2,

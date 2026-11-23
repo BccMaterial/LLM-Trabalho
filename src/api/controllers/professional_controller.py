@@ -78,6 +78,30 @@ def list_professionals():
     return professional_view.professionals_response(page)
 
 
+@professional_controller.get("/api/professionals/active")
+def list_active_professionals():
+    db_service = current_app.extensions["database_service"]
+    if not ProfessionalAuthorizationPolicy.can_list_active_professionals(
+        current_actor_type()
+    ):
+        return _permission_denied()
+    try:
+        parameters = PaginationParameters.from_query_params(request.args)
+    except InvalidPageError:
+        return error_view.error_response(
+            "Invalid page parameter",
+            400,
+            "Use an integer greater than or equal to 1.",
+        )
+
+    page = db_service.run_with_session(
+        ProfessionalService.list_active,
+        parameters,
+        request.url,
+    )
+    return professional_view.active_professionals_response(page)
+
+
 @professional_controller.get("/api/professionals/<professional_id>")
 def get_professional(professional_id: str):
     db_service = current_app.extensions["database_service"]

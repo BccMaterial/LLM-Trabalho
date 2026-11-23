@@ -31,13 +31,6 @@ TOOLS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "patient_id": {
-                        "type": "string",
-                        "description": (
-                            "ID, nome, username ou e-mail do paciente para "
-                            "filtrar a consulta. Opcional."
-                        ),
-                    },
                     "professional_id": {
                         "type": "string",
                         "description": "UUID do profissional. Opcional.",
@@ -163,8 +156,10 @@ def execute_tool(
     if name == "consultar_profissionais":
         return {"value": client.listar_profissionais()}
     if name == "consultar_disponibilidade":
+        allowed_arguments = {"professional_id", "agenda_inicio", "agenda_fim"}
+        if set(arguments) - allowed_arguments:
+            raise ValueError("A consulta de disponibilidade recebeu campos inválidos.")
         return client.consultar_agendamentos(
-            patient_id=arguments.get("patient_id"),
             professional_id=arguments.get("professional_id"),
             agenda_inicio=arguments.get("agenda_inicio"),
             agenda_fim=arguments.get("agenda_fim"),
