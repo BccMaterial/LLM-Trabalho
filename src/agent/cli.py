@@ -6,7 +6,11 @@ from langgraph.types import Command
 
 from .integrations import llm
 from .integrations.api import ApiClient
-from .observability import configure_tracing, invoke_agent
+from .observability import (
+    EvaluationTraceContext,
+    configure_tracing,
+    invoke_agent,
+)
 from .policy_retrieval import create_policy_retriever
 from .workflows.execution import (
     LANGGRAPH_RECURSION_LIMIT,
@@ -199,6 +203,7 @@ def run_scheduling_case(
     *,
     login: tuple[str, str] | None = None,
     approval_decisions: list[dict] | None = None,
+    evaluation_context: EvaluationTraceContext | None = None,
 ) -> dict:
     """Executa turnos do agente sem input humano e retorna estado exportável."""
     configure_tracing()
@@ -270,6 +275,7 @@ def run_scheduling_case(
             config,
             mode="case",
             turn_index=turn_index,
+            evaluation_context=evaluation_context,
         )
         turn_interrupts: list[dict] = []
         while isinstance(result, dict) and result.get("__interrupt__"):
@@ -287,6 +293,7 @@ def run_scheduling_case(
                 mode="case",
                 turn_index=turn_index,
                 approval_decision=resume.get("decision"),
+                evaluation_context=evaluation_context,
             )
         state = result
         turn_tool_results = state.get("tool_results") or []

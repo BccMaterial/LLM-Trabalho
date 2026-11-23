@@ -2,6 +2,7 @@ import atexit
 import json
 import os
 import tomllib
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,14 @@ from opentelemetry.trace import Status, StatusCode
 SERVICE_NAME_VALUE = "llm-trabalho-agent"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _provider: TracerProvider | None = None
+
+
+@dataclass(frozen=True)
+class EvaluationTraceContext:
+    run_id: str
+    case_id: str
+    version: str
+    commit: str
 
 
 @lru_cache(maxsize=1)
@@ -183,6 +192,7 @@ def invoke_agent(
     mode: str,
     turn_index: int,
     approval_decision: str | None = None,
+    evaluation_context: EvaluationTraceContext | None = None,
 ) -> Any:
     version = system_version()
     attributes = {
@@ -198,6 +208,15 @@ def invoke_agent(
             approval_decision
             if approval_decision in {"approve", "reject", "edit", "invalid"}
             else "other"
+        )
+    if evaluation_context is not None:
+        attributes.update(
+            {
+                "app.evaluation.run_id": evaluation_context.run_id,
+                "app.evaluation.case_id": evaluation_context.case_id,
+                "app.evaluation.version": evaluation_context.version,
+                "app.evaluation.commit": evaluation_context.commit,
+            }
         )
 
     with tracer().start_as_current_span(

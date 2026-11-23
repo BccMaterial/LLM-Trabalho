@@ -27,8 +27,11 @@ conversa apenas pelo checkpoint interno do LangGraph; o identificador da
 conversa não é exportado. O span raiz registra modo e turno, versão do sistema,
 motivo de término, classe de erro, uso total de tokens, nomes das ferramentas,
 versão/decisão da aprovação e categorias da saída (status, ação, suficiência e
-tipos de fonte). Quando há política recuperada, registra somente documento,
-versão e trecho.
+tipos de fonte). Nas execuções do avaliador, também registra `run_id`,
+`case_id`, rótulo da versão avaliada e commit. Esses mesmos quatro campos são
+gravados em `results.json`, permitindo correlacionar cada resultado sem
+exportar entradas ou respostas clínicas. Quando há política recuperada, registra
+somente documento, versão e trecho.
 
 `chat` usa os atributos semânticos GenAI `gen_ai.operation.name`,
 `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`,
@@ -83,3 +86,52 @@ interface local não tem autenticação.
 serviço é `llm-trabalho-agent`; na interface Jaeger, selecione-o, filtre pela
 operação `invoke_agent` e pela janela de tempo da execução, então abra o trace
 para consultar spans e atributos.
+
+## Métricas observadas e SLO
+
+O avaliador correlaciona spans com `run.json` e `results.json` por
+`run_id`/`case_id` e valida também versão e commit. Uma execução só é válida
+para o SLI se a rodada terminou, o worktree estava limpo, o juiz estava
+adotado, o caso foi conclusivo e há trace raiz com a correlação completa.
+Evento bom é um caso válido com `passed=true` em `results.json`.
+
+O SLI é a proporção de eventos bons entre execuções válidas. O SLO pré-definido
+é **pelo menos 90%**, medido sobre a coorte de rodadas informadas para cada
+versão, com no mínimo 30 execuções válidas. O orçamento de erro é
+`floor(10% × execuções válidas)` falhas. A ferramenta não preenche um valor
+medido quando a amostra é menor que 30; casos inconclusivos, worktrees sujos e
+traces ausentes aparecem como lacunas, não como sucesso.
+
+Com API, agente e Jaeger locais em execução, faça duas rodadas completas do
+dataset sintético (20 casos cada) na mesma versão. Preserve os IDs exibidos ao
+fim de cada rodada e consulte Jaeger antes de reiniciá-lo, pois seu armazenamento
+local é volátil. Execute a medição a partir de um checkout commitado e limpo: o
+analisador exclui rodadas iniciadas com worktree sujo:
+
+```powershell
+docker compose -f infra/compose.yaml up -d jaeger
+poetry run python -m src.judge.run_suite --version "issue-61" --change "medição inicial" --output-dir evals/runs
+poetry run python -m src.judge.run_suite --version "issue-61" --change "medição inicial" --output-dir evals/runs
+poetry run python -m src.judge.observability_metrics --run-dir evals/runs/RUN_ID_1 --run-dir evals/runs/RUN_ID_2 --pricing-tier paid
+```
+
+O comando gera `evals/observability/measurement.json` e
+`evals/observability/measurement.md`. O JSON guarda IDs dos traces, métricas
+agregadas e metadados mínimos por caso, sem conteúdo de conversa. Comite esses
+arquivos junto das evidências das rodadas quando registrar uma medição. O
+analisador também informa:
+
+- **Negócio:** distribuição de status e tipos de fonte observados.
+- **Operação:** p50/p95 da soma das durações dos spans `invoke_agent` por caso,
+  motivos de término e taxa de erro por ferramenta. A latência não inclui
+  setup, avaliação do juiz ou pausas humanas entre invocações.
+- **Pagador:** custo médio estimado por execução, tokens e cobertura. A faixa
+  `paid` usa a tarifa paga quando declarada; `listed` usa a tarifa base do TOML
+  (para Gemini, a faixa gratuita). Preços vêm de `benchmarks/modelos.toml`. A
+  estimativa não é fatura e fica indisponível se tokens ou tarifa não forem
+  conhecidos.
+- **Responsável pelo sistema:** versões, commits, cobertura de traces e IDs para
+  reconstrução no Jaeger.
+
+As rodadas e traces desta branch ainda não foram medidos; nenhum valor de SLI,
+latência ou custo é alegado sem a execução real dos comandos acima.
