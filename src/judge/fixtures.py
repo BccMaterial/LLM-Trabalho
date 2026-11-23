@@ -21,6 +21,7 @@ from src.agent import cli
 from src.agent.demo_data import PATIENT_EMAIL, populate_example_data
 from src.agent.integrations.api import ApiClient
 from src.judge.rubric import ROOT
+from src.network_security import validate_service_base_url
 
 PATIENT_PASSWORD = "senha-paciente-demo"
 CONFLICT_SLOT = {
@@ -53,8 +54,12 @@ PRIOR_CONTEXT = {
 
 def _admin_request(path: str, method: str = "GET", payload: dict | None = None) -> dict:
     data = json.dumps(payload).encode() if payload is not None else None
+    base_url = validate_service_base_url(
+        os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/"),
+        setting_name="API_BASE_URL",
+    )
     request = Request(
-        f"{os.getenv('API_BASE_URL', 'http://127.0.0.1:5000').rstrip('/')}{path}",
+        f"{base_url}{path}",
         data=data,
         headers={
             "Authorization": f"Bearer {os.environ['ADMIN_API_TOKEN']}",

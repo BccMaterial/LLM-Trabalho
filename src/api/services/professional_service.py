@@ -1,7 +1,16 @@
 from typing import TypedDict
 from uuid import UUID
 
-from sqlalchemy import Column, MetaData, String, Table, Uuid, inspect, select, update
+from sqlalchemy import (
+    Column,
+    MetaData,
+    String,
+    Table,
+    Uuid,
+    inspect,
+    select,
+    update,
+)
 from sqlalchemy.orm import Session
 
 from ..models.professional import Professional
@@ -37,6 +46,24 @@ class ProfessionalService:
         statement = select(Professional).order_by(
             Professional.created_at,
             Professional.id,
+        )
+        return PaginationService.paginate(
+            session,
+            statement,
+            parameters,
+            request_url,
+        )
+
+    @staticmethod
+    def list_active(
+        session: Session,
+        parameters: PaginationParameters,
+        request_url: str,
+    ) -> PageResult[Professional]:
+        statement = (
+            select(Professional)
+            .where(Professional.status.is_(True))
+            .order_by(Professional.created_at, Professional.id)
         )
         return PaginationService.paginate(
             session,

@@ -5,9 +5,9 @@ from http.cookies import SimpleCookie
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, build_opener
-from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from ...network_security import validate_service_base_url
 from ..workflows.execution import remaining_seconds
 
 LOCAL_TIMEZONE = ZoneInfo("America/Sao_Paulo")
@@ -21,7 +21,10 @@ class ApiClient:
         self.user_session_cookie = ""
         self.authenticated_user: dict | None = None
         self.execution_deadline: str | None = None
-        self.base_url = os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
+        self.base_url = validate_service_base_url(
+            os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/"),
+            setting_name="API_BASE_URL",
+        )
         agent_email = os.getenv("API_AGENT_USER") or os.environ["API_USER"]
         agent_password = os.getenv("API_AGENT_PASSWORD") or os.environ["API_PASSWORD"]
         self._request(
@@ -100,7 +103,9 @@ class ApiClient:
         professionals = []
         page = 1
         while True:
-            response = self._request(f"/api/professionals?page={page}&page_size=500")
+            response = self._request(
+                f"/api/professionals/active?page={page}&page_size=500"
+            )
             professionals.extend(response.get("value", []))
             if not response.get("next_link"):
                 break
@@ -108,39 +113,21 @@ class ApiClient:
         return [
             {"id": str(professional["id"]), "nome": str(professional["nome"])}
             for professional in professionals
-            if professional.get("status") is True
-            and professional.get("id")
-            and professional.get("nome")
+            if professional.get("id") and professional.get("nome")
         ]
 
     def consultar_agendamentos(
         self,
-        patient_id: str | None = None,
         professional_id: str | None = None,
         agenda_inicio: str | None = None,
         agenda_fim: str | None = None,
     ) -> dict:
-        if patient_id:
-            patient_id = self._resolve_patient_id(patient_id)
-            if not patient_id:
-                return {"erro": "Paciente não encontrado na API."}
         if bool(agenda_inicio) != bool(agenda_fim):
             return {
                 "disponibilidade": "indeterminada",
                 "motivo": "Informe o início e o fim do intervalo.",
             }
-
-        params: dict[str, str] = {}
-        if patient_id:
-            params["patient_id"] = patient_id
-        if professional_id:
-            params["professional_id"] = professional_id
-        path = "/api/appointments"
-        if params:
-            path += f"?{urlencode(params)}"
-        appointments = self._request(path).get("value", [])
-
-        if not agenda_inicio or not agenda_fim:
+        if not professional_id or not agenda_inicio or not agenda_fim:
             return {
                 "disponibilidade": "indeterminada",
                 "motivo": "Informe o profissional e o intervalo para avaliar.",
@@ -159,20 +146,14 @@ class ApiClient:
                 "disponibilidade": "indeterminada",
                 "motivo": "O início deve ser anterior ao fim.",
             }
-
-        occupied = any(
-            appointment.get("status") == "Pendente"
-            and self._parse_iso_datetime(appointment["agenda_inicio"]) < requested_end
-            and self._parse_iso_datetime(appointment["agenda_fim"]) > requested_start
-            for appointment in appointments
-            if appointment.get("agenda_inicio") and appointment.get("agenda_fim")
-        )
-        if occupied:
-            return {
-                "disponibilidade": "indisponivel",
-                "motivo": "Há um agendamento pendente que ocupa o intervalo.",
+        params = urlencode(
+            {
+                "professional_id": professional_id,
+                "agenda_inicio": agenda_inicio,
+                "agenda_fim": agenda_fim,
             }
-        return {"disponibilidade": "disponivel"}
+        )
+        return self._request(f"/api/appointments/availability?{params}")
 
     @staticmethod
     def _parse_iso_datetime(value: str) -> datetime:
@@ -181,32 +162,15 @@ class ApiClient:
             parsed = parsed.replace(tzinfo=LOCAL_TIMEZONE)
         return parsed
 
-    def _resolve_patient_id(self, identifier: str) -> str | None:
-        try:
-            UUID(identifier)
-            return identifier
-        except ValueError:
-            pass
-
-        users = self._request("/api/users?page_size=500").get("value", [])
-        normalized_identifier = identifier.strip().casefold()
-        for user in users:
-            searchable_values = (
-                user.get("nome"),
-                user.get("username"),
-                user.get("email"),
-            )
-            if any(
-                value and value.casefold() == normalized_identifier
-                for value in searchable_values
-            ):
-                return user["id"]
-        return None
-
     def criar_agendamento(self, **fields: str) -> dict:
         payload = dict(fields)
         for field in ("agenda_inicio", "agenda_fim"):
             value = payload.get(field)
             if value is not None:
                 payload[field] = self._parse_iso_datetime(value).isoformat()
-        return self._request("/api/appointments", method="POST", payload=payload)
+        return self._request(
+            "/api/appointments",
+            method="POST",
+            payload=payload,
+            cookie_kind="user",
+        )

@@ -13,11 +13,11 @@ class UserAuthorizationPolicy:
 
     @staticmethod
     def can_list_users(actor_type: str | None) -> bool:
-        return actor_type in {"admin", "agent"}
+        return actor_type == "admin"
 
     @staticmethod
     def can_read_user(actor_type: str | None) -> bool:
-        return actor_type in {"admin", "agent"}
+        return actor_type == "admin"
 
     @classmethod
     def can_update_user(

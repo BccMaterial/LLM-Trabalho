@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from flask import Blueprint, current_app, g, request
+from flask import Blueprint, current_app, g, jsonify, request
 from sqlalchemy.orm import Session
 
 from ..models.appointment import Appointment
@@ -24,11 +24,16 @@ appointment_controller = Blueprint("appointment_controller", __name__)
 
 @appointment_controller.post("/api/appointments")
 def create_appointment():
-    if not AppointmentAuthorizationPolicy.can_write(current_actor_type()):
+    actor_type = current_actor_type()
+    if not AppointmentAuthorizationPolicy.can_create(actor_type):
         return _permission_denied()
     fields = _parse_fields(json_object(), partial=False)
     if fields is None:
         return _invalid_data()
+    if actor_type == "patient":
+        actor = getattr(g, "authenticated_user", None)
+        if actor is None or fields["patient_id"] != actor.id:
+            return _permission_denied()
 
     def create(session: Session):
         return AppointmentService.create(session, **fields)
@@ -46,6 +51,26 @@ def create_appointment():
     except ValueError:
         return _invalid_data("agenda_inicio must be before agenda_fim.")
     return appointment_view.appointment_response(appointment, 201)
+
+
+@appointment_controller.get("/api/appointments/availability")
+def check_appointment_availability():
+    if not AppointmentAuthorizationPolicy.can_check_availability(current_actor_type()):
+        return _permission_denied()
+    professional_id = _query_uuid("professional_id")
+    start = _parse_datetime(request.args.get("agenda_inicio"))
+    end = _parse_datetime(request.args.get("agenda_fim"))
+    if professional_id is None or start is None or end is None or start >= end:
+        return _invalid_data(
+            "Provide a professional UUID and a valid start/end datetime interval."
+        )
+    available = current_app.extensions["database_service"].run_with_session(
+        AppointmentService.is_professional_available,
+        professional_id,
+        start,
+        end,
+    )
+    return jsonify({"disponibilidade": ("disponivel" if available else "indisponivel")})
 
 
 @appointment_controller.get("/api/appointments")
