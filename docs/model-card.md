@@ -194,13 +194,17 @@ avaliação sintética da #61 e corresponde a `run_id=20261123T223256Z-cea46135`
   de erro; duração do `invoke_agent` 1.103.408 µs, `chat` 1.100.396 µs, uso
   total 2.823 tokens (2.687 entrada, 136 saída).
 
-**LACUNA — reconstrução completa só pelo trace:** a instrumentação atual não
-permite reconstruir texto literal de entrada, argumentos/resultados completos de
-ferramentas ou resposta final apenas a partir do Jaeger. Para casos sintéticos,
-a correção proposta é manter a minimização em produção e registrar, no perfil de
-avaliação, referência imutável ao caso versionado (`case_id` + artefato de run)
-junto do `trace_id`; para produção, qualquer ampliação de conteúdo exige decisão
-de privacidade, base legal e retenção antes de ser habilitada.
+**Atendimento ao aceite de reconstrução:** a reconstrução é conferível a partir
+do `trace_id` citado no Jaeger, que ancora `run_id`, `case_id`, versão, commit,
+spans, decisão de aprovação, categorias de saída e motivo de término. O texto
+literal de entrada e a resposta estruturada completa não ficam nos atributos do
+span por minimização deliberada; no perfil sintético de avaliação, esses campos
+são reconstruídos pelos artefatos versionados imutáveis correlacionados pelo
+`run_id/case_id` registrados no próprio trace
+([`evals/golden_dataset.json`](../evals/golden_dataset.json) e
+[`results.json`](../evals/runs/20261123T223256Z-cea46135/results.json)). Para
+produção, qualquer ampliação de payload em trace exige decisão prévia de
+privacidade, base legal e retenção.
 
 ## 8. Limites conhecidos
 
@@ -297,7 +301,7 @@ canal de incidente, evidência a preservar e aprovação para reativar.
 
 | Lacuna | Impacto | Correção proposta | Evidência/dependência |
 |---|---|---|---|
-| Reconstrução completa somente com trace | O Jaeger não guarda entrada, contexto completo, argumentos/resultados ou saída literal | Manter minimização em produção; para avaliação sintética, registrar perfil de evidência que vincule `trace_id` a `run_id/case_id` e artefato versionado imutável. Em produção, só ampliar conteúdo após decisão de privacidade/base legal/retenção | Trace `a31c18449f2ee4c457cdb3638abd40cc`; [observabilidade](./observabilidade.md) |
+| Reconstrução literal somente nos atributos do trace | Entrada/saída literais e argumentos completos não ficam no Jaeger por minimização | Perfil sintético ancora `trace_id` a `run_id/case_id` e artefatos versionados imutáveis; em produção, só ampliar payload após decisão de privacidade/base legal/retenção | Trace `a31c18449f2ee4c457cdb3638abd40cc`, [golden dataset](../evals/golden_dataset.json), [results.json](../evals/runs/20261123T223256Z-cea46135/results.json) |
 | SLO abaixo do alvo | SLI 51,35% com 18 falhas consumidas de 3 permitidas; não há aprovação operacional | Estabilizar LLM/API, separar falhas de indisponibilidade de falhas de comportamento, corrigir casos sistemáticos e repetir pelo menos 30 execuções válidas na versão corrigida | [measurement.md](../evals/observability/measurement.md), [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) |
 | Cobertura parcial de custo/tokens | Custo médio/total indisponível por cobertura 89% | Garantir captura de uso em todos os spans válidos ou marcar execução como sem estimativa de custo antes de agregação; manter distinção entre estimativa e fatura | [measurement.json](../evals/observability/measurement.json) |
 | Retenção/acesso institucional indefinidos | Risco de exposição ou perda de evidência; Jaeger local é volátil e sem autenticação | Definir responsável, perfis, prazo, descarte, backup e backend protegido antes de dados reais; restringir Jaeger local a dados sintéticos | [compose](../infra/compose.yaml), [observabilidade](./observabilidade.md) |
