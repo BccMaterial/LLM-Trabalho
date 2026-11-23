@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 from src.agent import cli
+from src.agent.observability import EvaluationTraceContext
 
 
 class FakeApiClient:
@@ -79,3 +80,30 @@ def test_scheduling_case_keeps_tool_results_for_every_turn(monkeypatch):
         "primeiro turno",
         "segundo turno",
     ]
+
+
+def test_scheduling_case_propagates_evaluation_trace_context(monkeypatch):
+    class Graph:
+        def invoke(self, state, config):
+            return {**state, "answer": "Resposta de teste."}
+
+    graph = Graph()
+    context = EvaluationTraceContext("run", "case", "version", "commit")
+    captured_contexts = []
+    monkeypatch.setattr(cli, "configure_tracing", lambda: None)
+    monkeypatch.setattr(cli, "ApiClient", FakeApiClient)
+    monkeypatch.setattr(cli.llm, "create_client", lambda: object())
+    monkeypatch.setattr(cli, "create_policy_retriever", lambda: object())
+    monkeypatch.setattr(cli, "build_scheduling_graph", lambda *_: graph)
+
+    def invoke_agent(graph, state, config, **kwargs):
+        captured_contexts.append(kwargs["evaluation_context"])
+        return graph.invoke(state, config)
+
+    monkeypatch.setattr(cli, "invoke_agent", invoke_agent)
+    cli.run_scheduling_case(
+        ["primeiro turno", "segundo turno"],
+        evaluation_context=context,
+    )
+
+    assert captured_contexts == [context, context]

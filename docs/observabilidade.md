@@ -27,8 +27,11 @@ conversa apenas pelo checkpoint interno do LangGraph; o identificador da
 conversa não é exportado. O span raiz registra modo e turno, versão do sistema,
 motivo de término, classe de erro, uso total de tokens, nomes das ferramentas,
 versão/decisão da aprovação e categorias da saída (status, ação, suficiência e
-tipos de fonte). Quando há política recuperada, registra somente documento,
-versão e trecho.
+tipos de fonte). Nas execuções do avaliador, também registra `run_id`,
+`case_id`, rótulo da versão avaliada e commit. Esses mesmos quatro campos são
+gravados em `results.json`, permitindo correlacionar cada resultado sem
+exportar entradas ou respostas clínicas. Quando há política recuperada, registra
+somente documento, versão e trecho.
 
 `chat` usa os atributos semânticos GenAI `gen_ai.operation.name`,
 `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`,
@@ -83,3 +86,79 @@ interface local não tem autenticação.
 serviço é `llm-trabalho-agent`; na interface Jaeger, selecione-o, filtre pela
 operação `invoke_agent` e pela janela de tempo da execução, então abra o trace
 para consultar spans e atributos.
+
+## Métricas observadas e SLO
+
+O avaliador correlaciona spans com `run.json` e `results.json` por
+`run_id`/`case_id` e valida também versão e commit. Uma execução só é válida
+para o SLI se a rodada terminou, o worktree estava limpo, o juiz estava
+adotado, o caso foi conclusivo e há trace raiz com a correlação completa.
+Evento bom é um caso válido com `passed=true` em `results.json`.
+
+O SLI é a proporção de eventos bons entre execuções válidas. O SLO pré-definido
+é **pelo menos 90%**, medido sobre a coorte de rodadas informadas para cada
+versão, com no mínimo 30 execuções válidas. O orçamento de erro é
+`floor(10% × execuções válidas)` falhas. A ferramenta não preenche um valor
+medido quando a amostra é menor que 30; casos inconclusivos, worktrees sujos e
+traces ausentes aparecem como lacunas, não como sucesso.
+
+Com API, agente e Jaeger locais em execução, faça duas rodadas completas do
+dataset sintético (20 casos cada) na mesma versão. Preserve os IDs exibidos ao
+fim de cada rodada e consulte Jaeger antes de reiniciá-lo, pois seu armazenamento
+local é volátil. Execute a medição a partir de um checkout commitado e limpo: o
+analisador exclui rodadas iniciadas com worktree sujo:
+
+```powershell
+docker compose -f infra/compose.yaml up -d jaeger
+poetry run python -m src.judge.run_suite --version "issue-61" --change "medição inicial" --output-dir evals/runs
+poetry run python -m src.judge.run_suite --version "issue-61" --change "medição inicial" --output-dir evals/runs
+poetry run python -m src.judge.observability_metrics --run-dir evals/runs/RUN_ID_1 --run-dir evals/runs/RUN_ID_2 --pricing-tier paid
+```
+
+O comando gera `evals/observability/measurement.json` e
+`evals/observability/measurement.md`. O JSON guarda IDs dos traces, métricas
+agregadas e metadados mínimos por caso, sem conteúdo de conversa. Comite esses
+arquivos junto das evidências das rodadas quando registrar uma medição. O
+analisador também informa:
+
+- **Negócio:** distribuição de status e tipos de fonte observados.
+- **Operação:** p50/p95 da soma das durações dos spans `invoke_agent` por caso,
+  motivos de término e taxa de erro por ferramenta. A latência não inclui
+  setup, avaliação do juiz ou pausas humanas entre invocações.
+- **Pagador:** custo médio estimado por execução, tokens e cobertura. A faixa
+  `paid` usa a tarifa paga quando declarada; `listed` usa a tarifa base do TOML
+  (para Gemini, a faixa gratuita). Preços vêm de `benchmarks/modelos.toml`. A
+  estimativa não é fatura e fica indisponível se tokens ou tarifa não forem
+  conhecidos.
+- **Responsável pelo sistema:** versões, commits, cobertura de traces e IDs para
+  reconstrução no Jaeger.
+
+### Medição registrada (issue #61)
+
+Três rodadas completas do dataset sintético (20 casos cada) foram executadas em
+checkout commitado e limpo, com juiz adotado e Jaeger ativo, sobre o commit
+`e003a35` (versão `issue-61`): `20261123T222130Z-495029bb`,
+`20261123T222701Z-90d97a20` e `20261123T223256Z-cea46135`. A terceira rodada foi
+necessária para atingir o mínimo de 30 execuções válidas.
+
+A janela é a coorte das 37 execuções válidas ligadas a traces e à versão
+`issue-61`; 23 execuções inconclusivas foram excluídas pelo avaliador. O **SLI
+observado e medido é 51,35%** (19 boas de 37), abaixo do alvo pré-definido de 90%
+— status `missed`. O orçamento de erro é de 3 falhas permitidas, com 18
+consumidas. O alvo não foi ajustado ao resultado.
+
+Latência p50/p95 das somas dos spans `invoke_agent`: 1845,169 / 22012,471 ms.
+Términos: 24 `normal_completion` e 13 `recoverable_error`.
+`consultar_disponibilidade` teve 6 erros em 13 chamadas (46,15%). Tokens: 143.593
+de entrada e 4.887 de saída, com uso completo em 33 de 37 execuções (89%); por
+isso o custo médio e o total ficaram sem valor preenchido — a estimativa parcial
+não é uma fatura.
+
+Parte dos erros pode ter sido causada por indisponibilidade (limite/timeout da LLM
+e falhas de rede na API local). Os traces não permitem atribuir individualmente
+todas as falhas a essa causa: algumas são divergências reais de status, escopo,
+suficiência, ferramentas ou efeito no estado. O relatório commitado em
+`evals/observability/measurement.json` e `.md` não contém conteúdo de conversa e
+permite recalcular as métricas. O resultado negativo é registrado como evidência;
+a melhoria do SLI depende de estabilizar o ambiente e corrigir as falhas
+sistemáticas do agente, sem alterar o alvo.

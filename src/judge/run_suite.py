@@ -16,6 +16,7 @@ from uuid import uuid4
 from dotenv import load_dotenv
 
 from src.agent.cli import run_scheduling_case
+from src.agent.observability import EvaluationTraceContext, system_version
 from src.judge import fixtures
 from src.judge.client import judge_identity, judge_message
 from src.judge.evaluate import evaluate_case
@@ -93,6 +94,7 @@ def _identity(version: str, change: str, *, judge_enabled: bool) -> dict[str, An
         ],
         "dataset_sha256": _sha256_file(ROOT / "evals" / "golden_dataset.json"),
         "agent_entrypoint": "src.agent.cli.run_scheduling_case",
+        "agent_version": system_version(),
         "agent_model": os.environ["LLM_MODEL"],
         "agent_prompt_sha256": _sha256_file(
             ROOT / "src" / "prompts" / "atendente_v1.txt"
@@ -200,6 +202,7 @@ def _run_case(
     case: dict,
     ids: dict[str, str],
     *,
+    evaluation_context: EvaluationTraceContext,
     judge_enabled: bool,
     results_path: Path,
     records: list[dict],
@@ -214,6 +217,7 @@ def _run_case(
                 execution.user_messages,
                 login=execution.login,
                 approval_decisions=execution.decisions(ids["professional_id"]),
+                evaluation_context=evaluation_context,
             )
     except Exception as error:  # a falha é evidência, não interrompe a rodada
         result = {
@@ -243,6 +247,12 @@ def _run_case(
 
     before_ids = set(before) | setup_ids
     record = evaluate_case(case, result, before_ids, set(after), judgment)
+    record["trace_correlation"] = {
+        "run_id": evaluation_context.run_id,
+        "case_id": evaluation_context.case_id,
+        "version": evaluation_context.version,
+        "commit": evaluation_context.commit,
+    }
     record["adaptadores"] = [*adapters, *setup["adaptadores"]]
     record["answer"] = fixtures.sanitize(record.get("answer"))
     record["structured_response"] = fixtures.sanitize(record.get("structured_response"))
@@ -314,6 +324,12 @@ def main() -> int:
         _run_case(
             case,
             ids,
+            evaluation_context=EvaluationTraceContext(
+                run_id=run_id,
+                case_id=case["id"],
+                version=args.version,
+                commit=identity["commit"],
+            ),
             judge_enabled=judge_enabled,
             results_path=results_path,
             records=records,

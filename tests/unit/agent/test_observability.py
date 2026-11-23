@@ -10,7 +10,7 @@ from opentelemetry.trace import StatusCode
 
 from src.agent import tools
 from src.agent.integrations import llm
-from src.agent.observability import invoke_agent
+from src.agent.observability import EvaluationTraceContext, invoke_agent
 
 
 @pytest.fixture(scope="module")
@@ -89,6 +89,12 @@ def test_agent_trace_captures_minimized_genai_spans(monkeypatch, span_exporter):
         {},
         mode="case",
         turn_index=1,
+        evaluation_context=EvaluationTraceContext(
+            run_id="run-demo",
+            case_id="case-demo",
+            version="issue-61",
+            commit="a" * 40,
+        ),
     )
 
     spans = span_exporter.get_finished_spans()
@@ -100,6 +106,10 @@ def test_agent_trace_captures_minimized_genai_spans(monkeypatch, span_exporter):
     assert chat.parent.span_id == root.context.span_id
     assert tool.parent.span_id == root.context.span_id
     assert root.attributes["app.system.version"] == "0.1.0"
+    assert root.attributes["app.evaluation.run_id"] == "run-demo"
+    assert root.attributes["app.evaluation.case_id"] == "case-demo"
+    assert root.attributes["app.evaluation.version"] == "issue-61"
+    assert root.attributes["app.evaluation.commit"] == "a" * 40
     assert root.attributes["app.termination.reason"] == "normal_completion"
     assert root.attributes["app.approval.decision"] == "approve"
     assert root.attributes["app.output.status"] == "revisao_humana_necessaria"

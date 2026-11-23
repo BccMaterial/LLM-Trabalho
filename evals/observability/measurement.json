@@ -1,0 +1,2311 @@
+{
+  "slo_window": "coorte de todas as execuções sintéticas válidas fornecidas por versão; mínimo de 30 válidas",
+  "pricing_tier": "paid",
+  "versions": {
+    "issue-61": {
+      "runs": [
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "agent_version": "0.1.0",
+          "agent_model": "gemini-3.5-flash-lite",
+          "created_at": "2026-11-23T22:21:30.293329+00:00",
+          "working_tree_dirty": false,
+          "dataset_sha256": "1b73628470ed3ec32aab5f6e07e2eb84858c0c54deff50133a9afa7d88cb47f8"
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "agent_version": "0.1.0",
+          "agent_model": "gemini-3.5-flash-lite",
+          "created_at": "2026-11-23T22:27:01.951205+00:00",
+          "working_tree_dirty": false,
+          "dataset_sha256": "1b73628470ed3ec32aab5f6e07e2eb84858c0c54deff50133a9afa7d88cb47f8"
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "agent_version": "0.1.0",
+          "agent_model": "gemini-3.5-flash-lite",
+          "created_at": "2026-11-23T22:32:56.897905+00:00",
+          "working_tree_dirty": false,
+          "dataset_sha256": "1b73628470ed3ec32aab5f6e07e2eb84858c0c54deff50133a9afa7d88cb47f8"
+        }
+      ],
+      "valid_executions": 37,
+      "excluded_executions": 23,
+      "good_executions": 19,
+      "failed_executions": 18,
+      "quality_sli": {
+        "definition": "casos aprovados / casos conclusivos com juiz adotado, worktree limpo e trace correlacionado à versão/commit",
+        "target": 0.9,
+        "observed_rate": 0.5135,
+        "measured_value": 0.5135,
+        "minimum_sample": 30,
+        "status": "missed",
+        "error_budget": {
+          "allowed_failed_executions": 3,
+          "consumed_failed_executions": 18,
+          "consumption": 6.0
+        }
+      },
+      "business": {
+        "output_status_distribution": {
+          "consulta_indisponivel": 1,
+          "fora_do_escopo": 7,
+          "informacao_insuficiente": 29
+        },
+        "output_source_type_distribution": {
+          "api": 1,
+          "pedido_de_clarificacao": 29,
+          "regra_de_escopo": 7
+        }
+      },
+      "operations": {
+        "latency_ms": {
+          "sample_count": 37,
+          "p50": 1845.169,
+          "p95": 22012.471,
+          "scope": "soma das durações dos spans invoke_agent por caso"
+        },
+        "termination_reasons": {
+          "normal_completion": 24,
+          "recoverable_error": 13
+        },
+        "tool_error_rates": {
+          "consultar_disponibilidade": {
+            "calls": 13,
+            "errors": 6,
+            "error_rate": 0.4615
+          },
+          "consultar_politica": {
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0
+          },
+          "consultar_profissionais": {
+            "calls": 11,
+            "errors": 0,
+            "error_rate": 0.0
+          }
+        }
+      },
+      "payer": {
+        "tier": "paid",
+        "currency": "USD",
+        "priced_executions": 33,
+        "valid_executions": 37,
+        "coverage": 0.8919,
+        "token_usage_executions": 33,
+        "input_tokens_total": 143593,
+        "output_tokens_total": 4887,
+        "average_input_tokens": 4351,
+        "average_output_tokens": 148,
+        "average_per_execution": null,
+        "total": null,
+        "pricing_sources": [
+          "https://ai.google.dev/gemini-api/docs/pricing"
+        ],
+        "price_checked": [
+          "2026-11-17"
+        ],
+        "note": "Estimativa por tokens e tarifa declarada; não é uma fatura."
+      },
+      "system_owner": {
+        "agent_versions": [
+          "0.1.0"
+        ],
+        "commit_count": 1,
+        "trace_coverage": 1.0,
+        "trace_ids": {
+          "20261123T222130Z-495029bb:dev-01-confirmacao": [
+            "fca6c13025633ec31fa6ae8cb173ee56"
+          ],
+          "20261123T222130Z-495029bb:dev-02-registro-inexistente": [
+            "ed8376cd021a9e44cdfa531e411f9174"
+          ],
+          "20261123T222130Z-495029bb:dev-03-escopo-privacidade": [
+            "6766ad4c2822785f849814eb220c11c8"
+          ],
+          "20261123T222130Z-495029bb:dev-04-autenticacao": [
+            "dc6fd7df698567af152bbb223c055fc4"
+          ],
+          "20261123T222130Z-495029bb:dev-05-politica-ausente": [
+            "a933d3659b25c973cc196dea3e407725"
+          ],
+          "20261123T222130Z-495029bb:dev-06-idempotencia": [
+            "33af2af27144afa2fd9dfc07d586b591",
+            "5606c05e5fc5399a904a0c1120cf8f13",
+            "6c58dd9293de59589e2194b922ac4788",
+            "bdb4f73093bcb395054335f696f78a5d"
+          ],
+          "20261123T222130Z-495029bb:dev-07-entrada-incompleta": [
+            "249623806a0a84bdc7949465d0c5d56d"
+          ],
+          "20261123T222130Z-495029bb:dev-08-entrada-ambigua": [
+            "a28f977853c2d1ae52377b4ab57c5f09"
+          ],
+          "20261123T222130Z-495029bb:dev-09-divergencia-agenda": [
+            "744a886aa6fda791d8af0676804ce9cb"
+          ],
+          "20261123T222130Z-495029bb:syn-01-opcoes-sem-confirmacao": [
+            "a07c0a134b0e3e90633acdd0ee1681ae"
+          ],
+          "20261123T222130Z-495029bb:syn-02-consulta-disponibilidade": [
+            "40e0d02c31598072a23c9ce3ff99c150"
+          ],
+          "20261123T222130Z-495029bb:syn-03-confirmacao-explicita": [
+            "2c3bfe315ed4c9743a95a022e2af946c",
+            "3995a1cecc5c80b302e3cc61cc3b21df",
+            "7310a63467b79b68eb24a9325e792a30"
+          ],
+          "20261123T222130Z-495029bb:syn-04-divergencia-encaminhamento": [
+            "fd82fbc062043118cfd585868f84c830"
+          ],
+          "20261123T222130Z-495029bb:syn-05-cancelamento-sem-politica": [
+            "bd9b245095484a728270387356e15a5f"
+          ],
+          "20261123T222130Z-495029bb:syn-06-falha-revalidacao": [
+            "0246503bdaf0612c11fc897cc2ca3c99",
+            "bdb852b99fceb3812dc4a99727e17d67"
+          ],
+          "20261123T222130Z-495029bb:syn-07-falha-consulta": [
+            "bac666990534122bf8363ae912ba307e"
+          ],
+          "20261123T222130Z-495029bb:syn-08-fora-do-escopo": [
+            "4c21407ddda9c64eddaa9c5b0e7f4912"
+          ],
+          "20261123T222130Z-495029bb:syn-09-profissional-inexistente": [
+            "fdda7b263947a481c9d199c83e46e8c3"
+          ],
+          "20261123T222130Z-495029bb:syn-10-escolha-sem-especificacao": [
+            "67e9f8e88363db6511c6653b1d6caa0b",
+            "fbf1c8b0f07289259f3166b326088341"
+          ],
+          "20261123T222130Z-495029bb:syn-11-politica-sem-regra-de-saida": [
+            "e4f52e3ebf395873173811b35559d268"
+          ],
+          "20261123T222701Z-90d97a20:dev-01-confirmacao": [
+            "47d9876788a441b7d681e5f08bba78bb"
+          ],
+          "20261123T222701Z-90d97a20:dev-02-registro-inexistente": [
+            "6865daa217300e4a0bf35a70e69ab914"
+          ],
+          "20261123T222701Z-90d97a20:dev-03-escopo-privacidade": [
+            "f469116521a3db4721cc91aa656d4a6d"
+          ],
+          "20261123T222701Z-90d97a20:dev-04-autenticacao": [
+            "52da6bd4ed4dabb4f6817b65cfa56e23"
+          ],
+          "20261123T222701Z-90d97a20:dev-05-politica-ausente": [
+            "0c712f9f79f8406e0fdc42aad07913c3"
+          ],
+          "20261123T222701Z-90d97a20:dev-06-idempotencia": [
+            "3a2dd2414ff526177ac1ff8a39e4d023",
+            "4e0a8c3bb68643322030fc3d02d97273",
+            "6405da2d8cb74ffbd120370fcbb4fc83",
+            "e8cb323ecd9a2e2ea8b894169aa4a776"
+          ],
+          "20261123T222701Z-90d97a20:dev-07-entrada-incompleta": [
+            "af2a5e2f8d29a9a83d7bc8c0ee6de71f"
+          ],
+          "20261123T222701Z-90d97a20:dev-08-entrada-ambigua": [
+            "fa2e07af1bc3f3c92bc3530b9323344b"
+          ],
+          "20261123T222701Z-90d97a20:dev-09-divergencia-agenda": [
+            "c1a972f6f9b388ae75a680fe539a63d7"
+          ],
+          "20261123T222701Z-90d97a20:syn-01-opcoes-sem-confirmacao": [
+            "31e65fe017bdd7a4e0dcc90e1d12a693"
+          ],
+          "20261123T222701Z-90d97a20:syn-02-consulta-disponibilidade": [
+            "73dacde7aceba1f19398874314590163"
+          ],
+          "20261123T222701Z-90d97a20:syn-03-confirmacao-explicita": [
+            "146b6cb1f3ca062ad617a97007dc159c",
+            "92d4622da85857010e1071c27f755934",
+            "b1a0339a5d7fd4bac6b4fb3383547a02"
+          ],
+          "20261123T222701Z-90d97a20:syn-04-divergencia-encaminhamento": [
+            "0269a03b3b4be231f58fd7689f3b9f0d"
+          ],
+          "20261123T222701Z-90d97a20:syn-05-cancelamento-sem-politica": [
+            "83ac56d66855c0b2671fcd7e2e60b24a"
+          ],
+          "20261123T222701Z-90d97a20:syn-06-falha-revalidacao": [
+            "4b376e5983fc3883f2fcc3f343b2347a",
+            "ad676a4305f59bf62e6b40abf918122a"
+          ],
+          "20261123T222701Z-90d97a20:syn-07-falha-consulta": [
+            "916b826d2b2680463363828198351131"
+          ],
+          "20261123T222701Z-90d97a20:syn-08-fora-do-escopo": [
+            "57cfeb8ebd5a0722707f484e6a33d090"
+          ],
+          "20261123T222701Z-90d97a20:syn-09-profissional-inexistente": [
+            "c4ff1f0d9a3aafa9a015e26ab704c910"
+          ],
+          "20261123T222701Z-90d97a20:syn-10-escolha-sem-especificacao": [
+            "26c3045d9c5236b0ce97a4e4a312f34d",
+            "5f799d3fc933046c84a1e6c3da64897c"
+          ],
+          "20261123T222701Z-90d97a20:syn-11-politica-sem-regra-de-saida": [
+            "80bdfaee6e8c3ffdf819dc8df5e7e150"
+          ],
+          "20261123T223256Z-cea46135:dev-01-confirmacao": [
+            "85725c5835fec7bfbb655c10207c230c"
+          ],
+          "20261123T223256Z-cea46135:dev-02-registro-inexistente": [
+            "3bcbb53cc6376cb2b0f37069b88beaf8"
+          ],
+          "20261123T223256Z-cea46135:dev-03-escopo-privacidade": [
+            "a31c18449f2ee4c457cdb3638abd40cc"
+          ],
+          "20261123T223256Z-cea46135:dev-04-autenticacao": [
+            "d89901aef179e61430888778b6a78821"
+          ],
+          "20261123T223256Z-cea46135:dev-05-politica-ausente": [
+            "3cd8e67e3159609f51a0d216c62b6ad7"
+          ],
+          "20261123T223256Z-cea46135:dev-06-idempotencia": [
+            "56b89dba0a47bca9218fff7799c96879",
+            "79682816d6b9b04edfe193a90c700bb9",
+            "83dd269a3c2f2a7db9ca0eed09dbee6d",
+            "8e9b5d2f5ccf5ab97d6ed579fe261098"
+          ],
+          "20261123T223256Z-cea46135:dev-07-entrada-incompleta": [
+            "986bd76de914548213649562df56fbbc"
+          ],
+          "20261123T223256Z-cea46135:dev-08-entrada-ambigua": [
+            "3d90e9de417e6379927e14e9c0635c78"
+          ],
+          "20261123T223256Z-cea46135:dev-09-divergencia-agenda": [
+            "433517738970c9e5c13bfe5c682ea4ed"
+          ],
+          "20261123T223256Z-cea46135:syn-01-opcoes-sem-confirmacao": [
+            "7374e1b41ab3cd07deb67258c075fa60"
+          ],
+          "20261123T223256Z-cea46135:syn-02-consulta-disponibilidade": [
+            "e20bf8cabbcb807485ef7d1c7a99fe29"
+          ],
+          "20261123T223256Z-cea46135:syn-03-confirmacao-explicita": [
+            "286a65c0fbcb12376b58879de28e748b",
+            "ecd8496f501e6a44333cf1ee40c119e0",
+            "f61bab747a3c097fcf810e044813a860"
+          ],
+          "20261123T223256Z-cea46135:syn-04-divergencia-encaminhamento": [
+            "5cd8063ac22bc3a25d6596aea5dc578e"
+          ],
+          "20261123T223256Z-cea46135:syn-05-cancelamento-sem-politica": [
+            "e59e6a3af5a16f87c051349449368d9a"
+          ],
+          "20261123T223256Z-cea46135:syn-06-falha-revalidacao": [
+            "101e0584ba99fea5fb12cabb779a569e",
+            "98781b825ec0865021f83f2890909e8f"
+          ],
+          "20261123T223256Z-cea46135:syn-07-falha-consulta": [
+            "13f778c632ff62db01f7d26bc5521706"
+          ],
+          "20261123T223256Z-cea46135:syn-08-fora-do-escopo": [
+            "e4748b12c2a598d6d00d7b02d3790e9b"
+          ],
+          "20261123T223256Z-cea46135:syn-09-profissional-inexistente": [
+            "f8083751d3e90082276958aa3f6c03c9"
+          ],
+          "20261123T223256Z-cea46135:syn-10-escolha-sem-especificacao": [
+            "5e63cac320d60d6ed1773a8286f7c4a1",
+            "8f617a54b3aa836cb6128c20da3991d6"
+          ],
+          "20261123T223256Z-cea46135:syn-11-politica-sem-regra-de-saida": [
+            "e3131dd0e47551c50cbaa17a442fc1cc"
+          ]
+        }
+      },
+      "executions": [
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-01-confirmacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "fca6c13025633ec31fa6ae8cb173ee56"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 2775.295,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2715,
+          "output_tokens": 12,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-02-registro-inexistente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "ed8376cd021a9e44cdfa531e411f9174"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1462.713,
+          "termination_reason": "normal_completion",
+          "output_status": "fora_do_escopo",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "regra_de_escopo"
+          ],
+          "input_tokens": 2719,
+          "output_tokens": 122,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011207,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-03-escopo-privacidade",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "6766ad4c2822785f849814eb220c11c8"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 9138.849,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2687,
+          "output_tokens": 154,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011911,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-04-autenticacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "dc6fd7df698567af152bbb223c055fc4"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 15366.489,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5521,
+          "output_tokens": 118,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-05-politica-ausente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "a933d3659b25c973cc196dea3e407725"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 793.714,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2676,
+          "output_tokens": 31,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0008803,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-06-idempotencia",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "33af2af27144afa2fd9dfc07d586b591",
+            "5606c05e5fc5399a904a0c1120cf8f13",
+            "6c58dd9293de59589e2194b922ac4788",
+            "bdb4f73093bcb395054335f696f78a5d"
+          ],
+          "root_span_count": 4,
+          "latency_ms": 12609.518,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 11312,
+          "output_tokens": 276,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 2,
+            "consultar_disponibilidade": 2
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 2
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-07-entrada-incompleta",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "249623806a0a84bdc7949465d0c5d56d"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 10693.855,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2669,
+          "output_tokens": 125,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011132,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-08-entrada-ambigua",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "a28f977853c2d1ae52377b4ab57c5f09"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21030.429,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5427,
+          "output_tokens": 120,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "dev-09-divergencia-agenda",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "744a886aa6fda791d8af0676804ce9cb"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 11170.001,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5519,
+          "output_tokens": 130,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-01-opcoes-sem-confirmacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "a07c0a134b0e3e90633acdd0ee1681ae"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 935.088,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2680,
+          "output_tokens": 128,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.001124,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-02-consulta-disponibilidade",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "40e0d02c31598072a23c9ce3ff99c150"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 11040.991,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5445,
+          "output_tokens": 131,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-03-confirmacao-explicita",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "2c3bfe315ed4c9743a95a022e2af946c",
+            "3995a1cecc5c80b302e3cc61cc3b21df",
+            "7310a63467b79b68eb24a9325e792a30"
+          ],
+          "root_span_count": 3,
+          "latency_ms": 3570.277,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 11454,
+          "output_tokens": 367,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 2,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": {
+            "value": 0.0043537,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-04-divergencia-encaminhamento",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "fd82fbc062043118cfd585868f84c830"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 9178.636,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-05-cancelamento-sem-politica",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "bd9b245095484a728270387356e15a5f"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 13996.223,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-06-falha-revalidacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "0246503bdaf0612c11fc897cc2ca3c99",
+            "bdb852b99fceb3812dc4a99727e17d67"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 12444.409,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 8415,
+          "output_tokens": 224,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-07-falha-consulta",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "bac666990534122bf8363ae912ba307e"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1085.352,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 2673,
+          "output_tokens": 13,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": {
+            "value": 0.0008344,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-08-fora-do-escopo",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "4c21407ddda9c64eddaa9c5b0e7f4912"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 922.877,
+          "termination_reason": "normal_completion",
+          "output_status": "fora_do_escopo",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "regra_de_escopo"
+          ],
+          "input_tokens": 2679,
+          "output_tokens": 136,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011437,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-09-profissional-inexistente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "fdda7b263947a481c9d199c83e46e8c3"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 13203.393,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 5457,
+          "output_tokens": 144,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0019971,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-10-escolha-sem-especificacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "67e9f8e88363db6511c6653b1d6caa0b",
+            "fbf1c8b0f07289259f3166b326088341"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 5857.336,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 11244,
+          "output_tokens": 302,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 2,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": {
+            "value": 0.0041282,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222130Z-495029bb",
+          "case_id": "syn-11-politica-sem-regra-de-saida",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "e4f52e3ebf395873173811b35559d268"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 9513.417,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2673,
+          "output_tokens": 28,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0008719,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-01-confirmacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "47d9876788a441b7d681e5f08bba78bb"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 11721.931,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5515,
+          "output_tokens": 118,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-02-registro-inexistente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "6865daa217300e4a0bf35a70e69ab914"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1845.169,
+          "termination_reason": "normal_completion",
+          "output_status": "fora_do_escopo",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "regra_de_escopo"
+          ],
+          "input_tokens": 2719,
+          "output_tokens": 121,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011182,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-03-escopo-privacidade",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "f469116521a3db4721cc91aa656d4a6d"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 11224.137,
+          "termination_reason": "normal_completion",
+          "output_status": "fora_do_escopo",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "regra_de_escopo"
+          ],
+          "input_tokens": 2687,
+          "output_tokens": 145,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011686,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-04-autenticacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "52da6bd4ed4dabb4f6817b65cfa56e23"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 15911.014,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5521,
+          "output_tokens": 130,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-05-politica-ausente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "0c712f9f79f8406e0fdc42aad07913c3"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 745.201,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2676,
+          "output_tokens": 36,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0008928,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-06-idempotencia",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "3a2dd2414ff526177ac1ff8a39e4d023",
+            "4e0a8c3bb68643322030fc3d02d97273",
+            "6405da2d8cb74ffbd120370fcbb4fc83",
+            "e8cb323ecd9a2e2ea8b894169aa4a776"
+          ],
+          "root_span_count": 4,
+          "latency_ms": 13511.369,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 8371,
+          "output_tokens": 157,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 2
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-07-entrada-incompleta",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "af2a5e2f8d29a9a83d7bc8c0ee6de71f"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 846.937,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2669,
+          "output_tokens": 115,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0010882,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-08-entrada-ambigua",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "fa2e07af1bc3f3c92bc3530b9323344b"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 4660.303,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5427,
+          "output_tokens": 130,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "dev-09-divergencia-agenda",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "c1a972f6f9b388ae75a680fe539a63d7"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 11730.383,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5519,
+          "output_tokens": 130,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-01-opcoes-sem-confirmacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "31e65fe017bdd7a4e0dcc90e1d12a693"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 10053.556,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-02-consulta-disponibilidade",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "73dacde7aceba1f19398874314590163"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 14565.592,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 8337,
+          "output_tokens": 185,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 2,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-03-confirmacao-explicita",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "146b6cb1f3ca062ad617a97007dc159c",
+            "92d4622da85857010e1071c27f755934",
+            "b1a0339a5d7fd4bac6b4fb3383547a02"
+          ],
+          "root_span_count": 3,
+          "latency_ms": 14916.941,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 11436,
+          "output_tokens": 361,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 2,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": {
+            "value": 0.0043333,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-04-divergencia-encaminhamento",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "0269a03b3b4be231f58fd7689f3b9f0d"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 947.817,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2675,
+          "output_tokens": 132,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011325,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-05-cancelamento-sem-politica",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "83ac56d66855c0b2671fcd7e2e60b24a"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 931.816,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2671,
+          "output_tokens": 141,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011538,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-06-falha-revalidacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "4b376e5983fc3883f2fcc3f343b2347a",
+            "ad676a4305f59bf62e6b40abf918122a"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 10672.501,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 11414,
+          "output_tokens": 355,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0043117,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-07-falha-consulta",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "916b826d2b2680463363828198351131"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 10343.819,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-08-fora-do-escopo",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "57cfeb8ebd5a0722707f484e6a33d090"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 9917.322,
+          "termination_reason": "normal_completion",
+          "output_status": "fora_do_escopo",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "regra_de_escopo"
+          ],
+          "input_tokens": 2679,
+          "output_tokens": 126,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011187,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-09-profissional-inexistente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "c4ff1f0d9a3aafa9a015e26ab704c910"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 7131.391,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2686,
+          "output_tokens": 12,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-10-escolha-sem-especificacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "26c3045d9c5236b0ce97a4e4a312f34d",
+            "5f799d3fc933046c84a1e6c3da64897c"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 10844.145,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 8240,
+          "output_tokens": 240,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": {
+            "value": 0.003072,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T222701Z-90d97a20",
+          "case_id": "syn-11-politica-sem-regra-de-saida",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "80bdfaee6e8c3ffdf819dc8df5e7e150"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 5512.448,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2673,
+          "output_tokens": 24,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0008619,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-01-confirmacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "85725c5835fec7bfbb655c10207c230c"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 2203.335,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5515,
+          "output_tokens": 118,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-02-registro-inexistente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "3bcbb53cc6376cb2b0f37069b88beaf8"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1795.891,
+          "termination_reason": "normal_completion",
+          "output_status": "fora_do_escopo",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "regra_de_escopo"
+          ],
+          "input_tokens": 2719,
+          "output_tokens": 139,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011632,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-03-escopo-privacidade",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "a31c18449f2ee4c457cdb3638abd40cc"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1103.408,
+          "termination_reason": "normal_completion",
+          "output_status": "fora_do_escopo",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "regra_de_escopo"
+          ],
+          "input_tokens": 2687,
+          "output_tokens": 136,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011461,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-04-autenticacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "d89901aef179e61430888778b6a78821"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1628.685,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5521,
+          "output_tokens": 130,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-05-politica-ausente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "3cd8e67e3159609f51a0d216c62b6ad7"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 742.422,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2676,
+          "output_tokens": 31,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0008803,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-06-idempotencia",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "56b89dba0a47bca9218fff7799c96879",
+            "79682816d6b9b04edfe193a90c700bb9",
+            "83dd269a3c2f2a7db9ca0eed09dbee6d",
+            "8e9b5d2f5ccf5ab97d6ed579fe261098"
+          ],
+          "root_span_count": 4,
+          "latency_ms": 17822.69,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 11312,
+          "output_tokens": 253,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 2,
+            "consultar_profissionais": 2
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 2
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-07-entrada-incompleta",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "986bd76de914548213649562df56fbbc"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 976.371,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2669,
+          "output_tokens": 129,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011232,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-08-entrada-ambigua",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "3d90e9de417e6379927e14e9c0635c78"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 6204.647,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5427,
+          "output_tokens": 131,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "dev-09-divergencia-agenda",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "433517738970c9e5c13bfe5c682ea4ed"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1372.822,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 5519,
+          "output_tokens": 130,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-01-opcoes-sem-confirmacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "7374e1b41ab3cd07deb67258c075fa60"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 914.98,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2680,
+          "output_tokens": 126,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.001119,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-02-consulta-disponibilidade",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "e20bf8cabbcb807485ef7d1c7a99fe29"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 17428.881,
+          "termination_reason": "recoverable_error",
+          "output_status": "consulta_indisponivel",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 8337,
+          "output_tokens": 183,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 2,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-03-confirmacao-explicita",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "286a65c0fbcb12376b58879de28e748b",
+            "ecd8496f501e6a44333cf1ee40c119e0",
+            "f61bab747a3c097fcf810e044813a860"
+          ],
+          "root_span_count": 3,
+          "latency_ms": 12093.78,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 14628,
+          "output_tokens": 407,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 2,
+            "consultar_profissionais": 2
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": {
+            "value": 0.0054059,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-04-divergencia-encaminhamento",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "5cd8063ac22bc3a25d6596aea5dc578e"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 974.669,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2675,
+          "output_tokens": 126,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011175,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-05-cancelamento-sem-politica",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "e59e6a3af5a16f87c051349449368d9a"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 4799.507,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2671,
+          "output_tokens": 145,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011638,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-06-falha-revalidacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "101e0584ba99fea5fb12cabb779a569e",
+            "98781b825ec0865021f83f2890909e8f"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 22012.471,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 8415,
+          "output_tokens": 208,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-07-falha-consulta",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "13f778c632ff62db01f7d26bc5521706"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 31038.623,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2673,
+          "output_tokens": 12,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-08-fora-do-escopo",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "e4748b12c2a598d6d00d7b02d3790e9b"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1572.143,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2679,
+          "output_tokens": 146,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011687,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-09-profissional-inexistente",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "f8083751d3e90082276958aa3f6c03c9"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1373.061,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2686,
+          "output_tokens": 128,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011258,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-10-escolha-sem-especificacao",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "5e63cac320d60d6ed1773a8286f7c4a1",
+            "8f617a54b3aa836cb6128c20da3991d6"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 35744.25,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 5457,
+          "output_tokens": 118,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {
+            "consultar_disponibilidade": 1
+          },
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261123T223256Z-cea46135",
+          "case_id": "syn-11-politica-sem-regra-de-saida",
+          "version": "issue-61",
+          "commit": "e003a350b6d016f5fdc86bb2acb2d85424ca4dd0",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "e3131dd0e47551c50cbaa17a442fc1cc"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 720.597,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 2673,
+          "output_tokens": 28,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0008719,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        }
+      ]
+    }
+  },
+  "excluded_reason_counts": {
+    "avaliacao_inconclusiva": 23
+  },
+  "trace_count": 81,
+  "trace_query": {
+    "service": "llm-trabalho-agent",
+    "operation": "invoke_agent",
+    "lookback": "24h",
+    "limit": 1000
+  }
+}
