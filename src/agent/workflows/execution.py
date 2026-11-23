@@ -28,8 +28,33 @@ class ErrorClass(str, Enum):
     FATAL = "fatal"
 
 
+class ErrorKind(str, Enum):
+    RATE_LIMIT = "rate_limit"
+    PROVIDER_TIMEOUT = "provider_timeout"
+    API_UNAVAILABLE = "api_unavailable"
+    UNKNOWN = "unknown"
+
+
 class FatalExecutionError(Exception):
     pass
+
+
+class RecoverableExecutionError(RuntimeError):
+    """Falha transitória com classe e motivo explícitos para a avaliação."""
+
+    kind = ErrorKind.UNKNOWN
+
+
+class RateLimitFailure(RecoverableExecutionError):
+    kind = ErrorKind.RATE_LIMIT
+
+
+class ProviderTimeoutFailure(RecoverableExecutionError):
+    kind = ErrorKind.PROVIDER_TIMEOUT
+
+
+class ApiUnavailableFailure(RecoverableExecutionError):
+    kind = ErrorKind.API_UNAVAILABLE
 
 
 def classify_execution_error(error: Exception) -> ErrorClass:
@@ -38,6 +63,18 @@ def classify_execution_error(error: Exception) -> ErrorClass:
     if isinstance(error, (RuntimeError, TimeoutError, ConnectionError)):
         return ErrorClass.RECOVERABLE
     return ErrorClass.FATAL
+
+
+def classify_error_kind(error: Exception) -> ErrorKind:
+    if isinstance(error, RecoverableExecutionError):
+        return error.kind
+    if "ratelimit" in type(error).__name__.casefold():
+        return ErrorKind.RATE_LIMIT
+    if isinstance(error, TimeoutError):
+        return ErrorKind.PROVIDER_TIMEOUT
+    if isinstance(error, ConnectionError):
+        return ErrorKind.API_UNAVAILABLE
+    return ErrorKind.UNKNOWN
 
 
 def new_execution_deadline() -> str:

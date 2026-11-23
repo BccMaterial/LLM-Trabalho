@@ -111,6 +111,40 @@ def test_unexpected_rate_limit_is_inconclusive():
     assert not record["failed_checks"]
 
 
+def test_structured_rate_limit_kind_is_inconclusive():
+    result = _result()
+    result.update(
+        {
+            "structured_response": None,
+            "tool_results": [],
+            "termination_reason": "recoverable_error",
+            "error_kind": "rate_limit",
+        }
+    )
+    record = evaluate_case(_case(), result, set(), set())
+
+    assert record["inconclusivo"] is True
+    assert record["error_kind"] == "rate_limit"
+
+
+def test_generic_temporary_failure_message_is_a_real_failure():
+    result = _result()
+    result.update(
+        {
+            "structured_response": None,
+            "tool_results": [],
+            "termination_reason": "recoverable_error",
+            "error_kind": "api_unavailable",
+            "answer": "O atendimento foi interrompido. Tente novamente mais tarde.",
+        }
+    )
+    record = evaluate_case(_case(), result, set(), set())
+
+    assert record["inconclusivo"] is False
+    assert record["passed"] is False
+    assert any(value is False for value in record["checks"].values())
+
+
 def test_injected_failure_is_not_treated_as_inconclusive():
     case = _case()
     case["entrada"] = {"ambiente": "falha de rede na consulta"}

@@ -28,6 +28,7 @@ from .execution import (
     ErrorClass,
     FatalExecutionError,
     TerminationReason,
+    classify_error_kind,
     classify_execution_error,
     deadline_expired,
     new_approval_deadline,
@@ -77,6 +78,7 @@ class SchedulingState(TypedDict):
     tool_call_counts: dict[str, int]
     termination_reason: str | None
     error_class: str | None
+    error_kind: str | None
 
 
 def _tool_call_fingerprint(tool_call: dict) -> str:
@@ -183,7 +185,7 @@ def _error_update(
         else "O atendimento foi interrompido por uma falha interna. "
         "Nenhuma ação pendente foi executada."
     )
-    return _terminal_update(
+    update = _terminal_update(
         message,
         reason,
         error_class,
@@ -191,6 +193,8 @@ def _error_update(
         workflow_steps=1,
         external_calls=external_calls,
     )
+    update["error_kind"] = classify_error_kind(error).value
+    return update
 
 
 def build_scheduling_graph(

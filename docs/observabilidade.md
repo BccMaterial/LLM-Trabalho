@@ -48,7 +48,10 @@ exceção. Falhas registram somente tipo de exceção e status do span.
 ## Falhas e sinais
 
 1. **Falha de conexão/limite do modelo.** O span `chat` fica com status `ERROR`
-   e `error.type`; a raiz indica `recoverable_error` e a classe da falha.
+   e `error.type`; a raiz indica `recoverable_error`, a classe da falha e
+   `app.error.kind` (`rate_limit`, `provider_timeout`, `api_unavailable` ou
+   `unknown`). O motivo estruturado, e não o texto da resposta ao paciente,
+   distingue limite do provedor de indisponibilidade ou erro de contrato.
 2. **Falha de rede da API durante consulta ou revalidação.** O fluxo captura a
    exceção e responde de forma segura, sem expor detalhes técnicos. Esse é um
    modo silencioso para quem opera: o sinal fica no span `execute_tool` com
@@ -94,6 +97,14 @@ O avaliador correlaciona spans com `run.json` e `results.json` por
 para o SLI se a rodada terminou, o worktree estava limpo, o juiz estava
 adotado, o caso foi conclusivo e há trace raiz com a correlação completa.
 Evento bom é um caso válido com `passed=true` em `results.json`.
+
+Uma execução só é registrada como `inconclusivo` quando há evidência estrutural
+de limite do provedor (`error_kind=rate_limit` ou erro HTTP 429 explícito). Uma
+mensagem de "falha temporária" sem esse sinal é falha conclusiva: o texto da
+resposta não pode retirar eventos do denominador. A classificação anterior,
+baseada no texto da mensagem, produziu 23 lacunas na medição da issue #61 e foi
+substituída; o valor medido daquela coorte permanece como evidência histórica e
+não foi recalculado retroativamente.
 
 O SLI é a proporção de eventos bons entre execuções válidas. O SLO pré-definido
 é **pelo menos 90%**, medido sobre a coorte de rodadas informadas para cada
