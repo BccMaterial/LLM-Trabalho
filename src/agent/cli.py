@@ -66,6 +66,7 @@ def run_scheduling_flow(
         "tool_call_counts": {},
         "termination_reason": None,
         "error_class": None,
+        "error_kind": None,
     }
 
     if interactive:
@@ -118,6 +119,7 @@ def run_scheduling_flow(
         state["tool_call_counts"] = {}
         state["termination_reason"] = None
         state["error_class"] = None
+        state["error_kind"] = None
         state["execution_deadline"] = new_execution_deadline()
         api_client.set_execution_deadline(state["execution_deadline"])
         if not state["pending_action"]:
@@ -239,6 +241,7 @@ def run_scheduling_case(
         "tool_call_counts": {},
         "termination_reason": None,
         "error_class": None,
+        "error_kind": None,
     }
 
     authenticated_user = None
@@ -260,6 +263,7 @@ def run_scheduling_case(
         state["tool_call_counts"] = {}
         state["termination_reason"] = None
         state["error_class"] = None
+        state["error_kind"] = None
         state["execution_deadline"] = new_execution_deadline()
         api_client.set_execution_deadline(state["execution_deadline"])
         if not state["pending_action"]:
@@ -307,6 +311,7 @@ def run_scheduling_case(
                 "structured_response": state.get("structured_response"),
                 "termination_reason": state.get("termination_reason"),
                 "error_class": state.get("error_class"),
+                "error_kind": state.get("error_kind"),
             }
         )
 
@@ -321,6 +326,7 @@ def run_scheduling_case(
         "tool_call_counts": state.get("tool_call_counts") or {},
         "termination_reason": state.get("termination_reason"),
         "error_class": state.get("error_class"),
+        "error_kind": state.get("error_kind"),
         "approval_decision": state.get("approval_decision"),
         "completed_actions": state.get("completed_actions") or {},
     }

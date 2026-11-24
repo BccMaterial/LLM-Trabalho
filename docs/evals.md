@@ -150,8 +150,9 @@ poetry run python scripts/validate_judge.py --dry-run
   e a comparação entre versões estão em `evals/runs/` e
   [`docs/evals-comparison.md`](evals-comparison.md). O juiz é reutilizado pela
   suíte, mas os rótulos e o limiar desta seção não são recalculados por ela.
-- Na suíte, o juiz tenta novamente em caso de `429` com backoff. Falhas
-  inesperadas do provedor que produzem apenas o fallback genérico de "falha
-  temporária" são registradas como `inconclusivo` e ficam fora do denominador;
+- Na suíte, o juiz tenta novamente em caso de `429` com backoff. Somente limites
+  do provedor com sinal estrutural (`error_kind=rate_limit` do agente ou erro
+  HTTP 429 explícito do runner) são registrados como `inconclusivo`; uma
+  mensagem genérica de "falha temporária" sem esse sinal é falha conclusiva, e
   falhas injetadas pelos casos continuam sendo avaliadas. Quando o juiz falha,
   `juiz_clareza` fica `null` em vez de contar como uma resposta `NÃO`.

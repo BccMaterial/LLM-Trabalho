@@ -40,3 +40,12 @@ def test_atendente_prompt_blocks_exposing_appointments():
     assert "Não transcreva nem resuma registros da agenda" in prompt.content
     assert "Pendente” representa um agendamento futuro confirmado" in prompt.content
     assert "bloqueio aguardando decisão" in prompt.content
+
+
+def test_atendente_prompt_guides_systematic_failure_cases():
+    prompt = load_prompt("atendente_v1")
+
+    assert "não caracterizam pedido de" in prompt.content
+    assert "Mesmo quando faltar data ou horário" in prompt.content
+    assert "revalide a disponibilidade uma única vez" in prompt.content
+    assert "próximo passo concreto" in prompt.content
