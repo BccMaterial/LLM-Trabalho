@@ -73,7 +73,7 @@ class FakeLlmClient:
 def _rate_limit():
     response = SimpleNamespace(
         status_code=429,
-        headers={"retry-after": "0"},
+        headers={"retry-after": "1"},
         text="rate limited",
         request=SimpleNamespace(),
     )
@@ -94,6 +94,17 @@ def test_rate_limit_is_retried_and_succeeds(monkeypatch):
 
     assert response.model == "fake-model"
     assert client.chat.completions.outcomes == []
+
+
+def test_daily_quota_exhaustion_is_not_retried(monkeypatch):
+    error = _rate_limit()
+    error.response.headers = {}
+    client = _client(monkeypatch)([error])
+
+    with pytest.raises(RateLimitFailure):
+        llm._request_with_retry(client, [{}])
+
+    assert client.chat.completions.calls == 1
 
 
 def test_exhausted_rate_limit_has_structured_kind(monkeypatch):

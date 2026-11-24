@@ -23,6 +23,7 @@ from ..workflows.execution import (
 MAX_LLM_RETRIES = 5
 RETRY_BACKOFF_SECONDS = 1.0
 MAX_RETRY_BACKOFF_SECONDS = 8.0
+MAX_RETRY_AFTER_SECONDS = 5.0
 RETRYABLE_STATUS_CODES = frozenset({408, 425, 429, 500, 502, 503, 504})
 
 
@@ -97,10 +98,26 @@ def _retry_delay(error: Exception, attempt: int, deadline: float) -> float | Non
     return delay if delay < remaining else None
 
 
+def _retry_after_seconds(error: Exception) -> float:
+    headers = getattr(getattr(error, "response", None), "headers", {}) or {}
+    retry_after = headers.get("retry-after") if hasattr(headers, "get") else None
+    try:
+        return float(retry_after) if retry_after else 0.0
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _is_retryable(error: Exception) -> bool:
-    if isinstance(error, (RateLimitError, APIConnectionError, APITimeoutError)):
+    if isinstance(error, RateLimitError):
+        # Cota diária esgotada não se resolve com retry: cada tentativa
+        # consume mais cota e atrasa a execução. Só repetimos 429 com
+        # Retry-After explícito e curto, sinal de limite momentâneo.
+        return 0 < _retry_after_seconds(error) <= MAX_RETRY_AFTER_SECONDS
+    if isinstance(error, (APIConnectionError, APITimeoutError)):
         return True
     if isinstance(error, APIStatusError):
+        if error.status_code == 429:
+            return 0 < _retry_after_seconds(error) <= MAX_RETRY_AFTER_SECONDS
         return error.status_code in RETRYABLE_STATUS_CODES
     return isinstance(error, (TimeoutError, ConnectionError))
 
