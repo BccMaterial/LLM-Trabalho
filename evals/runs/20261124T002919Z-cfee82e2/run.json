@@ -1,0 +1,34 @@
+{
+  "version": "issue-audit-evidence",
+  "change": "trace sintético novo com payload opt-in",
+  "created_at": "2026-11-24T00:29:18.793255+00:00",
+  "commit": "0ab06b338d914fcfb092c3b05df3e90b37f059e1",
+  "working_tree_dirty": false,
+  "dataset": "evals/golden_dataset.json",
+  "dataset_version": "1.1.0",
+  "dataset_sha256": "4b9ca9bed7854328b36ee476a1cbc15a78a5f168c92c9b3aea6e3213103efd71",
+  "agent_entrypoint": "src.agent.cli.run_scheduling_case",
+  "agent_version": "0.1.0",
+  "agent_model": "gemini-3.5-flash-lite",
+  "agent_prompt_sha256": "06c9c5715b9de4d262ea0eca375bd5ceb3aa7d2c6faacefbcb467d82e11935fe",
+  "contract_sha256": "ada9912ede6f7b0648d446dea522f767048a5b1f58b9aaf80c7984b8e61024c0",
+  "judge": {
+    "model": "gemini-3.5-flash-lite",
+    "provider": "endpoint OpenAI-compatível configurado em JUDGE_LLM_BASE_URL",
+    "temperature": "0",
+    "max_tokens": "300",
+    "env_keys": "JUDGE_LLM_BASE_URL, JUDGE_LLM_API_KEY, JUDGE_LLM_MODEL"
+  },
+  "judge_prompt_sha256": "2d0b57a777c704d3703124ad3723d96c828b146260ba62dec1cce09d57b1ba7e",
+  "judge_validation_sha256": "e17f50ad6b225bd0c53196505ab4235616448ba1c17a2878436b16ce5872c49d",
+  "judge_validation_decision": "juiz_adotado",
+  "judge_enabled": true,
+  "run_id": "20261124T002919Z-cfee82e2",
+  "capture_synthetic_payloads": true,
+  "status": "concluida",
+  "dataset_slots_limpos": [
+    "a350bcb0-938d-4459-83aa-6f7da6a73eb6",
+    "aabdd195-a5fc-4e20-8d2f-6c6415ab7e9f"
+  ],
+  "intervalo_entre_casos_segundos": 2.0
+}

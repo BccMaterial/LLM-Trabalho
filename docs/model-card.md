@@ -55,17 +55,14 @@ não tem autoridade clínica.
 operações administrativas ao agente; a criação exige a sessão do próprio
 paciente. A mesma PR exige HTTPS para endpoints remotos e mantém HTTP apenas em
 loopback local. Esses controles e testes estão na
-[PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71); essa PR ainda é
-uma dependência separada desta branch.
-Os controles server-side detalhados nela não fazem parte do commit-base desta
-branch e não devem ser considerados implantados até que a PR seja integrada e
-validada.
+[PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71), já integrada à
+base atual.
 
 **Credenciais:** `LLM_API_KEY`, `API_AGENT_USER`/`API_AGENT_PASSWORD` (ou o
 fallback temporário `API_USER`/`API_PASSWORD`) e, na avaliação, as credenciais
 do juiz são configuração local. Os valores não pertencem a este documento,
-ao trace nem ao repositório. O arquivo `.env` não existe neste ambiente; por
-isso não é possível identificar o modelo/endpoints ativos de uma instalação.
+ao trace nem ao repositório. A configuração local não é evidência versionada;
+por isso este card não identifica modelo/endpoints ativos de uma instalação.
 
 **Limites por execução:** até 8 etapas do workflow, 10 chamadas externas, 12.000
 tokens reportados, 120 s por turno, 1.000 tokens de saída por chamada, 30 s
@@ -156,6 +153,18 @@ O custo ficou sem valor total/médio por cobertura parcial de uso de tokens
 aponta a causa definitiva de todos os erros e não atende ao alvo. A melhoria do
 SLI exige trabalho separado, sem alterar o alvo retroativamente.
 
+**Evidência operacional/SLO (PR #77):** a mesma fonte registra a coorte
+`pr-77-final`, com 51 execuções válidas em 3 rodadas e 9 inconclusivas excluídas
+por limite momentâneo do provedor. O SLI medido foi **80,39% (41/51)**, ainda
+abaixo do alvo pré-definido de 90% (`missed`); o orçamento de erro permite 5
+falhas e 10 foram consumidas. Latência p50/p95: 2585,454 / 10498,324 ms; 44
+`normal_completion` e 7 `recoverable_error`; `consultar_disponibilidade` teve 3
+erros em 34 chamadas (8,82%), contra 46,15% no baseline. A cobertura de tokens
+foi 98% e a estimativa de custo continua sem valor preenchido. Trata-se de uma
+medição válida: o alvo não foi ajustado ao resultado, e a próxima iteração deve
+corrigir os casos sistemáticos e repetir a medição com pelo menos 30 execuções
+válidas.
+
 ### Reconstrução exigida somente com trace
 
 **Reconstrução de exemplo (dados sintéticos, trace real):** trace
@@ -205,6 +214,33 @@ são reconstruídos pelos artefatos versionados imutáveis correlacionados pelo
 [`results.json`](../evals/runs/20261123T223256Z-cea46135/results.json)). Para
 produção, qualquer ampliação de payload em trace exige decisão prévia de
 privacidade, base legal e retenção.
+
+A suíte também dispõe de `--capture-synthetic-payloads`, desativado por padrão,
+que inclui entrada, saída, ferramentas e eventos de aprovação somente quando
+todos os casos selecionados são de desenvolvimento/sintéticos. A opção não
+foi usada no trace histórico acima, mas foi verificada em 24/11/2026 numa
+rodada sintética nova no Jaeger: `run_id=20261124T002919Z-cfee82e2`,
+`case_id=dev-03-escopo-privacidade`, commit
+`0ab06b338d914fcfb092c3b05df3e90b37f059e1` e
+`trace_id=1acc5443dfd0fc949c370afd4a7e515a`. Os atributos
+`app.evaluation.payload_capture=true`, `app.evaluation.input` e
+`app.evaluation.output` confirmaram a captura opt-in; o caso passou todas as
+checagens. Os artefatos estão em
+[`evals/runs/20261124T002919Z-cfee82e2`](../evals/runs/20261124T002919Z-cfee82e2).
+
+O span raiz registra `app.prompt.sha256`, o hash da versão do prompt
+`src/prompts/atendente_v1.txt`. Cada `run.json` guarda o mesmo hash em
+`agent_prompt_sha256`, permitindo relacionar trace, commit, sistema, modelo e
+prompt sem exportar o texto completo. A instrumentação foi confirmada em
+24/11/2026 no trace `801adc8a34bc5c539dc435ebce3f0089`
+(`run_id=20261124T020553Z-28bc477c`, mesmo caso sintético, commit
+`df562b11ce9072baa3655b776ba8165dd31ef5a1`): o span raiz exportou
+`app.prompt.sha256=a759ced71a16e843aea39374b416548794668412fbe72f5f8643abb451fa844d`,
+idêntico ao `agent_prompt_sha256` do `run.json`, com
+`app.evaluation.payload_capture=true`, término normal e todas as checagens
+aprovadas. O trace `1acc5443…` mencionado acima é anterior a esse atributo e
+comprova apenas a captura opt-in. Artefatos:
+[`evals/runs/20261124T020553Z-28bc477c`](../evals/runs/20261124T020553Z-28bc477c).
 
 ## 8. Limites conhecidos
 
@@ -292,37 +328,36 @@ canal de incidente, evidência a preservar e aprovação para reativar.
 | 20/11/2026 | #56 — `548d415` | Níveis de avaliação, rubrica e validação do juiz |
 | 20–21/11/2026 | #57 — `e755617`, `4553f6d` | Suíte de execução, realinhamento do dataset e comparação 15/18 → 17/20 |
 | 23/11/2026 | #59 — `dfa8140`, [PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71), merge `4f2798e` | Menor privilégio, autorização e HTTPS; controles integrados à `main`, com esta branch empilhada sobre a base de #61 |
-| 23/11/2026 | #60 — `629d26c`, [PR #72](https://github.com/BccMaterial/LLM-Trabalho/pull/72) | Spans GenAI minimizados e exportação OTLP; evidência na base/PR separada |
-| 23/11/2026 | #61 — `e003a35`, `4bf91dd`, `6aebbfa`, [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) | Correlação, medição SLO/latência/custo e relatório observado; PR aberta |
-| 23/11/2026 | #62 — `3ceef6e`, [PR #73](https://github.com/BccMaterial/LLM-Trabalho/pull/73) | Documentação reprodutível da Entrega 3; PR aberta |
-| 23/11/2026 | #58 — `0571932`, [PR #75](https://github.com/BccMaterial/LLM-Trabalho/pull/75) | Consolida model card, evidências disponíveis e lacunas/correções |
+| 23/11/2026 | #60 — `629d26c`, [PR #72](https://github.com/BccMaterial/LLM-Trabalho/pull/72) | Spans GenAI minimizados e exportação OTLP; PR integrada |
+| 23/11/2026 | #61 — `e003a35`, `4bf91dd`, `6aebbfa`, [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) | Correlação, medição SLO/latência/custo e relatório observado; PR integrada |
+| 23/11/2026 | #62 — `3ceef6e`, [PR #73](https://github.com/BccMaterial/LLM-Trabalho/pull/73) | Documentação reprodutível da Entrega 3; PR integrada |
+| 23/11/2026 | #58 — `0571932`, [PR #75](https://github.com/BccMaterial/LLM-Trabalho/pull/75) | Consolida model card, evidências disponíveis e lacunas/correções; PR integrada |
+| 24/11/2026 | `0ab06b3`, [PR #78](https://github.com/BccMaterial/LLM-Trabalho/pull/78) | Verificação end-to-end de captura sintética opt-in em trace Jaeger; payload sem dados reais |
+| 24/11/2026 | `df562b1`, [PR #78](https://github.com/BccMaterial/LLM-Trabalho/pull/78) | Hash do prompt no span raiz e trace sintético aprovado correlacionando `app.prompt.sha256` ao `run.json` |
 
 ## 13. Lacunas e correções propostas
 
 | Lacuna | Impacto | Correção proposta | Evidência/dependência |
 |---|---|---|---|
-| Reconstrução literal somente nos atributos do trace | Entrada/saída literais e argumentos completos não ficam no Jaeger por minimização | Perfil sintético ancora `trace_id` a `run_id/case_id` e artefatos versionados imutáveis; em produção, só ampliar payload após decisão de privacidade/base legal/retenção | Trace `a31c18449f2ee4c457cdb3638abd40cc`, [golden dataset](../evals/golden_dataset.json), [results.json](../evals/runs/20261123T223256Z-cea46135/results.json) |
-| SLO abaixo do alvo | SLI 51,35% com 18 falhas consumidas de 3 permitidas; não há aprovação operacional | Estabilizar LLM/API, separar falhas de indisponibilidade de falhas de comportamento, corrigir casos sistemáticos e repetir pelo menos 30 execuções válidas na versão corrigida | [measurement.md](../evals/observability/measurement.md), [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) |
+| SLO abaixo do alvo | SLI 80,39% (41/51), com 10 falhas consumidas de 5 permitidas: medição válida, mas abaixo do alvo de 90% | Corrigir os casos sistemáticos restantes (status/escopo, ferramentas ausentes, idempotência e `juiz_clareza`) e repetir a medição com pelo menos 30 execuções válidas, sem alterar o alvo | [measurement.md](../evals/observability/measurement.md), [observabilidade](./observabilidade.md) |
 | Cobertura parcial de custo/tokens | Custo médio/total indisponível por cobertura 89% | Garantir captura de uso em todos os spans válidos ou marcar execução como sem estimativa de custo antes de agregação; manter distinção entre estimativa e fatura | [measurement.json](../evals/observability/measurement.json) |
 | Retenção/acesso institucional indefinidos | Risco de exposição ou perda de evidência; Jaeger local é volátil e sem autenticação | Definir responsável, perfis, prazo, descarte, backup e backend protegido antes de dados reais; restringir Jaeger local a dados sintéticos | [compose](../infra/compose.yaml), [observabilidade](./observabilidade.md) |
 | Autoridade de suspensão não designada | Sem gatilho institucional claro para interromper/religar o sistema | Nomear responsáveis clínico e técnico, definir critérios de suspensão, canal de incidente, preservação de evidência e aprovação de reativação | Campo 10; decisão institucional pendente |
 | Base legal/privacidade/retenção de dados reais | Não é possível tratar dados de pacientes com segurança jurídica | Controlador da clínica deve aprovar base legal, finalidade, contrato/DPA com provedores, região, retenção e minimização antes de qualquer piloto real | Campo 6; decisão institucional pendente |
-| Controles #59 em PR/base separada | Risco de leitura do card como se todos os controles já estivessem na mesma linha de release | Manter rastreabilidade por PR/commit; só declarar controle implantado após merge, validação e configuração do ambiente | [PR #71](https://github.com/BccMaterial/LLM-Trabalho/pull/71), `docs/seguranca.md` |
+| Captura de payloads em traces | Payloads sintéticos podem conter dados sensíveis se a opção for usada fora do escopo de avaliação | Opção desativada por padrão; suíte rejeita casos que não sejam de desenvolvimento/sintéticos; manter Jaeger local e nunca usar dados reais | [observabilidade](./observabilidade.md), `docs/seguranca.md` |
 
 ## Lacunas e correções propostas
 
-1. **Trace real e reconstrução:** iniciar Jaeger, rodar um caso sintético após
-   configurar o ambiente e guardar o `trace_id`; decidir se `case_id` ligado ao
-   dataset sintético fornece detalhe suficiente, sem exportar conteúdo clínico.
-2. **SLI/SLO observado:** após commit e checkout limpo, executar pelo menos duas
-   rodadas completas (40 tentativas), coletar os traces e comitar o relatório
-   JSON/Markdown. Publicar valor do SLI e orçamento de erro somente se houver
-   pelo menos 30 execuções válidas.
-3. **Autoridade e suspensão:** clínica designa formalmente quem pode aprovar
+1. **SLI/SLO observado:** medição válida registrada (80,39% em 51 execuções,
+   `missed`); corrigir os casos sistemáticos e repetir pelo menos duas rodadas
+   completas (40 tentativas) na versão corrigida, com checkout commitado e limpo,
+   preservando os traces e comitando o relatório JSON/Markdown. Publicar o SLI e
+   o orçamento de erro somente se houver pelo menos 30 execuções válidas.
+2. **Autoridade e suspensão:** clínica designa formalmente quem pode aprovar
    políticas/exceções e quem pode suspender/reativar o serviço; adicionar um
    procedimento testável e auditável.
-4. **Dados e provedor:** controlador define base legal, provedor permitido,
+3. **Dados e provedor:** controlador define base legal, provedor permitido,
    finalidade, acesso, retenção e resposta a incidentes antes de dados reais.
-5. **Risco operacional:** definir alerta para falha de exportação, backend
+4. **Risco operacional:** definir alerta para falha de exportação, backend
    protegido, retenção/descarte verificáveis e avaliação independente antes de
    qualquer piloto.

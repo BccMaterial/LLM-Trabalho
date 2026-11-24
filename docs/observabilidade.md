@@ -32,18 +32,29 @@ tipos de fonte). Nas execuções do avaliador, também registra `run_id`,
 gravados em `results.json`, permitindo correlacionar cada resultado sem
 exportar entradas ou respostas clínicas. Quando há política recuperada, registra
 somente documento, versão e trecho.
+O span raiz também registra `app.prompt.sha256`, o SHA-256 do prompt
+`src/prompts/atendente_v1.txt`, permitindo correlacionar o trace à versão do
+prompt sem exportar o texto completo.
 
 `chat` usa os atributos semânticos GenAI `gen_ai.operation.name`,
 `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`,
 `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens` e
-`gen_ai.response.finish_reasons`. `execute_tool` registra o nome semântico da
-ferramenta, sucesso/falha e, para busca de política, a contagem e referências
-minimizadas.
+`gen_ai.response.finish_reasons`. `execute_tool` registra o nome semântico da ferramenta, sucesso/falha e, para
+busca de política, a contagem e referências minimizadas.
 
-Nenhum span recebe prompts, mensagens do paciente, conteúdo recuperado,
-argumentos ou resultados completos das ferramentas, identificadores de
-pacientes/agendamentos, referências livres da saída, credenciais ou texto de
+Por padrão, nenhum span recebe prompts, mensagens do paciente, conteúdo
+recuperado, argumentos ou resultados completos das ferramentas, identificadores
+de pacientes/agendamentos, referências livres da saída, credenciais ou texto de
 exceção. Falhas registram somente tipo de exceção e status do span.
+
+A suíte de avaliação oferece `--capture-synthetic-payloads` para incluir nos
+traces de avaliação a entrada, a saída estruturada, argumentos/resultados de
+ferramentas e eventos de aprovação (ator, decisão, instante UTC, versão e
+argumentos aprovados). A opção é desativada por padrão e a suíte recusa ativá-la
+se algum caso selecionado não tiver origem `desenvolvimento` ou `sintetico`.
+O estado da rodada registra se a opção foi usada. Isso se destina apenas a
+avaliações locais com dados sintéticos; não habilita payloads em execuções
+normais do agente e não deve ser usado com dados reais.
 
 ## Falhas e sinais
 
@@ -84,6 +95,23 @@ para traces. Portanto, o destino é apenas para desenvolvimento local; antes de
 qualquer uso com dados reais, a instituição precisa definir responsável,
 perfis de acesso, prazo de retenção, descarte e um backend protegido. A
 interface local não tem autenticação.
+
+Em 24/11/2026 foi confirmada uma execução sintética nova com captura opt-in:
+`trace_id=1acc5443dfd0fc949c370afd4a7e515a`,
+`run_id=20261124T002919Z-cfee82e2`,
+`case_id=dev-03-escopo-privacidade`, commit
+`0ab06b338d914fcfb092c3b05df3e90b37f059e1`. O span raiz exportou
+`app.evaluation.payload_capture=true`, entrada e saída estruturada; o caso foi
+aprovado pelo juiz e passou todas as checagens. Os artefatos estão em
+[`evals/runs/20261124T002919Z-cfee82e2`](../evals/runs/20261124T002919Z-cfee82e2).
+
+Após a instrumentação do hash do prompt, uma nova rodada sintética aprovada
+registrou `trace_id=801adc8a34bc5c539dc435ebce3f0089`,
+`run_id=20261124T020553Z-28bc477c`, commit
+`df562b11ce9072baa3655b776ba8165dd31ef5a1` e
+`app.prompt.sha256=a759ced71a16e843aea39374b416548794668412fbe72f5f8643abb451fa844d`
+no span raiz, igual ao `agent_prompt_sha256` do `run.json`. Artefatos em
+[`evals/runs/20261124T020553Z-28bc477c`](../evals/runs/20261124T020553Z-28bc477c).
 
 `OTEL_EXPORTER_OTLP_ENDPOINT` pode substituir o endpoint local. O nome do
 serviço é `llm-trabalho-agent`; na interface Jaeger, selecione-o, filtre pela

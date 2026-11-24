@@ -431,6 +431,14 @@ def test_scheduling_graph_requires_explicit_approval_before_booking(monkeypatch)
         }
     ]
     assert result["answer"] == "O agendamento foi confirmado."
+    assert len(result["approval_events"]) == 1
+    approval = result["approval_events"][0]
+    assert approval["actor_id"] == "authenticated-patient"
+    assert approval["action"] == "confirmar_agendamento"
+    assert approval["decision"] == "approve"
+    assert approval["arguments"]["agenda_inicio"] == start
+    assert approval["arguments"]["agenda_fim"] == end
+    assert approval["occurred_at"].endswith("+00:00")
 
 
 def test_scheduling_graph_cancels_booking_on_explicit_rejection(monkeypatch):

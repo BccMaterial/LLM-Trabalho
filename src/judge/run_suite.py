@@ -265,6 +265,19 @@ def _run_case(
     )
 
 
+def _validate_synthetic_payload_capture(cases: list[dict]) -> None:
+    unsupported = [
+        case["id"]
+        for case in cases
+        if case.get("origem") not in {"desenvolvimento", "sintetico"}
+    ]
+    if unsupported:
+        raise ValueError(
+            "captura de payload só é permitida para casos sintéticos/"
+            f"de desenvolvimento; casos incompatíveis: {', '.join(unsupported)}"
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", required=True, help="rótulo da versão avaliada")
@@ -279,6 +292,11 @@ def main() -> int:
     parser.add_argument(
         "--skip-judge", action="store_true", help="desativa o juiz (depuração)"
     )
+    parser.add_argument(
+        "--capture-synthetic-payloads",
+        action="store_true",
+        help="inclui entrada, saída e dados de ferramentas nos traces dos casos sintéticos",
+    )
     args = parser.parse_args()
 
     load_dotenv(ROOT / ".env")
@@ -291,6 +309,11 @@ def main() -> int:
     if only and {case["id"] for case in selected} != only:
         unknown = sorted(only - {case["id"] for case in selected})
         parser.error(f"casos inexistentes no dataset: {', '.join(unknown)}")
+    if args.capture_synthetic_payloads:
+        try:
+            _validate_synthetic_payload_capture(selected)
+        except ValueError as error:
+            parser.error(str(error))
     if args.dry_run:
         for case in selected:
             print(f"{case['id']}: {', '.join(fixtures.case_adapters(case)) or 'fiel'}")
@@ -306,6 +329,7 @@ def main() -> int:
     run_dir = ROOT / args.output_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
     identity["run_id"] = run_id
+    identity["capture_synthetic_payloads"] = args.capture_synthetic_payloads
     identity["status"] = "em_andamento"
     write_json(run_dir / "run.json", identity)
     results_path = run_dir / "results.json"
@@ -329,6 +353,7 @@ def main() -> int:
                 case_id=case["id"],
                 version=args.version,
                 commit=identity["commit"],
+                capture_synthetic_payloads=args.capture_synthetic_payloads,
             ),
             judge_enabled=judge_enabled,
             results_path=results_path,

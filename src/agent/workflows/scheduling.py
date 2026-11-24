@@ -65,6 +65,7 @@ class SchedulingState(TypedDict):
     answer: str | None
     authenticated_user: dict[str, Any] | None
     approval_decision: str | None
+    approval_events: list[dict[str, Any]]
     proposal_version: int
     approved_action_key: str | None
     completed_actions: dict[str, dict[str, Any]]

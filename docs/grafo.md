@@ -76,32 +76,33 @@ LangGraph: a atualização padrão substitui o valor do campo. Quando um nó
 acrescenta mensagens/resultados, ele copia a lista, inclui os itens e devolve
 a lista completa. Não há ramos paralelos nem escritas concorrentes.
 
-| Campo | Escritores | Leitores | Reducer |
-|---|---|---|---|
-| `messages` | CLI, `call_model`, `dispatch_tools`, `request_approval`, erros em `revalidate_availability` | `call_model`, `dispatch_tools`, `request_approval`, CLI | Substituição; alguns nós concatenam manualmente |
-| `conversation_id` | CLI | `actions.approved_action_key`; CLI usa como `thread_id` | Substituição |
-| `round_count` | CLI reinicia por turno; `call_model` incrementa | `route_after_tools` | Substituição |
-| `pending_action` | `call_model`, edição/rejeição em `request_approval`, `dispatch_tools`, `revalidate_availability` | Roteamento, `request_approval`, `dispatch_tools`, `revalidate_availability`, CLI | Substituição |
-| `pending_message` | `call_model`; `dispatch_tools` e `request_approval` limpam | `dispatch_tools`, `request_approval` | Substituição |
-| `approval_result` | `request_approval`; CLI e `dispatch_tools` limpam | Roteamento, `dispatch_tools`, CLI | Substituição |
-| `tool_results` | CLI inicia/limpa; `dispatch_tools` acrescenta | `call_model`, `dispatch_tools`, `booking_result_response` | Substituição; `dispatch_tools` concatena manualmente |
-| `structured_response` | `call_model`, `dispatch_tools`, respostas terminais | `route_after_tools` | Substituição |
-| `answer` | `call_model`, `dispatch_tools`, `request_approval`, `require_authentication`, `revalidate_availability` | CLI | Substituição |
-| `authenticated_user` | CLI após `/login` | `call_model`, roteamento, `execute_tool_calls` | Substituição |
-| `approval_decision` | `request_approval`; `dispatch_tools` limpa | `route_after_approval` | Substituição |
-| `proposal_version` | `call_model` ao propor agendamento; `request_approval` ao editar | `call_model`, `request_approval` | Substituição |
-| `approved_action_key` | `request_approval` ao aprovar; `dispatch_tools` e erros limpam | `dispatch_tools` | Substituição |
-| `completed_actions` | `dispatch_tools` | `dispatch_tools` | Substituição; cópia e atualização manual |
-| `approval_expires_at` | `call_model` ao propor; `actions` ao aprovar, editar ou encerrar | `actions.request_appointment_approval` | Substituição |
-| `professional_name` | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | `request_approval`, `actions`, CLI lê o payload do interrupt | Substituição |
-| `professional_validated` | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | Roteamento, `request_approval` | Substituição |
-| `execution_deadline` | CLI inicia por turno | Nós que verificam limite; `ApiClient` recebe o mesmo deadline | Substituição |
-| `workflow_step_count` | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason` | Substituição |
-| `external_call_count` | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason`, `dispatch_tools` | Substituição |
-| `total_model_tokens` | `call_model`; CLI reinicia por turno | `call_model`, `_limit_reason` | Substituição |
-| `tool_call_counts` | `call_model`; CLI reinicia por turno | `call_model` | Substituição; o nó copia e atualiza manualmente |
-| `termination_reason` | Nós e `actions`; CLI define `user_exit` ou limpa por turno | Roteamento | Substituição |
-| `error_class` | Nós de erro; CLI limpa por turno | Consumidor do estado final | Substituição |
+| Campo | Tipo | Origem/inicialização | Escritores | Leitores | Reducer |
+|---|---|---|---|---|---|
+| `messages` | `list[dict]` | CLI cria; entrada do usuário vem do terminal/fixture | CLI, `call_model`, `dispatch_tools`, `request_approval`, erros em `revalidate_availability` | `call_model`, `dispatch_tools`, `request_approval`, CLI | Substituição; alguns nós concatenam manualmente |
+| `conversation_id` | `str` | CLI gera UUID | CLI | `actions.approved_action_key`; CLI usa como `thread_id` | Substituição |
+| `round_count` | `int` | CLI inicia em zero | CLI reinicia por turno; `call_model` incrementa | `route_after_tools` | Substituição |
+| `pending_action` | `list[dict] \| None` | Tool call proposta pelo modelo | `call_model`, edição/rejeição em `request_approval`, `dispatch_tools`, `revalidate_availability` | Roteamento, `request_approval`, `dispatch_tools`, `revalidate_availability`, CLI | Substituição |
+| `pending_message` | `dict \| None` | CLI inicia vazio; preenchida pela proposta do modelo | `call_model`; `dispatch_tools` e `request_approval` limpam | `dispatch_tools`, `request_approval` | Substituição |
+| `approval_result` | `bool \| None` | CLI inicia vazio | `request_approval`; CLI e `dispatch_tools` limpam | Roteamento, `dispatch_tools`, CLI | Substituição |
+| `tool_results` | `list[dict[str, Any]]` | CLI inicia lista vazia | CLI inicia/limpa; `dispatch_tools` acrescenta | `call_model`, `dispatch_tools`, `booking_result_response` | Substituição; `dispatch_tools` concatena manualmente |
+| `structured_response` | `dict \| None` | CLI inicia vazio; produzida pelo modelo ou por respostas terminais | `call_model`, `dispatch_tools`, respostas terminais | `route_after_tools` | Substituição |
+| `answer` | `str \| None` | CLI inicia vazio; produzida pelos nós | `call_model`, `dispatch_tools`, `request_approval`, `require_authentication`, `revalidate_availability` | CLI | Substituição |
+| `authenticated_user` | `dict[str, Any] \| None` | CLI inicia vazio; sessão autenticada após `/login` | CLI após `/login` | `call_model`, roteamento, `execute_tool_calls` | Substituição |
+| `approval_decision` | `str \| None` | CLI inicia vazio; resume do portão humano | `request_approval`; `dispatch_tools` limpa | `route_after_approval` | Substituição |
+| `approval_events` | `list[dict[str, Any]]` | CLI inicia lista vazia; eventos descrevem respostas ao portão de aprovação | `request_approval` acrescenta decisão, ator, instante UTC e argumentos | `set_root_result` exporta eventos somente em captura sintética opt-in | Substituição; cópia e atualização manual |
+| `proposal_version` | `int` | CLI inicia em zero | `call_model` ao propor agendamento; `request_approval` ao editar | `call_model`, `request_approval` | Substituição |
+| `approved_action_key` | `str \| None` | CLI inicia vazio; calculada após aprovação | `request_approval` ao aprovar; `dispatch_tools` e erros limpam | `dispatch_tools` | Substituição |
+| `completed_actions` | `dict[str, dict[str, Any]]` | CLI inicia dicionário vazio | `dispatch_tools` | `dispatch_tools` | Substituição; cópia e atualização manual |
+| `approval_expires_at` | `str \| None` | CLI inicia vazio; prazo gerado ao propor | `call_model` ao propor; `actions` ao aprovar, editar ou encerrar | `actions.request_appointment_approval` | Substituição |
+| `professional_name` | `str \| None` | CLI inicia vazio; nome vem da API | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | `request_approval`, `actions`, CLI lê o payload do interrupt | Substituição |
+| `professional_validated` | `bool` | CLI inicia como `False` | `validate_professional`; `call_model` e `actions` limpam ao trocar a proposta | Roteamento, `request_approval` | Substituição |
+| `execution_deadline` | `str \| None` | CLI cria por turno | CLI inicia por turno | Nós que verificam limite; `ApiClient` recebe o mesmo deadline | Substituição |
+| `workflow_step_count` | `int` | CLI inicia em zero | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason` | Substituição |
+| `external_call_count` | `int` | CLI inicia em zero | Nós via `_budget_update`; CLI reinicia por turno | `_limit_reason`, `dispatch_tools` | Substituição |
+| `total_model_tokens` | `int` | CLI inicia em zero; uso vem do provedor | `call_model`; CLI reinicia por turno | `call_model`, `_limit_reason` | Substituição |
+| `tool_call_counts` | `dict[str, int]` | CLI inicia dicionário vazio | `call_model`; CLI reinicia por turno | `call_model` | Substituição; o nó copia e atualiza manualmente |
+| `termination_reason` | `str \| None` | CLI inicia vazio | Nós e `actions`; CLI define `user_exit` ou limpa por turno | Roteamento | Substituição |
+| `error_class` | `str \| None` | CLI inicia vazio | Nós de erro; CLI limpa por turno | Consumidor do estado final | Substituição |
 
 `agent_session_cookie` e `user_session_cookie` pertencem ao `ApiClient`, não
 ao `SchedulingState`. O `thread_id` também é metadado de configuração do
