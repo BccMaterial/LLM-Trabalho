@@ -58,6 +58,10 @@ def populate_example_data() -> None:
     api_user = (os.getenv("API_AGENT_USER") or os.environ["API_USER"]).strip().lower()
     api_password = os.getenv("API_AGENT_PASSWORD") or os.environ["API_PASSWORD"]
 
+    # A credencial usada pelo agente em runtime precisa do papel `agent`:
+    # a API concede a consulta de disponibilidade somente a esse papel. A
+    # semeadura usa ADMIN_API_TOKEN, então não é necessário promover o usuário
+    # a `admin` (o que quebrava todas as consultas de agenda da suíte).
     _request(
         "/api/users",
         method="POST",
@@ -65,7 +69,7 @@ def populate_example_data() -> None:
             "nome": "Usuário da Demonstração",
             "username": "agente_demo",
             "cpf": "39053344705",
-            "type": "admin",
+            "type": "agent",
             "email": api_user,
             "password": api_password,
         },
@@ -74,7 +78,7 @@ def populate_example_data() -> None:
     _request(
         f"/api/users/{seeded_api_user['id']}",
         method="PATCH",
-        payload={"type": "admin", "password": api_password},
+        payload={"type": "agent", "password": api_password},
     )
     _request(
         "/api/users",

@@ -1,5 +1,7 @@
 import json
 import os
+import random
+import time
 from datetime import datetime
 from http.cookies import SimpleCookie
 from urllib.error import HTTPError, URLError
@@ -8,9 +10,28 @@ from urllib.request import Request, build_opener
 from zoneinfo import ZoneInfo
 
 from ...network_security import validate_service_base_url
-from ..workflows.execution import remaining_seconds
+from ..workflows.execution import (
+    ApiUnavailableFailure,
+    ProviderTimeoutFailure,
+    remaining_seconds,
+)
 
 LOCAL_TIMEZONE = ZoneInfo("America/Sao_Paulo")
+MAX_API_READ_ATTEMPTS = 3
+API_READ_BACKOFF_SECONDS = 0.25
+RETRYABLE_API_STATUS_CODES = frozenset({408, 425, 429, 500, 502, 503, 504})
+
+
+def _sleep_before_retry(attempt: int, attempts: int, remaining: float) -> bool:
+    """Retry somente leituras idempotentes e dentro do prazo da execução."""
+    if attempt >= attempts - 1:
+        return False
+    backoff = min(API_READ_BACKOFF_SECONDS * (2**attempt), 1.0)
+    delay = backoff + random.uniform(0, backoff)
+    if delay >= remaining:
+        return False
+    time.sleep(delay)
+    return True
 
 
 class ApiClient:
@@ -59,25 +80,39 @@ class ApiClient:
             },
             method=method,
         )
-        try:
+        attempts = MAX_API_READ_ATTEMPTS if method == "GET" else 1
+        for attempt in range(attempts):
             timeout = remaining_seconds(self.execution_deadline)
             if timeout <= 0:
-                raise TimeoutError("API excedeu o tempo máximo da execução.")
-            with self.opener.open(request, timeout=timeout) as response:
-                cookie = SimpleCookie(response.headers.get("Set-Cookie"))
-                if "session_id" in cookie:
-                    session_cookie = f"session_id={cookie['session_id'].value}"
-                    if cookie_kind == "agent":
-                        self.agent_session_cookie = session_cookie
-                        self.session_cookie = session_cookie
-                    else:
-                        self.user_session_cookie = session_cookie
-                return json.loads(response.read().decode())
-        except (HTTPError, URLError) as error:
-            detail = (
-                error.read().decode() if isinstance(error, HTTPError) else str(error)
-            )
-            raise RuntimeError(f"API indisponível ({path}): {detail}") from error
+                raise ProviderTimeoutError("API excedeu o tempo máximo da execução.")
+            try:
+                with self.opener.open(request, timeout=timeout) as response:
+                    cookie = SimpleCookie(response.headers.get("Set-Cookie"))
+                    if "session_id" in cookie:
+                        session_cookie = f"session_id={cookie['session_id'].value}"
+                        if cookie_kind == "agent":
+                            self.agent_session_cookie = session_cookie
+                            self.session_cookie = session_cookie
+                        else:
+                            self.user_session_cookie = session_cookie
+                    return json.loads(response.read().decode())
+            except HTTPError as error:
+                detail = error.read().decode()
+                if (
+                    method == "GET"
+                    and error.code in RETRYABLE_API_STATUS_CODES
+                    and _sleep_before_retry(attempt, attempts, timeout)
+                ):
+                    continue
+                raise ApiUnavailableFailure(
+                    f"API indisponível ({path}): {detail}"
+                ) from error
+            except (URLError, TimeoutError) as error:
+                if method == "GET" and _sleep_before_retry(attempt, attempts, timeout):
+                    continue
+                raise ApiUnavailableFailure(
+                    f"API indisponível ({path}): {error}"
+                ) from error
 
     def set_execution_deadline(self, deadline: str | None) -> None:
         self.execution_deadline = deadline

@@ -70,21 +70,23 @@ def _revalidation_before_write(tool_results: list[dict]) -> bool:
 
 
 def _rate_limit_inconclusive(case: dict, result: dict) -> bool:
-    """Identifica 429 inesperado do provedor, preservando falhas injetadas."""
+    """Identifica 429 inesperado do provedor, preservando falhas injetadas.
+
+    A classe do erro vem do código (`error_kind`); o texto da resposta ao
+    paciente não é evidência de limite, porque mensagens seguras de falha
+    temporária também aparecem em indisponibilidade e erros de contrato.
+    """
     if case.get("entrada", {}).get("ambiente"):
         return False
     if result.get("termination_reason") not in {"recoverable_error", "runner_error"}:
         return False
-    evidence = f"{result.get('error') or ''} {result.get('answer') or ''}".casefold()
-    if any(
+    if "rate_limit" in str(result.get("error_kind") or "").casefold():
+        return True
+    evidence = str(result.get("error") or "").casefold()
+    return any(
         marker in evidence
         for marker in ("429", "ratelimit", "rate limit", "limite de requisicoes")
-    ):
-        return True
-    answer = str(result.get("answer") or "").casefold()
-    return (
-        "falha temporária" in answer or "tente novamente mais tarde" in answer
-    ) and ("falha" in answer or "tente" in answer)
+    )
 
 
 def _idempotency(case_id: str, tool_results: list[dict]) -> bool | None:
@@ -154,6 +156,7 @@ def evaluate_case(
         "novos_agendamentos": [hashed(item) for item in sorted(new_ids)],
         "termination_reason": result.get("termination_reason"),
         "error_class": result.get("error_class"),
+        "error_kind": result.get("error_kind"),
         "error": result.get("error"),
         "judgment": judgment,
         "answer": result.get("answer"),

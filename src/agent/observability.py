@@ -118,6 +118,10 @@ def set_root_result(
     if isinstance(error_class, str):
         span.set_attribute("app.error.class", error_class)
 
+    error_kind = result.get("error_kind")
+    if isinstance(error_kind, str):
+        span.set_attribute("app.error.kind", error_kind)
+
     total_tokens = result.get("total_model_tokens")
     if isinstance(total_tokens, int) and total_tokens >= 0:
         span.set_attribute("app.usage.total_tokens", total_tokens)

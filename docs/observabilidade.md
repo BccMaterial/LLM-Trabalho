@@ -56,7 +56,10 @@ normais do agente e não deve ser usado com dados reais.
 ## Falhas e sinais
 
 1. **Falha de conexão/limite do modelo.** O span `chat` fica com status `ERROR`
-   e `error.type`; a raiz indica `recoverable_error` e a classe da falha.
+   e `error.type`; a raiz indica `recoverable_error`, a classe da falha e
+   `app.error.kind` (`rate_limit`, `provider_timeout`, `api_unavailable` ou
+   `unknown`). O motivo estruturado, e não o texto da resposta ao paciente,
+   distingue limite do provedor de indisponibilidade ou erro de contrato.
 2. **Falha de rede da API durante consulta ou revalidação.** O fluxo captura a
    exceção e responde de forma segura, sem expor detalhes técnicos. Esse é um
    modo silencioso para quem opera: o sinal fica no span `execute_tool` com
@@ -111,6 +114,14 @@ O avaliador correlaciona spans com `run.json` e `results.json` por
 para o SLI se a rodada terminou, o worktree estava limpo, o juiz estava
 adotado, o caso foi conclusivo e há trace raiz com a correlação completa.
 Evento bom é um caso válido com `passed=true` em `results.json`.
+
+Uma execução só é registrada como `inconclusivo` quando há evidência estrutural
+de limite do provedor (`error_kind=rate_limit` ou erro HTTP 429 explícito). Uma
+mensagem de "falha temporária" sem esse sinal é falha conclusiva: o texto da
+resposta não pode retirar eventos do denominador. A classificação anterior,
+baseada no texto da mensagem, produziu 23 lacunas na medição da issue #61 e foi
+substituída; o valor medido daquela coorte permanece como evidência histórica e
+não foi recalculado retroativamente.
 
 O SLI é a proporção de eventos bons entre execuções válidas. O SLO pré-definido
 é **pelo menos 90%**, medido sobre a coorte de rodadas informadas para cada
@@ -179,3 +190,29 @@ suficiência, ferramentas ou efeito no estado. O relatório commitado em
 permite recalcular as métricas. O resultado negativo é registrado como evidência;
 a melhoria do SLI depende de estabilizar o ambiente e corrigir as falhas
 sistemáticas do agente, sem alterar o alvo.
+
+### Medição registrada (PR #77)
+
+Três rodadas completas (20 casos cada) foram executadas em checkout commitado e
+limpo, com juiz adotado e Jaeger ativo, sobre o commit `58d4d57` (versão
+`pr-77-final`): `20261124T005302Z-7005870b`, `20261124T005605Z-a1e8b61a` e
+`20261124T005855Z-67bd29ea`. O agente e o juiz usaram chaves de API distintas,
+ambas com cota disponível; o modelo permaneceu `gemini-3.5-flash-lite`.
+
+A janela é a coorte das 51 execuções válidas; 9 foram excluídas como
+`inconclusivo` por limite momentâneo do provedor. O **SLI observado e medido é
+80,39%** (41 boas de 51), contra 51,35% da coorte anterior — ainda abaixo do
+alvo pré-definido de 90% (`missed`). O orçamento de erro permite 5 falhas, com
+10 consumidas. Latência p50/p95: 2585,454 / 10498,324 ms. Términos: 44
+`normal_completion` e 7 `recoverable_error`.
+`consultar_disponibilidade` teve 3 erros em 34 chamadas (8,82%), contra 46,15%
+no baseline, após corrigir o papel da credencial de runtime no seeding e limitar
+retries de 429 por cota diária. Cobertura de tokens: 98%; a estimativa de custo
+continua sem valor preenchido porque parte das execuções não tem uso completo.
+
+As falhas restantes concentram-se em divergências de status/escopo, ferramentas
+ausentes, idempotência e `juiz_clareza`. O alvo não foi ajustado ao resultado: a
+próxima iteração deve corrigir esses casos sistemáticos e repetir a medição com
+pelo menos 30 execuções válidas. A rodada parcial interrompida por esgotamento de
+cota diária está preservada separadamente em
+`evals/observability/measurement-pr77.{json,md}` e não entra nesta comparação.

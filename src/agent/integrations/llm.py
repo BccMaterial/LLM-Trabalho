@@ -1,15 +1,30 @@
 import os
+import random
 import time
 
-from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
+from openai import (
+    APIConnectionError,
+    APIStatusError,
+    APITimeoutError,
+    OpenAI,
+    RateLimitError,
+)
 
 from ...network_security import validate_service_base_url
 from ..observability import mark_span_error, set_token_usage, tracer
 from ..tools import TOOLS
-from ..workflows.execution import MAX_EXTERNAL_CALL_SECONDS
+from ..workflows.execution import (
+    MAX_EXTERNAL_CALL_SECONDS,
+    ProviderTimeoutFailure,
+    RateLimitFailure,
+    RecoverableExecutionError,
+)
 
 MAX_LLM_RETRIES = 5
-RETRY_BACKOFF_SECONDS = 5
+RETRY_BACKOFF_SECONDS = 1.0
+MAX_RETRY_BACKOFF_SECONDS = 8.0
+MAX_RETRY_AFTER_SECONDS = 5.0
+RETRYABLE_STATUS_CODES = frozenset({408, 425, 429, 500, 502, 503, 504})
 
 
 def create_client() -> OpenAI:
@@ -66,6 +81,47 @@ def request_with_retry(
         return response
 
 
+def _retry_delay(error: Exception, attempt: int, deadline: float) -> float | None:
+    """Jitter exponencial respeitando Retry-After e o prazo restante."""
+    headers = getattr(getattr(error, "response", None), "headers", {}) or {}
+    retry_after = headers.get("retry-after") if hasattr(headers, "get") else None
+    try:
+        declared = float(retry_after) if retry_after else 0.0
+    except (TypeError, ValueError):
+        declared = 0.0
+    backoff = min(
+        RETRY_BACKOFF_SECONDS * (2**attempt),
+        MAX_RETRY_BACKOFF_SECONDS,
+    )
+    delay = max(declared, backoff) + random.uniform(0, backoff / 2)
+    remaining = deadline - time.monotonic()
+    return delay if delay < remaining else None
+
+
+def _retry_after_seconds(error: Exception) -> float:
+    headers = getattr(getattr(error, "response", None), "headers", {}) or {}
+    retry_after = headers.get("retry-after") if hasattr(headers, "get") else None
+    try:
+        return float(retry_after) if retry_after else 0.0
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _is_retryable(error: Exception) -> bool:
+    if isinstance(error, RateLimitError):
+        # Cota diária esgotada não se resolve com retry: cada tentativa
+        # consume mais cota e atrasa a execução. Só repetimos 429 com
+        # Retry-After explícito e curto, sinal de limite momentâneo.
+        return 0 < _retry_after_seconds(error) <= MAX_RETRY_AFTER_SECONDS
+    if isinstance(error, (APIConnectionError, APITimeoutError)):
+        return True
+    if isinstance(error, APIStatusError):
+        if error.status_code == 429:
+            return 0 < _retry_after_seconds(error) <= MAX_RETRY_AFTER_SECONDS
+        return error.status_code in RETRYABLE_STATUS_CODES
+    return isinstance(error, (TimeoutError, ConnectionError))
+
+
 def _request_with_retry(
     llm_client: OpenAI,
     messages: list[dict],
@@ -78,7 +134,7 @@ def _request_with_retry(
     for attempt in range(MAX_LLM_RETRIES):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise RuntimeError("LLM excedeu o tempo máximo da execução.")
+            raise ProviderTimeoutFailure("LLM excedeu o tempo máximo da execução.")
         try:
             request_options = {"max_tokens": max_tokens} if max_tokens else {}
             request_client = llm_client.with_options(timeout=remaining)
@@ -88,31 +144,35 @@ def _request_with_retry(
                 tools=tool_definitions,
                 **request_options,
             )
-        except RateLimitError as error:
-            if attempt == MAX_LLM_RETRIES - 1:
-                raise RuntimeError(
-                    f"LLM continuou limitado após {MAX_LLM_RETRIES} tentativas: "
-                    f"{error.response.text}"
+        except Exception as error:
+            retryable = _is_retryable(error)
+            last_attempt = attempt == MAX_LLM_RETRIES - 1
+            if not retryable or last_attempt:
+                if isinstance(error, RateLimitError):
+                    raise RateLimitFailure(
+                        f"LLM continuou limitado após {MAX_LLM_RETRIES} tentativas."
+                    ) from error
+                if isinstance(error, (APITimeoutError, TimeoutError)):
+                    raise ProviderTimeoutFailure(
+                        "LLM excedeu o tempo máximo da execução."
+                    ) from error
+                if isinstance(error, APIStatusError):
+                    raise RuntimeError(
+                        f"LLM retornou HTTP {error.status_code}."
+                    ) from error
+                if isinstance(error, APIConnectionError):
+                    raise RecoverableExecutionError(
+                        "Não foi possível conectar ao LLM."
+                    ) from error
+                raise
+            delay = _retry_delay(error, attempt, deadline)
+            if delay is None:
+                if isinstance(error, RateLimitError):
+                    raise RateLimitFailure(
+                        "LLM continuou limitado e o tempo máximo da execução "
+                        "foi atingido."
+                    ) from error
+                raise ProviderTimeoutFailure(
+                    "LLM excedeu o tempo máximo da execução."
                 ) from error
-
-            retry_after = error.response.headers.get("retry-after")
-            try:
-                delay = float(retry_after) if retry_after else 0
-            except ValueError:
-                delay = 0
-            delay = max(delay, RETRY_BACKOFF_SECONDS * (2**attempt))
-            if delay >= deadline - time.monotonic():
-                raise RuntimeError(
-                    "LLM continuou limitado e o tempo máximo da execução foi atingido."
-                ) from error
-            print(
-                f"Limite do LLM atingido. Tentando novamente em {delay:g}s "
-                f"({attempt + 1}/{MAX_LLM_RETRIES})..."
-            )
             time.sleep(delay)
-        except APIStatusError as error:
-            raise RuntimeError(
-                f"LLM retornou HTTP {error.status_code}: {error.response.text}"
-            ) from error
-        except APIConnectionError as error:
-            raise RuntimeError(f"Não foi possível conectar ao LLM: {error}") from error

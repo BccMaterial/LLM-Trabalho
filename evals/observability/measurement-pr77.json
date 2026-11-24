@@ -1,0 +1,2090 @@
+{
+  "slo_window": "coorte de todas as execuções sintéticas válidas fornecidas por versão; mínimo de 30 válidas",
+  "pricing_tier": "paid",
+  "versions": {
+    "pr-77": {
+      "runs": [
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "agent_version": "0.1.0",
+          "agent_model": "gemini-3.5-flash-lite",
+          "created_at": "2026-11-24T00:02:33.462676+00:00",
+          "working_tree_dirty": false,
+          "dataset_sha256": "1b73628470ed3ec32aab5f6e07e2eb84858c0c54deff50133a9afa7d88cb47f8"
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "agent_version": "0.1.0",
+          "agent_model": "gemini-3.5-flash-lite",
+          "created_at": "2026-11-24T00:13:18.596545+00:00",
+          "working_tree_dirty": false,
+          "dataset_sha256": "1b73628470ed3ec32aab5f6e07e2eb84858c0c54deff50133a9afa7d88cb47f8"
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "agent_version": "0.1.0",
+          "agent_model": "gemini-3.5-flash-lite",
+          "created_at": "2026-11-24T00:27:31.914396+00:00",
+          "working_tree_dirty": false,
+          "dataset_sha256": "1b73628470ed3ec32aab5f6e07e2eb84858c0c54deff50133a9afa7d88cb47f8"
+        }
+      ],
+      "valid_executions": 17,
+      "excluded_executions": 43,
+      "good_executions": 7,
+      "failed_executions": 10,
+      "quality_sli": {
+        "definition": "casos aprovados / casos conclusivos com juiz adotado, worktree limpo e trace correlacionado à versão/commit",
+        "target": 0.9,
+        "observed_rate": 0.4118,
+        "measured_value": null,
+        "minimum_sample": 30,
+        "status": "insufficient_sample",
+        "error_budget": {
+          "allowed_failed_executions": 1,
+          "consumed_failed_executions": 10,
+          "consumption": 10.0
+        }
+      },
+      "business": {
+        "output_status_distribution": {
+          "agendamento_confirmado": 2,
+          "informacao_insuficiente": 15
+        },
+        "output_source_type_distribution": {
+          "api": 4,
+          "pedido_de_clarificacao": 15
+        }
+      },
+      "operations": {
+        "latency_ms": {
+          "sample_count": 17,
+          "p50": 16421.928,
+          "p95": 53482.099,
+          "scope": "soma das durações dos spans invoke_agent por caso"
+        },
+        "termination_reasons": {
+          "normal_completion": 8,
+          "recoverable_error": 9
+        },
+        "tool_error_rates": {
+          "confirmar_agendamento": {
+            "calls": 2,
+            "errors": 0,
+            "error_rate": 0.0
+          },
+          "consultar_disponibilidade": {
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0
+          },
+          "consultar_politica": {
+            "calls": 2,
+            "errors": 0,
+            "error_rate": 0.0
+          },
+          "consultar_profissionais": {
+            "calls": 6,
+            "errors": 0,
+            "error_rate": 0.0
+          }
+        }
+      },
+      "payer": {
+        "tier": "paid",
+        "currency": "USD",
+        "priced_executions": 10,
+        "valid_executions": 17,
+        "coverage": 0.5882,
+        "token_usage_executions": 10,
+        "input_tokens_total": 62510,
+        "output_tokens_total": 1699,
+        "average_input_tokens": 6251,
+        "average_output_tokens": 170,
+        "average_per_execution": null,
+        "total": null,
+        "pricing_sources": [
+          "https://ai.google.dev/gemini-api/docs/pricing"
+        ],
+        "price_checked": [
+          "2026-11-17"
+        ],
+        "note": "Estimativa por tokens e tarifa declarada; não é uma fatura."
+      },
+      "system_owner": {
+        "agent_versions": [
+          "0.1.0"
+        ],
+        "commit_count": 1,
+        "trace_coverage": 1.0,
+        "trace_ids": {
+          "20261124T000233Z-7830db3a:dev-01-confirmacao": [
+            "a4722e783a04bbb66c3d1e2c9919e49f",
+            "e1b00f7d5e18b5f0e1e88c54580e2d40"
+          ],
+          "20261124T000233Z-7830db3a:dev-02-registro-inexistente": [
+            "072fbbbba16997303c15a31094b90fce"
+          ],
+          "20261124T000233Z-7830db3a:dev-03-escopo-privacidade": [
+            "829f846a1b369f9ec515375816067b92"
+          ],
+          "20261124T000233Z-7830db3a:dev-04-autenticacao": [
+            "9d1868cc05975a3e78b48732e4ec4258"
+          ],
+          "20261124T000233Z-7830db3a:dev-05-politica-ausente": [
+            "be81d865315de7cb3d76289731853299"
+          ],
+          "20261124T000233Z-7830db3a:dev-06-idempotencia": [
+            "22b67c24cd915150b0acf7d38d5b517b",
+            "43463182886497bcc2666504f9fd86ce",
+            "448443547e813aab0cae873be0a89492",
+            "58f3334d5376bd3b2b39065647f71f4a",
+            "819ca7f82796f6a6a7060cee63badefa",
+            "f196663f314e4d696f020cb6dc738938"
+          ],
+          "20261124T000233Z-7830db3a:dev-07-entrada-incompleta": [
+            "ec661590095ee3d848a37d6d4fafc141"
+          ],
+          "20261124T000233Z-7830db3a:dev-08-entrada-ambigua": [
+            "474d56c8aaaf09fbde439e8488dc6814"
+          ],
+          "20261124T000233Z-7830db3a:dev-09-divergencia-agenda": [
+            "2390bb9d339ee61575004cd734e1f8f0"
+          ],
+          "20261124T000233Z-7830db3a:syn-01-opcoes-sem-confirmacao": [
+            "e8bc0c96869bde158c8604c21d440399"
+          ],
+          "20261124T000233Z-7830db3a:syn-02-consulta-disponibilidade": [
+            "b4def55d5bcd9753e2e1e90127f046db"
+          ],
+          "20261124T000233Z-7830db3a:syn-03-confirmacao-explicita": [
+            "2eb6c7845293d532315d4fc741a06cfa",
+            "7ef1bb1b0657393e2beb84e8d84a3bb4"
+          ],
+          "20261124T000233Z-7830db3a:syn-04-divergencia-encaminhamento": [
+            "e3d65edb381feb8708504d2f20f9f5c1"
+          ],
+          "20261124T000233Z-7830db3a:syn-05-cancelamento-sem-politica": [
+            "ad5efd4a359339cb1083c8cb76ca021a"
+          ],
+          "20261124T000233Z-7830db3a:syn-06-falha-revalidacao": [
+            "bdeaba1a4f8bb17c4f36121b28fe7f79",
+            "e9629ba5bd2d7285eae3e00c9e86891f"
+          ],
+          "20261124T000233Z-7830db3a:syn-07-falha-consulta": [
+            "706b2f0137eda16a9b683fb5390e6af1"
+          ],
+          "20261124T000233Z-7830db3a:syn-08-fora-do-escopo": [
+            "f761451352e4d006ca207c8ecea61550"
+          ],
+          "20261124T000233Z-7830db3a:syn-09-profissional-inexistente": [
+            "d1045ae879f62fc014cd0a2c9c343df7"
+          ],
+          "20261124T000233Z-7830db3a:syn-10-escolha-sem-especificacao": [
+            "75c0112b289dd5298b9efb5f5779cf9a",
+            "ae8bc6b42c0844841409319077f09063"
+          ],
+          "20261124T000233Z-7830db3a:syn-11-politica-sem-regra-de-saida": [
+            "270e6d15ffc7f045dfd880238905059a"
+          ],
+          "20261124T001318Z-d42887ba:dev-01-confirmacao": [
+            "eec47dc388493c7e19adf39aa2552190"
+          ],
+          "20261124T001318Z-d42887ba:dev-02-registro-inexistente": [
+            "3a39d8c6d9597b8d4c2d0280b8d8e0da"
+          ],
+          "20261124T001318Z-d42887ba:dev-03-escopo-privacidade": [
+            "c1aabd441a6c0ade0d5c9910609116ea"
+          ],
+          "20261124T001318Z-d42887ba:dev-04-autenticacao": [
+            "77e090b3eb0bf16f67b0e6ccc385706f"
+          ],
+          "20261124T001318Z-d42887ba:dev-05-politica-ausente": [
+            "2587294869ae7eacee694ebe8d392d27"
+          ],
+          "20261124T001318Z-d42887ba:dev-06-idempotencia": [
+            "7edcef934e5a29003e688b70d6e85625",
+            "997775ee05c215f6ccc43fc98c39ebbf"
+          ],
+          "20261124T001318Z-d42887ba:dev-07-entrada-incompleta": [
+            "a18fcc3e7231f4853e627d995aa3b6f0"
+          ],
+          "20261124T001318Z-d42887ba:dev-08-entrada-ambigua": [
+            "c16eee7a3c6c2ac654497fe731315986"
+          ],
+          "20261124T001318Z-d42887ba:dev-09-divergencia-agenda": [
+            "e0d0d03dcb2f154fe95c06a0bae31da1"
+          ],
+          "20261124T001318Z-d42887ba:syn-01-opcoes-sem-confirmacao": [
+            "cbd1614c111d0417d1e5482d906a62f9"
+          ],
+          "20261124T001318Z-d42887ba:syn-02-consulta-disponibilidade": [
+            "76021b014a82e1d24f391ec2eb621960"
+          ],
+          "20261124T001318Z-d42887ba:syn-03-confirmacao-explicita": [
+            "0e922f6eabb1d3452302708a8101001d",
+            "ca42582eeda20f2cf93e6f1a72d1df2d"
+          ],
+          "20261124T001318Z-d42887ba:syn-04-divergencia-encaminhamento": [
+            "bde8d2c226b90e05e0e0ade7d6c303e3"
+          ],
+          "20261124T001318Z-d42887ba:syn-05-cancelamento-sem-politica": [
+            "efb1b7798ef9b979c9a80d08a9e8d183"
+          ],
+          "20261124T001318Z-d42887ba:syn-06-falha-revalidacao": [
+            "624e4c894f62870cbb76196ec83c2b3b",
+            "ce6e9a3d93aaa89302a2a20e7ff1ad13"
+          ],
+          "20261124T001318Z-d42887ba:syn-07-falha-consulta": [
+            "aa106d2c1f35871cd9b631ca13cce92c"
+          ],
+          "20261124T001318Z-d42887ba:syn-08-fora-do-escopo": [
+            "fc0bc0be433f5229ea9fab5fe02e4570"
+          ],
+          "20261124T001318Z-d42887ba:syn-09-profissional-inexistente": [
+            "a4203c9de28f5ad676f2f6fd44dbbeb2"
+          ],
+          "20261124T001318Z-d42887ba:syn-10-escolha-sem-especificacao": [
+            "a76b5497bbd623ce597efdbc19983925",
+            "c630eac00dc2fdbe32db3ad9d3a075e5"
+          ],
+          "20261124T001318Z-d42887ba:syn-11-politica-sem-regra-de-saida": [
+            "ed89de592e7d6375fd2fbd7ddbef52f3"
+          ],
+          "20261124T002731Z-f4e6942c:dev-01-confirmacao": [
+            "dafeec2b14848d9b0c10a891fcb10f2c"
+          ],
+          "20261124T002731Z-f4e6942c:dev-02-registro-inexistente": [
+            "b08f82d5862b93e56ac9c21503e3640d"
+          ],
+          "20261124T002731Z-f4e6942c:dev-03-escopo-privacidade": [
+            "e5e01e6f9a1acb2c19771e58f8301d93"
+          ],
+          "20261124T002731Z-f4e6942c:dev-04-autenticacao": [
+            "3dbdd40c8c456e22195c0b58067d7640"
+          ],
+          "20261124T002731Z-f4e6942c:dev-05-politica-ausente": [
+            "3621cd5075c89079528ccb9ecc4d4d4f"
+          ],
+          "20261124T002731Z-f4e6942c:dev-06-idempotencia": [
+            "cf4f71e81152bc08439cd726ba32c00b",
+            "e15dfa459e9d4a48fe8ec220a9fec6f1"
+          ],
+          "20261124T002731Z-f4e6942c:dev-07-entrada-incompleta": [
+            "13dc20d21dbc46b0208d58054699fc7f"
+          ],
+          "20261124T002731Z-f4e6942c:dev-08-entrada-ambigua": [
+            "b9253d6dff1de73a6c7089a2a51c266b"
+          ],
+          "20261124T002731Z-f4e6942c:dev-09-divergencia-agenda": [
+            "27f627f503c997c0d37ba9a2d5f9fb49"
+          ],
+          "20261124T002731Z-f4e6942c:syn-01-opcoes-sem-confirmacao": [
+            "88041b93654c1e0624db6e53bfd03a92"
+          ],
+          "20261124T002731Z-f4e6942c:syn-02-consulta-disponibilidade": [
+            "c9352d16e41f3d006bb6ac4094220df4"
+          ],
+          "20261124T002731Z-f4e6942c:syn-03-confirmacao-explicita": [
+            "9b3dcd1b78aee1bed3444de3945316a2",
+            "a025e2ac5ce74e9cd6cf2faf2ecc71a7"
+          ],
+          "20261124T002731Z-f4e6942c:syn-04-divergencia-encaminhamento": [
+            "ec5962da5b431e0eb5f1011c44713468"
+          ],
+          "20261124T002731Z-f4e6942c:syn-05-cancelamento-sem-politica": [
+            "1c32a55872c5b326c3dc26406d7883d7"
+          ],
+          "20261124T002731Z-f4e6942c:syn-06-falha-revalidacao": [
+            "2016e2e0eba47f57fc0104a61558a139",
+            "b0c790ee229ce4e85d7f7c8024de2146"
+          ],
+          "20261124T002731Z-f4e6942c:syn-07-falha-consulta": [
+            "a405850b8d9a8838e63e484379197502"
+          ],
+          "20261124T002731Z-f4e6942c:syn-08-fora-do-escopo": [
+            "a3bbc60c660b46dc23678552852b8457"
+          ],
+          "20261124T002731Z-f4e6942c:syn-09-profissional-inexistente": [
+            "b4e3ad14ce625bf1ac61b0adcc3ddbf6"
+          ],
+          "20261124T002731Z-f4e6942c:syn-10-escolha-sem-especificacao": [
+            "15bf057df7d9bef735658590521d92d3",
+            "209fc145aae5538257bbb8c60b1972a0"
+          ],
+          "20261124T002731Z-f4e6942c:syn-11-politica-sem-regra-de-saida": [
+            "10af562fcfed0c81545bb395f17c5328"
+          ]
+        }
+      },
+      "executions": [
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-01-confirmacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "a4722e783a04bbb66c3d1e2c9919e49f",
+            "e1b00f7d5e18b5f0e1e88c54580e2d40"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 5899.477,
+          "termination_reason": "normal_completion",
+          "output_status": "agendamento_confirmado",
+          "output_sufficiency": "suficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 6229,
+          "output_tokens": 138,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 1,
+            "confirmar_agendamento": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0022137,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-02-registro-inexistente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "072fbbbba16997303c15a31094b90fce"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 23835.655,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 3076,
+          "output_tokens": 77,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-03-escopo-privacidade",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "829f846a1b369f9ec515375816067b92"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 2792.015,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 3044,
+          "output_tokens": 113,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0011957,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-04-autenticacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "9d1868cc05975a3e78b48732e4ec4258"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 2729.191,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 6235,
+          "output_tokens": 140,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0022205,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-05-politica-ausente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "be81d865315de7cb3d76289731853299"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 2062.661,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 3033,
+          "output_tokens": 31,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0009874,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-06-idempotencia",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "22b67c24cd915150b0acf7d38d5b517b",
+            "43463182886497bcc2666504f9fd86ce",
+            "448443547e813aab0cae873be0a89492",
+            "58f3334d5376bd3b2b39065647f71f4a",
+            "819ca7f82796f6a6a7060cee63badefa",
+            "f196663f314e4d696f020cb6dc738938"
+          ],
+          "root_span_count": 6,
+          "latency_ms": 24652.686,
+          "termination_reason": "normal_completion",
+          "output_status": "agendamento_confirmado",
+          "output_sufficiency": "suficiente",
+          "output_source_types": [
+            "api"
+          ],
+          "input_tokens": 12832,
+          "output_tokens": 393,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_disponibilidade": 3,
+            "confirmar_agendamento": 1,
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0048321,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-07-entrada-incompleta",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "ec661590095ee3d848a37d6d4fafc141"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 1834.695,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api",
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 6137,
+          "output_tokens": 171,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0022686,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-08-entrada-ambigua",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "474d56c8aaaf09fbde439e8488dc6814"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 15014.514,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 9398,
+          "output_tokens": 248,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0034394,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "dev-09-divergencia-agenda",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "2390bb9d339ee61575004cd734e1f8f0"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 16421.928,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "api",
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 9537,
+          "output_tokens": 307,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_profissionais": 1,
+            "consultar_disponibilidade": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0036286,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-01-opcoes-sem-confirmacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "e8bc0c96869bde158c8604c21d440399"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 14343.159,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 3037,
+          "output_tokens": 129,
+          "usage_complete": true,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0012336,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-02-consulta-disponibilidade",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "b4def55d5bcd9753e2e1e90127f046db"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 23530.81,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 3037,
+          "output_tokens": 12,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-03-confirmacao-explicita",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "2eb6c7845293d532315d4fc741a06cfa",
+            "7ef1bb1b0657393e2beb84e8d84a3bb4"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 53482.099,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-04-divergencia-encaminhamento",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "e3d65edb381feb8708504d2f20f9f5c1"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 18492.812,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-05-cancelamento-sem-politica",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": true,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "ad5efd4a359339cb1083c8cb76ca021a"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 10973.519,
+          "termination_reason": "normal_completion",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 3028,
+          "output_tokens": 29,
+          "usage_complete": true,
+          "tool_calls": {
+            "consultar_politica": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": {
+            "value": 0.0009809,
+            "currency": "USD",
+            "model_id": "gemini-3.5-flash-lite",
+            "pricing_source": "https://ai.google.dev/gemini-api/docs/pricing",
+            "price_checked": "2026-11-17"
+          }
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-06-falha-revalidacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "bdeaba1a4f8bb17c4f36121b28fe7f79",
+            "e9629ba5bd2d7285eae3e00c9e86891f"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 41885.772,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-07-falha-consulta",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "706b2f0137eda16a9b683fb5390e6af1"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19899.471,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-08-fora-do-escopo",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "f761451352e4d006ca207c8ecea61550"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21070.495,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-09-profissional-inexistente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "d1045ae879f62fc014cd0a2c9c343df7"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 22170.459,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-10-escolha-sem-especificacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "75c0112b289dd5298b9efb5f5779cf9a",
+            "ae8bc6b42c0844841409319077f09063"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 40761.369,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T000233Z-7830db3a",
+          "case_id": "syn-11-politica-sem-regra-de-saida",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "270e6d15ffc7f045dfd880238905059a"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21600.05,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-01-confirmacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "eec47dc388493c7e19adf39aa2552190"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 20081.445,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-02-registro-inexistente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "3a39d8c6d9597b8d4c2d0280b8d8e0da"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 20642.849,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-03-escopo-privacidade",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "c1aabd441a6c0ade0d5c9910609116ea"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 20625.908,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-04-autenticacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "77e090b3eb0bf16f67b0e6ccc385706f"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 23024.553,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-05-politica-ausente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "2587294869ae7eacee694ebe8d392d27"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 18562.101,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-06-idempotencia",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "7edcef934e5a29003e688b70d6e85625",
+            "997775ee05c215f6ccc43fc98c39ebbf"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 40732.634,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-07-entrada-incompleta",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "a18fcc3e7231f4853e627d995aa3b6f0"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 31094.98,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 3026,
+          "output_tokens": 12,
+          "usage_complete": false,
+          "tool_calls": {
+            "consultar_profissionais": 1
+          },
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-08-entrada-ambigua",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "c16eee7a3c6c2ac654497fe731315986"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19299.239,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "dev-09-divergencia-agenda",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "e0d0d03dcb2f154fe95c06a0bae31da1"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19762.75,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-01-opcoes-sem-confirmacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "cbd1614c111d0417d1e5482d906a62f9"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 22640.524,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-02-consulta-disponibilidade",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "76021b014a82e1d24f391ec2eb621960"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 20986.356,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-03-confirmacao-explicita",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "0e922f6eabb1d3452302708a8101001d",
+            "ca42582eeda20f2cf93e6f1a72d1df2d"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 39905.875,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-04-divergencia-encaminhamento",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "bde8d2c226b90e05e0e0ade7d6c303e3"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19060.346,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-05-cancelamento-sem-politica",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "efb1b7798ef9b979c9a80d08a9e8d183"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 20245.203,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-06-falha-revalidacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "624e4c894f62870cbb76196ec83c2b3b",
+            "ce6e9a3d93aaa89302a2a20e7ff1ad13"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 41936.888,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-07-falha-consulta",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "aa106d2c1f35871cd9b631ca13cce92c"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 17579.778,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-08-fora-do-escopo",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "fc0bc0be433f5229ea9fab5fe02e4570"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 20848.923,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-09-profissional-inexistente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "a4203c9de28f5ad676f2f6fd44dbbeb2"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 22426.55,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-10-escolha-sem-especificacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "a76b5497bbd623ce597efdbc19983925",
+            "c630eac00dc2fdbe32db3ad9d3a075e5"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 38296.859,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T001318Z-d42887ba",
+          "case_id": "syn-11-politica-sem-regra-de-saida",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "ed89de592e7d6375fd2fbd7ddbef52f3"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21332.55,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-01-confirmacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "dafeec2b14848d9b0c10a891fcb10f2c"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21460.286,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-02-registro-inexistente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "b08f82d5862b93e56ac9c21503e3640d"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19315.684,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-03-escopo-privacidade",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "e5e01e6f9a1acb2c19771e58f8301d93"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21643.212,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-04-autenticacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "3dbdd40c8c456e22195c0b58067d7640"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21716.56,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-05-politica-ausente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "3621cd5075c89079528ccb9ecc4d4d4f"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 18570.344,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-06-idempotencia",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "cf4f71e81152bc08439cd726ba32c00b",
+            "e15dfa459e9d4a48fe8ec220a9fec6f1"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 41118.773,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-07-entrada-incompleta",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "13dc20d21dbc46b0208d58054699fc7f"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21317.3,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-08-entrada-ambigua",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "b9253d6dff1de73a6c7089a2a51c266b"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 18654.196,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "dev-09-divergencia-agenda",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "27f627f503c997c0d37ba9a2d5f9fb49"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 18968.811,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-01-opcoes-sem-confirmacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "88041b93654c1e0624db6e53bfd03a92"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21818.68,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-02-consulta-disponibilidade",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "c9352d16e41f3d006bb6ac4094220df4"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19820.016,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-03-confirmacao-explicita",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "9b3dcd1b78aee1bed3444de3945316a2",
+            "a025e2ac5ce74e9cd6cf2faf2ecc71a7"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 39629.0,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-04-divergencia-encaminhamento",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "ec5962da5b431e0eb5f1011c44713468"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19291.123,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-05-cancelamento-sem-politica",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "1c32a55872c5b326c3dc26406d7883d7"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 18809.246,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-06-falha-revalidacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "2016e2e0eba47f57fc0104a61558a139",
+            "b0c790ee229ce4e85d7f7c8024de2146"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 46841.68,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-07-falha-consulta",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": true,
+          "exclusion_reasons": [],
+          "trace_ids": [
+            "a405850b8d9a8838e63e484379197502"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 19818.918,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-08-fora-do-escopo",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "a3bbc60c660b46dc23678552852b8457"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 20148.554,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-09-profissional-inexistente",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "b4e3ad14ce625bf1ac61b0adcc3ddbf6"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21524.391,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-10-escolha-sem-especificacao",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "15bf057df7d9bef735658590521d92d3",
+            "209fc145aae5538257bbb8c60b1972a0"
+          ],
+          "root_span_count": 2,
+          "latency_ms": 39024.588,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        },
+        {
+          "run_id": "20261124T002731Z-f4e6942c",
+          "case_id": "syn-11-politica-sem-regra-de-saida",
+          "version": "pr-77",
+          "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669",
+          "passed": false,
+          "valid": false,
+          "exclusion_reasons": [
+            "avaliacao_inconclusiva"
+          ],
+          "trace_ids": [
+            "10af562fcfed0c81545bb395f17c5328"
+          ],
+          "root_span_count": 1,
+          "latency_ms": 21066.819,
+          "termination_reason": "recoverable_error",
+          "output_status": "informacao_insuficiente",
+          "output_sufficiency": "insuficiente",
+          "output_source_types": [
+            "pedido_de_clarificacao"
+          ],
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "usage_complete": false,
+          "tool_calls": {},
+          "tool_errors": {},
+          "estimated_cost": null
+        }
+      ]
+    }
+  },
+  "excluded_reason_counts": {
+    "avaliacao_inconclusiva": 43
+  },
+  "trace_count": 292,
+  "trace_query": {
+    "service": "llm-trabalho-agent",
+    "operation": "invoke_agent",
+    "lookback": "24h",
+    "limit": 1000
+  }
+}
