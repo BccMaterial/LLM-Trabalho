@@ -173,3 +173,29 @@ suficiência, ferramentas ou efeito no estado. O relatório commitado em
 permite recalcular as métricas. O resultado negativo é registrado como evidência;
 a melhoria do SLI depende de estabilizar o ambiente e corrigir as falhas
 sistemáticas do agente, sem alterar o alvo.
+
+### Medição registrada (PR #77)
+
+Três rodadas completas (20 casos cada) foram executadas em checkout commitado e
+limpo, com juiz adotado e Jaeger ativo, sobre o commit `58d4d57` (versão
+`pr-77-final`): `20261124T005302Z-7005870b`, `20261124T005605Z-a1e8b61a` e
+`20261124T005855Z-67bd29ea`. O agente e o juiz usaram chaves de API distintas,
+ambas com cota disponível; o modelo permaneceu `gemini-3.5-flash-lite`.
+
+A janela é a coorte das 51 execuções válidas; 9 foram excluídas como
+`inconclusivo` por limite momentâneo do provedor. O **SLI observado e medido é
+80,39%** (41 boas de 51), contra 51,35% da coorte anterior — ainda abaixo do
+alvo pré-definido de 90% (`missed`). O orçamento de erro permite 5 falhas, com
+10 consumidas. Latência p50/p95: 2585,454 / 10498,324 ms. Términos: 44
+`normal_completion` e 7 `recoverable_error`.
+`consultar_disponibilidade` teve 3 erros em 34 chamadas (8,82%), contra 46,15%
+no baseline, após corrigir o papel da credencial de runtime no seeding e limitar
+retries de 429 por cota diária. Cobertura de tokens: 98%; a estimativa de custo
+continua sem valor preenchido porque parte das execuções não tem uso completo.
+
+As falhas restantes concentram-se em divergências de status/escopo, ferramentas
+ausentes, idempotência e `juiz_clareza`. O alvo não foi ajustado ao resultado: a
+próxima iteração deve corrigir esses casos sistemáticos e repetir a medição com
+pelo menos 30 execuções válidas. A rodada parcial interrompida por esgotamento de
+cota diária está preservada separadamente em
+`evals/observability/measurement-pr77.{json,md}` e não entra nesta comparação.

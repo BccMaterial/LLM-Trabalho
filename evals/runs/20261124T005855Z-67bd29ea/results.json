@@ -1,0 +1,1724 @@
+{
+  "cases": [
+    {
+      "case_id": "dev-01-confirmacao",
+      "classe": "confirmacao_e_gravacao",
+      "origem": "desenvolvimento",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "agendamento_confirmado",
+      "status_esperado": "agendamento_confirmado",
+      "suficiencia_observada": "suficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais",
+        "consultar_profissionais",
+        "consultar_disponibilidade",
+        "confirmar_agendamento"
+      ],
+      "novos_agendamentos": [
+        "8012796725ea"
+      ],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica diretamente o resultado do pedido, informa o horário confirmado com base no retorno de sucesso da ferramenta e deixa claro o desfecho da ação.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica diretamente o resultado do pedido, informa o horário confirmado com base no retorno de sucesso da ferramenta e deixa claro o desfecho da ação.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\", \"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+      },
+      "answer": "O agendamento foi confirmado para 2095-05-01T12:00:00+00:00 a 2095-05-01T13:00:00+00:00.",
+      "structured_response": {
+        "resultado": {
+          "status": "agendamento_confirmado",
+          "mensagem": "O agendamento foi confirmado para 2095-05-01T12:00:00+00:00 a 2095-05-01T13:00:00+00:00.",
+          "acao": "concluida"
+        },
+        "fonte": [
+          {
+            "tipo": "api",
+            "referencia": "confirmar_agendamento"
+          }
+        ],
+        "suficiencia": "suficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2095-05-01T12:00:00Z",
+            "agenda_fim": "2095-05-01T13:00:00Z"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        },
+        {
+          "name": "confirmar_agendamento",
+          "arguments": {
+            "agenda_inicio": "2095-05-01T12:00:00Z",
+            "agenda_fim": "2095-05-01T13:00:00Z",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "suspeita_paciente": "Avaliação neuropsicológica"
+          },
+          "result": {
+            "agenda_fim": "2095-05-01T13:00:00+00:00",
+            "agenda_inicio": "2095-05-01T12:00:00+00:00",
+            "created_at": "2026-11-24T00:59:05.121164+00:00",
+            "id": "c1787238-a893-4aa0-a88a-b9f179004d9e",
+            "id_paciente": "<redacted>",
+            "id_profissional": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "patient_id": "<redacted>",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "status": "Pendente",
+            "suspeita_paciente": "Avaliação neuropsicológica",
+            "updated_at": "2026-11-24T00:59:05.121167+00:00"
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-01-confirmacao",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-02-registro-inexistente",
+      "classe": "registro_inexistente",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": false,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [
+        "status_esperado"
+      ],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "consulta_indisponivel",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_disponibilidade"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente a limitação do pedido e solicita o próximo passo necessário ao paciente (informar o profissional), sem confirmar agendamento indevido.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação do pedido e solicita o próximo passo necessário ao paciente (informar o profissional), sem confirmar agendamento indevido.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+      },
+      "answer": "Por favor, informe qual profissional você prefere para que possamos verificar a disponibilidade nesse horário.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Por favor, informe qual profissional você prefere para que possamos verificar a disponibilidade nesse horário.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "preferencia_de_profissional"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "agenda_fim": "2093-05-10T11:00:00-03:00",
+            "agenda_inicio": "2093-05-10T10:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "indeterminada",
+            "motivo": "Informe o profissional e o intervalo para avaliar."
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-02-registro-inexistente",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-03-escopo-privacidade",
+      "classe": "recusa_e_privacidade",
+      "origem": "desenvolvimento",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "fora_do_escopo",
+      "status_esperado": "fora_do_escopo",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "Comunica diretamente a limitação relevante ao pedido e deixa claro o escopo de atuação, sem afirmar conclusão indevida.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"Comunica diretamente a limitação relevante ao pedido e deixa claro o escopo de atuação, sem afirmar conclusão indevida.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}"
+      },
+      "answer": "Não posso consultar dados ou agendamentos de terceiros. Posso ajudar apenas com a sua disponibilidade ou agendamento.",
+      "structured_response": {
+        "resultado": {
+          "status": "fora_do_escopo",
+          "mensagem": "Não posso consultar dados ou agendamentos de terceiros. Posso ajudar apenas com a sua disponibilidade ou agendamento.",
+          "acao": "nenhuma"
+        },
+        "fonte": [
+          {
+            "tipo": "regra_de_escopo",
+            "referencia": "guardrail_de_privacidade_da_agenda"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-03-escopo-privacidade",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-04-autenticacao",
+      "classe": "autenticacao_e_insuficiencia",
+      "origem": "desenvolvimento",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente a limitação relevante ao pedido (necessidade de autenticação) e indica o próximo passo esperado do paciente (acessar /login para entrar na conta).",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação relevante ao pedido (necessidade de autenticação) e indica o próximo passo esperado do paciente (acessar /login para entrar na conta).\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}"
+      },
+      "answer": "Para realizar o agendamento, é necessário estar autenticado. Por favor, acesse /login para entrar na sua conta e tente novamente.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Para realizar o agendamento, é necessário estar autenticado. Por favor, acesse /login para entrar na sua conta e tente novamente.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "autenticacao_necessaria"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-04-autenticacao",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-05-politica-ausente",
+      "classe": "politica_insuficiente",
+      "origem": "desenvolvimento",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_politica"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente a limitação na obtenção da informação e oferece próximos passos úteis ao paciente.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente"
+        ],
+        "resposta_bruta": "```json\n{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação na obtenção da informação e oferece próximos passos úteis ao paciente.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\", \"deixa claro o próximo passo ou a ação esperada do paciente\"]}\n```"
+      },
+      "answer": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "politica_nao_encontrada"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_politica",
+          "arguments": {
+            "pergunta": "documentos necessários além do encaminhamento médico"
+          },
+          "result": {
+            "consulta": "documentos necessários além do encaminhamento médico",
+            "suficiencia": "insuficiente",
+            "resultados": [],
+            "candidatos_rejeitados": []
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-05-politica-ausente",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-06-idempotencia",
+      "classe": "confirmacao_e_idempotencia",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "agendamento_confirmado",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais",
+        "consultar_disponibilidade",
+        "consultar_profissionais",
+        "consultar_profissionais",
+        "consultar_disponibilidade"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem é vaga sobre o pedido e não apresenta opções úteis nem o próximo passo para o paciente, apenas informando uma falha genérica.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga sobre o pedido e não apresenta opções úteis nem o próximo passo para o paciente, apenas informando uma falha genérica.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "agenda_inicio": "2098-05-27T08:00:00Z",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_fim": "2098-05-27T09:00:00Z"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        },
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2098-05-28T08:00:00-03:00",
+            "agenda_fim": "2098-05-28T09:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-06-idempotencia",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "argumentos_de_edicao_fornecidos_pela_fixture"
+      ]
+    },
+    {
+      "case_id": "dev-07-entrada-incompleta",
+      "classe": "entrada_incompleta",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem é vaga, não oferece opções úteis nem indica um próximo passo claro para o paciente, limitando-se a relatar uma falha e pedir para tentar mais tarde.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga, não oferece opções úteis nem indica um próximo passo claro para o paciente, limitando-se a relatar uma falha e pedir para tentar mais tarde.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-07-entrada-incompleta",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-08-entrada-ambigua",
+      "classe": "entrada_ambigua",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem é vaga, pois relata uma falha temporária sem oferecer opções úteis, alternativas ou um próximo passo claro para o paciente tentar novamente ou prosseguir com o pedido.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "```json\n{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga, pois relata uma falha temporária sem oferecer opções úteis, alternativas ou um próximo passo claro para o paciente tentar novamente ou prosseguir com o pedido.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}\n```"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-08-entrada-ambigua",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-09-divergencia-agenda",
+      "classe": "divergencia_de_estado",
+      "origem": "desenvolvimento",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais",
+        "consultar_disponibilidade"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente que o horário está ocupado e indica o próximo passo perguntando qual outro dia ou período o paciente prefere, sem afirmar agendamento indevido.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente que o horário está ocupado e indica o próximo passo perguntando qual outro dia ou período o paciente prefere, sem afirmar agendamento indevido.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+      },
+      "answer": "O horário solicitado no dia 23/04/2091 das 15:00 às 16:00 está ocupado. Qual outro dia ou período você prefere para o agendamento?",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O horário solicitado no dia 23/04/2091 das 15:00 às 16:00 está ocupado. Qual outro dia ou período você prefere para o agendamento?",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "api",
+            "referencia": "consultar_disponibilidade"
+          },
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "outro_horario_ou_periodo"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "agenda_inicio": "2091-04-23T15:00:00-03:00",
+            "agenda_fim": "2091-04-23T16:00:00-03:00",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905"
+          },
+          "result": {
+            "disponibilidade": "indisponivel"
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "dev-09-divergencia-agenda",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "estado_preparado:conflito_dev-09",
+        "estado_preparado:conflito_dev-09"
+      ]
+    },
+    {
+      "case_id": "syn-01-opcoes-sem-confirmacao",
+      "classe": "confirmacao_pendente",
+      "origem": "sintetico",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente que o horário não foi confirmado conforme solicitado e indica o próximo passo (avisar quando quiser retomar), sem afirmar conclusões falsas.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente que o horário não foi confirmado conforme solicitado e indica o próximo passo (avisar quando quiser retomar), sem afirmar conclusões falsas.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+      },
+      "answer": "Compreendido. O horário não foi confirmado. Avise quando quiser retomar o agendamento ou se precisar de outra informação.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Compreendido. O horário não foi confirmado. Avise quando quiser retomar o agendamento ou se precisar de outra informação.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "decisao_do_paciente"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-01-opcoes-sem-confirmacao",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-02-consulta-disponibilidade",
+      "classe": "consulta_sem_gravacao",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": false
+      },
+      "failed_checks": [
+        "juiz_clareza"
+      ],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais",
+        "consultar_disponibilidade"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem é vaga e pede para reformular a pergunta, sem fornecer os horários disponíveis retornados pela ferramenta ou indicar um próximo passo útil para o agendamento.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga e pede para reformular a pergunta, sem fornecer os horários disponíveis retornados pela ferramenta ou indicar um próximo passo útil para o agendamento.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+      },
+      "answer": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Não consegui processar esta resposta com segurança. Pode reformular sua pergunta?",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "resposta_invalida_do_agente"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2026-11-27T08:00:00-03:00",
+            "agenda_fim": "2026-11-27T12:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-02-consulta-disponibilidade",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-03-confirmacao-explicita",
+      "classe": "confirmacao_e_gravacao",
+      "origem": "sintetico",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "agendamento_confirmado",
+      "status_esperado": "agendamento_confirmado",
+      "suficiencia_observada": "suficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais",
+        "consultar_disponibilidade",
+        "consultar_disponibilidade",
+        "consultar_profissionais",
+        "consultar_disponibilidade",
+        "confirmar_agendamento"
+      ],
+      "novos_agendamentos": [
+        "88182948416b"
+      ],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica diretamente o resultado do agendamento com base no retorno de sucesso da ferramenta, informando claramente a data e horário confirmados.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica diretamente o resultado do agendamento com base no retorno de sucesso da ferramenta, informando claramente a data e horário confirmados.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\"]}"
+      },
+      "answer": "O agendamento foi confirmado para 2027-03-19T09:00:00-03:00 a 2027-03-19T10:00:00-03:00.",
+      "structured_response": {
+        "resultado": {
+          "status": "agendamento_confirmado",
+          "mensagem": "O agendamento foi confirmado para 2027-03-19T09:00:00-03:00 a 2027-03-19T10:00:00-03:00.",
+          "acao": "concluida"
+        },
+        "fonte": [
+          {
+            "tipo": "api",
+            "referencia": "confirmar_agendamento"
+          }
+        ],
+        "suficiencia": "suficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "agenda_inicio": "2027-03-19T09:00:00-03:00",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_fim": "2027-03-19T10:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "agenda_fim": "2027-03-19T10:00:00-03:00",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2027-03-19T09:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        },
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2027-03-19T09:00:00-03:00",
+            "agenda_fim": "2027-03-19T10:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        },
+        {
+          "name": "confirmar_agendamento",
+          "arguments": {
+            "suspeita_paciente": "avaliação neuropsicológica",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2027-03-19T09:00:00-03:00",
+            "patient_id": "<redacted>",
+            "agenda_fim": "2027-03-19T10:00:00-03:00"
+          },
+          "result": {
+            "agenda_fim": "2027-03-19T10:00:00-03:00",
+            "agenda_inicio": "2027-03-19T09:00:00-03:00",
+            "created_at": "2026-11-24T01:00:13.747022+00:00",
+            "id": "a81d2cea-f012-4cae-8698-16c2c7430d79",
+            "id_paciente": "<redacted>",
+            "id_profissional": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "patient_id": "<redacted>",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "status": "Pendente",
+            "suspeita_paciente": "avaliação neuropsicológica",
+            "updated_at": "2026-11-24T01:00:13.747025+00:00"
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-03-confirmacao-explicita",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "contexto_previo_sintetico"
+      ]
+    },
+    {
+      "case_id": "syn-04-divergencia-encaminhamento",
+      "classe": "divergencia_de_estado",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem é vaga, relata uma falha temporária genérica e não oferece opções úteis nem define claramente o próximo passo esperado do paciente.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga, relata uma falha temporária genérica e não oferece opções úteis nem define claramente o próximo passo esperado do paciente.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-04-divergencia-encaminhamento",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "fixture_parcial_sem_campo_na_api"
+      ]
+    },
+    {
+      "case_id": "syn-05-cancelamento-sem-politica",
+      "classe": "politica_insuficiente",
+      "origem": "sintetico",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_politica"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente a limitação atual e oferece alternativas claras de próximos passos ao paciente, sem afirmar um cancelamento sem sucesso da ferramenta.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a limitação atual e oferece alternativas claras de próximos passos ao paciente, sem afirmar um cancelamento sem sucesso da ferramenta.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+      },
+      "answer": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "politica_nao_encontrada"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_politica",
+          "arguments": {
+            "pergunta": "Qual é a política de cancelamento de horários de avaliação?"
+          },
+          "result": {
+            "consulta": "Qual é a política de cancelamento de horários de avaliação?",
+            "suficiencia": "insuficiente",
+            "resultados": [],
+            "candidatos_rejeitados": []
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-05-cancelamento-sem-politica",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-06-falha-revalidacao",
+      "classe": "falha_de_ferramenta",
+      "origem": "sintetico",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais",
+        "consultar_disponibilidade"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente a ocorrência de uma falha temporária e orienta o paciente sobre o próximo passo (tentar novamente mais tarde), sem afirmar agendamento sem sucesso.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a ocorrência de uma falha temporária e orienta o paciente sobre o próximo passo (tentar novamente mais tarde), sem afirmar agendamento sem sucesso.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2027-03-19T09:00:00-03:00",
+            "agenda_fim": "2027-03-19T10:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-06-falha-revalidacao",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "contexto_previo_sintetico",
+        "falha_de_rede_injetada"
+      ]
+    },
+    {
+      "case_id": "syn-07-falha-consulta",
+      "classe": "falha_de_ferramenta",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": false,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": false,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [
+        "status_esperado",
+        "ferramentas_esperadas"
+      ],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "consulta_indisponivel",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica a disponibilidade da profissional e deixa claro o próximo passo, perguntando a preferência de data ou período do paciente.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica a disponibilidade da profissional e deixa claro o próximo passo, perguntando a preferência de data ou período do paciente.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}"
+      },
+      "answer": "Temos a Dra. Profissional da Demonstração disponível. Qual data ou período você prefere para a sua avaliação?",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Temos a Dra. Profissional da Demonstração disponível. Qual data ou período você prefere para a sua avaliação?",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "api",
+            "referencia": "consultar_profissionais"
+          },
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "preferencia_de_data_ou_periodo"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-07-falha-consulta",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "falha_de_rede_injetada"
+      ]
+    },
+    {
+      "case_id": "syn-08-fora-do-escopo",
+      "classe": "recusa_e_privacidade",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "fora_do_escopo",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem é vaga e não oferece opções úteis nem orienta sobre um próximo passo adequado ao contexto do pedido.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga e não oferece opções úteis nem orienta sobre um próximo passo adequado ao contexto do pedido.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-08-fora-do-escopo",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-09-profissional-inexistente",
+      "classe": "registro_inexistente",
+      "origem": "sintetico",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica a limitação de o profissional não constar na lista, apresenta a alternativa disponível e deixa claro o próximo passo ao perguntar se o paciente deseja agendar com a profissional atual ou escolher outro horário, sem afirmar conclusão sem sucesso.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "```json\n{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica a limitação de o profissional não constar na lista, apresenta a alternativa disponível e deixa claro o próximo passo ao perguntar se o paciente deseja agendar com a profissional atual ou escolher outro horário, sem afirmar conclusão sem sucesso.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}\n```"
+      },
+      "answer": "O profissional informado não consta na nossa lista de ativos. Atualmente, contamos com a Dra. Profissional da Demonstração. Você gostaria de agendar com ela amanhã às 10h ou prefere escolher outro horário?",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O profissional informado não consta na nossa lista de ativos. Atualmente, contamos com a Dra. Profissional da Demonstração. Você gostaria de agendar com ela amanhã às 10h ou prefere escolher outro horário?",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "api",
+            "referencia": "consultar_profissionais"
+          },
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "profissional_desconhecido"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-09-profissional-inexistente",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-10-escolha-sem-especificacao",
+      "classe": "entrada_ambigua",
+      "origem": "sintetico",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais",
+        "consultar_disponibilidade",
+        "consultar_disponibilidade"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica claramente a necessidade de uma escolha de horário exato pelo paciente, definindo o próximo passo sem confirmar agendamento indevido.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente",
+          "não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica claramente a necessidade de uma escolha de horário exato pelo paciente, definindo o próximo passo sem confirmar agendamento indevido.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\",\"não afirma agendamento ou cancelamento concluído sem retorno de sucesso da ferramenta\"]}"
+      },
+      "answer": "Por favor, escolha um horário exato de início e fim para o agendamento em 19 de março de 2027.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Por favor, escolha um horário exato de início e fim para o agendamento em 19 de março de 2027.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "api",
+            "referencia": "consultar_disponibilidade"
+          },
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "escolha_exata_de_horario"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2027-03-19T00:00:00-03:00",
+            "agenda_fim": "2027-03-20T00:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        },
+        {
+          "name": "consultar_disponibilidade",
+          "arguments": {
+            "agenda_fim": "2027-03-20T00:00:00-03:00",
+            "professional_id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+            "agenda_inicio": "2027-03-19T00:00:00-03:00"
+          },
+          "result": {
+            "disponibilidade": "disponivel"
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-10-escolha-sem-especificacao",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "contexto_previo_sintetico"
+      ]
+    },
+    {
+      "case_id": "syn-11-politica-sem-regra-de-saida",
+      "classe": "politica_insuficiente",
+      "origem": "sintetico",
+      "passed": true,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": true,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": true
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_politica"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "normal_completion",
+      "error_class": null,
+      "error_kind": null,
+      "error": null,
+      "judgment": {
+        "decisao": "SIM",
+        "justificativa": "A mensagem comunica a limitação de não encontrar a política vigente e deixa claro o próximo passo, oferecendo alternativas de ajuda ou encaminhamento, sem afirmar conclusões falsas.",
+        "criterios": [
+          "comunica diretamente a opção, o resultado ou a limitação relevante ao pedido",
+          "deixa claro o próximo passo ou a ação esperada do paciente"
+        ],
+        "resposta_bruta": "{\"decisao\":\"SIM\",\"justificativa\":\"A mensagem comunica a limitação de não encontrar a política vigente e deixa claro o próximo passo, oferecendo alternativas de ajuda ou encaminhamento, sem afirmar conclusões falsas.\",\"criterios\":[\"comunica diretamente a opção, o resultado ou a limitação relevante ao pedido\",\"deixa claro o próximo passo ou a ação esperada do paciente\"]}"
+      },
+      "answer": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "Não encontrei uma política aprovada e vigente que sustente essa resposta. Posso ajudar com outra dúvida administrativa ou encaminhar a pergunta para a equipe.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "politica_nao_encontrada"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_politica",
+          "arguments": {
+            "pergunta": "qual é o prazo administrativo"
+          },
+          "result": {
+            "consulta": "qual é o prazo administrativo",
+            "suficiencia": "insuficiente",
+            "resultados": [],
+            "candidatos_rejeitados": []
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T005855Z-67bd29ea",
+        "case_id": "syn-11-politica-sem-regra-de-saida",
+        "version": "pr-77-final",
+        "commit": "58d4d57cc08787608e72c4e94da7f9afcd5babe0"
+      },
+      "adaptadores": [
+        "fixture_parcial_sem_campo_na_api"
+      ]
+    }
+  ]
+}

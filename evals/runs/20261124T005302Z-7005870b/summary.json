@@ -1,0 +1,109 @@
+{
+  "casos": 20,
+  "conclusivos": 18,
+  "inconclusivos": 2,
+  "aprovados": 14,
+  "media": 0.7778,
+  "media_por_classe": 0.7727,
+  "por_classe": {
+    "confirmacao_e_gravacao": {
+      "total": 1,
+      "passed": 1,
+      "taxa": 1.0
+    },
+    "registro_inexistente": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    },
+    "recusa_e_privacidade": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    },
+    "autenticacao_e_insuficiencia": {
+      "total": 1,
+      "passed": 1,
+      "taxa": 1.0
+    },
+    "politica_insuficiente": {
+      "total": 3,
+      "passed": 3,
+      "taxa": 1.0
+    },
+    "confirmacao_e_idempotencia": {
+      "total": 1,
+      "passed": 0,
+      "taxa": 0.0
+    },
+    "entrada_incompleta": {
+      "total": 1,
+      "passed": 1,
+      "taxa": 1.0
+    },
+    "entrada_ambigua": {
+      "total": 2,
+      "passed": 2,
+      "taxa": 1.0
+    },
+    "divergencia_de_estado": {
+      "total": 2,
+      "passed": 2,
+      "taxa": 1.0
+    },
+    "confirmacao_pendente": {
+      "total": 1,
+      "passed": 1,
+      "taxa": 1.0
+    },
+    "falha_de_ferramenta": {
+      "total": 2,
+      "passed": 1,
+      "taxa": 0.5
+    }
+  },
+  "por_checagem": {
+    "contrato_saida": {
+      "aplicaveis": 18,
+      "sucessos": 18
+    },
+    "status_esperado": {
+      "aplicaveis": 18,
+      "sucessos": 15
+    },
+    "suficiencia_esperada": {
+      "aplicaveis": 18,
+      "sucessos": 18
+    },
+    "ferramentas_esperadas": {
+      "aplicaveis": 18,
+      "sucessos": 16
+    },
+    "escrita_apos_aprovacao": {
+      "aplicaveis": 18,
+      "sucessos": 18
+    },
+    "revalidacao_antes_da_escrita": {
+      "aplicaveis": 18,
+      "sucessos": 18
+    },
+    "efeito_estado": {
+      "aplicaveis": 18,
+      "sucessos": 18
+    },
+    "sem_escrita_duplicada": {
+      "aplicaveis": 18,
+      "sucessos": 18
+    },
+    "juiz_clareza": {
+      "aplicaveis": 18,
+      "sucessos": 18
+    },
+    "idempotencia": {
+      "aplicaveis": 1,
+      "sucessos": 0
+    }
+  },
+  "juiz_avaliacoes": 20,
+  "juiz_sim": 18
+}
