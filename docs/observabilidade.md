@@ -105,6 +105,14 @@ Em 24/11/2026 foi confirmada uma execução sintética nova com captura opt-in:
 aprovado pelo juiz e passou todas as checagens. Os artefatos estão em
 [`evals/runs/20261124T002919Z-cfee82e2`](../evals/runs/20261124T002919Z-cfee82e2).
 
+Após a instrumentação do hash do prompt, uma nova rodada sintética aprovada
+registrou `trace_id=801adc8a34bc5c539dc435ebce3f0089`,
+`run_id=20261124T020553Z-28bc477c`, commit
+`df562b11ce9072baa3655b776ba8165dd31ef5a1` e
+`app.prompt.sha256=a759ced71a16e843aea39374b416548794668412fbe72f5f8643abb451fa844d`
+no span raiz, igual ao `agent_prompt_sha256` do `run.json`. Artefatos em
+[`evals/runs/20261124T020553Z-28bc477c`](../evals/runs/20261124T020553Z-28bc477c).
+
 `OTEL_EXPORTER_OTLP_ENDPOINT` pode substituir o endpoint local. O nome do
 serviço é `llm-trabalho-agent`; na interface Jaeger, selecione-o, filtre pela
 operação `invoke_agent` e pela janela de tempo da execução, então abra o trace

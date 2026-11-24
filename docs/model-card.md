@@ -153,6 +153,18 @@ O custo ficou sem valor total/médio por cobertura parcial de uso de tokens
 aponta a causa definitiva de todos os erros e não atende ao alvo. A melhoria do
 SLI exige trabalho separado, sem alterar o alvo retroativamente.
 
+**Evidência operacional/SLO (PR #77):** a mesma fonte registra a coorte
+`pr-77-final`, com 51 execuções válidas em 3 rodadas e 9 inconclusivas excluídas
+por limite momentâneo do provedor. O SLI medido foi **80,39% (41/51)**, ainda
+abaixo do alvo pré-definido de 90% (`missed`); o orçamento de erro permite 5
+falhas e 10 foram consumidas. Latência p50/p95: 2585,454 / 10498,324 ms; 44
+`normal_completion` e 7 `recoverable_error`; `consultar_disponibilidade` teve 3
+erros em 34 chamadas (8,82%), contra 46,15% no baseline. A cobertura de tokens
+foi 98% e a estimativa de custo continua sem valor preenchido. Trata-se de uma
+medição válida: o alvo não foi ajustado ao resultado, e a próxima iteração deve
+corrigir os casos sistemáticos e repetir a medição com pelo menos 30 execuções
+válidas.
+
 ### Reconstrução exigida somente com trace
 
 **Reconstrução de exemplo (dados sintéticos, trace real):** trace
@@ -219,7 +231,16 @@ checagens. Os artefatos estão em
 O span raiz registra `app.prompt.sha256`, o hash da versão do prompt
 `src/prompts/atendente_v1.txt`. Cada `run.json` guarda o mesmo hash em
 `agent_prompt_sha256`, permitindo relacionar trace, commit, sistema, modelo e
-prompt sem exportar o texto completo.
+prompt sem exportar o texto completo. A instrumentação foi confirmada em
+24/11/2026 no trace `801adc8a34bc5c539dc435ebce3f0089`
+(`run_id=20261124T020553Z-28bc477c`, mesmo caso sintético, commit
+`df562b11ce9072baa3655b776ba8165dd31ef5a1`): o span raiz exportou
+`app.prompt.sha256=a759ced71a16e843aea39374b416548794668412fbe72f5f8643abb451fa844d`,
+idêntico ao `agent_prompt_sha256` do `run.json`, com
+`app.evaluation.payload_capture=true`, término normal e todas as checagens
+aprovadas. O trace `1acc5443…` mencionado acima é anterior a esse atributo e
+comprova apenas a captura opt-in. Artefatos:
+[`evals/runs/20261124T020553Z-28bc477c`](../evals/runs/20261124T020553Z-28bc477c).
 
 ## 8. Limites conhecidos
 
@@ -312,12 +333,13 @@ canal de incidente, evidência a preservar e aprovação para reativar.
 | 23/11/2026 | #62 — `3ceef6e`, [PR #73](https://github.com/BccMaterial/LLM-Trabalho/pull/73) | Documentação reprodutível da Entrega 3; PR integrada |
 | 23/11/2026 | #58 — `0571932`, [PR #75](https://github.com/BccMaterial/LLM-Trabalho/pull/75) | Consolida model card, evidências disponíveis e lacunas/correções; PR integrada |
 | 24/11/2026 | `0ab06b3`, [PR #78](https://github.com/BccMaterial/LLM-Trabalho/pull/78) | Verificação end-to-end de captura sintética opt-in em trace Jaeger; payload sem dados reais |
+| 24/11/2026 | `df562b1`, [PR #78](https://github.com/BccMaterial/LLM-Trabalho/pull/78) | Hash do prompt no span raiz e trace sintético aprovado correlacionando `app.prompt.sha256` ao `run.json` |
 
 ## 13. Lacunas e correções propostas
 
 | Lacuna | Impacto | Correção proposta | Evidência/dependência |
 |---|---|---|---|
-| SLO abaixo do alvo | SLI 51,35% com 18 falhas consumidas de 3 permitidas; não há aprovação operacional | Estabilizar LLM/API, separar falhas de indisponibilidade de falhas de comportamento, corrigir casos sistemáticos e repetir pelo menos 30 execuções válidas na versão corrigida | [measurement.md](../evals/observability/measurement.md), [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) |
+| SLO abaixo do alvo | SLI 80,39% (41/51), com 10 falhas consumidas de 5 permitidas: medição válida, mas abaixo do alvo de 90% | Corrigir os casos sistemáticos restantes (status/escopo, ferramentas ausentes, idempotência e `juiz_clareza`) e repetir a medição com pelo menos 30 execuções válidas, sem alterar o alvo | [measurement.md](../evals/observability/measurement.md), [observabilidade](./observabilidade.md) |
 | Cobertura parcial de custo/tokens | Custo médio/total indisponível por cobertura 89% | Garantir captura de uso em todos os spans válidos ou marcar execução como sem estimativa de custo antes de agregação; manter distinção entre estimativa e fatura | [measurement.json](../evals/observability/measurement.json) |
 | Retenção/acesso institucional indefinidos | Risco de exposição ou perda de evidência; Jaeger local é volátil e sem autenticação | Definir responsável, perfis, prazo, descarte, backup e backend protegido antes de dados reais; restringir Jaeger local a dados sintéticos | [compose](../infra/compose.yaml), [observabilidade](./observabilidade.md) |
 | Autoridade de suspensão não designada | Sem gatilho institucional claro para interromper/religar o sistema | Nomear responsáveis clínico e técnico, definir critérios de suspensão, canal de incidente, preservação de evidência e aprovação de reativação | Campo 10; decisão institucional pendente |
@@ -326,15 +348,16 @@ canal de incidente, evidência a preservar e aprovação para reativar.
 
 ## Lacunas e correções propostas
 
-1. **SLI/SLO observado:** após commit e checkout limpo, executar pelo menos duas
-   rodadas completas (40 tentativas), coletar os traces e comitar o relatório
-   JSON/Markdown. Publicar valor do SLI e orçamento de erro somente se houver
-   pelo menos 30 execuções válidas.
-3. **Autoridade e suspensão:** clínica designa formalmente quem pode aprovar
+1. **SLI/SLO observado:** medição válida registrada (80,39% em 51 execuções,
+   `missed`); corrigir os casos sistemáticos e repetir pelo menos duas rodadas
+   completas (40 tentativas) na versão corrigida, com checkout commitado e limpo,
+   preservando os traces e comitando o relatório JSON/Markdown. Publicar o SLI e
+   o orçamento de erro somente se houver pelo menos 30 execuções válidas.
+2. **Autoridade e suspensão:** clínica designa formalmente quem pode aprovar
    políticas/exceções e quem pode suspender/reativar o serviço; adicionar um
    procedimento testável e auditável.
-4. **Dados e provedor:** controlador define base legal, provedor permitido,
+3. **Dados e provedor:** controlador define base legal, provedor permitido,
    finalidade, acesso, retenção e resposta a incidentes antes de dados reais.
-5. **Risco operacional:** definir alerta para falha de exportação, backend
+4. **Risco operacional:** definir alerta para falha de exportação, backend
    protegido, retenção/descarte verificáveis e avaliação independente antes de
    qualquer piloto.
