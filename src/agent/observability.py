@@ -1,4 +1,5 @@
 import atexit
+import hashlib
 import json
 import os
 import tomllib
@@ -41,6 +42,12 @@ def synthetic_trace_payloads_enabled() -> bool:
 def system_version() -> str:
     with (PROJECT_ROOT / "pyproject.toml").open("rb") as project_file:
         return tomllib.load(project_file)["project"]["version"]
+
+
+@lru_cache(maxsize=1)
+def agent_prompt_sha256() -> str:
+    prompt_path = PROJECT_ROOT / "src" / "prompts" / "atendente_v1.txt"
+    return hashlib.sha256(prompt_path.read_bytes()).hexdigest()
 
 
 def configure_tracing() -> TracerProvider:
@@ -230,6 +237,7 @@ def invoke_agent(
         "gen_ai.operation.name": "invoke_agent",
         "gen_ai.agent.name": SERVICE_NAME_VALUE,
         "app.system.version": version,
+        "app.prompt.sha256": agent_prompt_sha256(),
         "app.execution.mode": mode,
         "app.turn.index": turn_index,
         "app.approval.resumed": approval_decision is not None,

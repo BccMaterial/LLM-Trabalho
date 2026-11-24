@@ -1,4 +1,6 @@
+import hashlib
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -122,6 +124,12 @@ def test_agent_trace_captures_genai_spans(
     assert chat.parent.span_id == root.context.span_id
     assert tool.parent.span_id == root.context.span_id
     assert root.attributes["app.system.version"] == "0.1.0"
+    prompt_sha256 = hashlib.sha256(
+        (
+            Path(__file__).resolve().parents[3] / "src" / "prompts" / "atendente_v1.txt"
+        ).read_bytes()
+    ).hexdigest()
+    assert root.attributes["app.prompt.sha256"] == prompt_sha256
     assert root.attributes["app.evaluation.run_id"] == "run-demo"
     assert root.attributes["app.evaluation.case_id"] == "case-demo"
     assert root.attributes["app.evaluation.version"] == "issue-61"

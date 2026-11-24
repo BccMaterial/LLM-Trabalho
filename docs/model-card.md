@@ -216,6 +216,11 @@ rodada sintética nova no Jaeger: `run_id=20261124T002919Z-cfee82e2`,
 checagens. Os artefatos estão em
 [`evals/runs/20261124T002919Z-cfee82e2`](../evals/runs/20261124T002919Z-cfee82e2).
 
+O span raiz registra `app.prompt.sha256`, o hash da versão do prompt
+`src/prompts/atendente_v1.txt`. Cada `run.json` guarda o mesmo hash em
+`agent_prompt_sha256`, permitindo relacionar trace, commit, sistema, modelo e
+prompt sem exportar o texto completo.
+
 ## 8. Limites conhecidos
 
 - Um único Atendente; não há os três agentes do desenho-alvo, fila clínica,

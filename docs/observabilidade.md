@@ -32,6 +32,9 @@ tipos de fonte). Nas execuções do avaliador, também registra `run_id`,
 gravados em `results.json`, permitindo correlacionar cada resultado sem
 exportar entradas ou respostas clínicas. Quando há política recuperada, registra
 somente documento, versão e trecho.
+O span raiz também registra `app.prompt.sha256`, o SHA-256 do prompt
+`src/prompts/atendente_v1.txt`, permitindo correlacionar o trace à versão do
+prompt sem exportar o texto completo.
 
 `chat` usa os atributos semânticos GenAI `gen_ai.operation.name`,
 `gen_ai.provider.name`, `gen_ai.request.model`, `gen_ai.response.model`,
