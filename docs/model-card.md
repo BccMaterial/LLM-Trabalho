@@ -206,8 +206,15 @@ privacidade, base legal e retenção.
 A suíte também dispõe de `--capture-synthetic-payloads`, desativado por padrão,
 que inclui entrada, saída, ferramentas e eventos de aprovação somente quando
 todos os casos selecionados são de desenvolvimento/sintéticos. A opção não
-altera o trace histórico acima; ainda é necessário executar uma avaliação nova
-com Jaeger ativo para produzir e verificar evidência com esses atributos.
+foi usada no trace histórico acima, mas foi verificada em 24/11/2026 numa
+rodada sintética nova no Jaeger: `run_id=20261124T002919Z-cfee82e2`,
+`case_id=dev-03-escopo-privacidade`, commit
+`0ab06b338d914fcfb092c3b05df3e90b37f059e1` e
+`trace_id=1acc5443dfd0fc949c370afd4a7e515a`. Os atributos
+`app.evaluation.payload_capture=true`, `app.evaluation.input` e
+`app.evaluation.output` confirmaram a captura opt-in; o caso passou todas as
+checagens. Os artefatos estão em
+[`evals/runs/20261124T002919Z-cfee82e2`](../evals/runs/20261124T002919Z-cfee82e2).
 
 ## 8. Limites conhecidos
 
@@ -299,12 +306,12 @@ canal de incidente, evidência a preservar e aprovação para reativar.
 | 23/11/2026 | #61 — `e003a35`, `4bf91dd`, `6aebbfa`, [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) | Correlação, medição SLO/latência/custo e relatório observado; PR integrada |
 | 23/11/2026 | #62 — `3ceef6e`, [PR #73](https://github.com/BccMaterial/LLM-Trabalho/pull/73) | Documentação reprodutível da Entrega 3; PR integrada |
 | 23/11/2026 | #58 — `0571932`, [PR #75](https://github.com/BccMaterial/LLM-Trabalho/pull/75) | Consolida model card, evidências disponíveis e lacunas/correções; PR integrada |
+| 24/11/2026 | `0ab06b3`, [PR #78](https://github.com/BccMaterial/LLM-Trabalho/pull/78) | Verificação end-to-end de captura sintética opt-in em trace Jaeger; payload sem dados reais |
 
 ## 13. Lacunas e correções propostas
 
 | Lacuna | Impacto | Correção proposta | Evidência/dependência |
 |---|---|---|---|
-| Payloads literais ausentes por padrão nos traces | A reconstrução sintética exigia consultar artefatos correlacionados fora do trace | Perfil de captura opt-in inclui entrada/saída, ferramentas e eventos de aprovação apenas para casos sintéticos; falta gerar e verificar um trace com a instrumentação atual. Em produção, não habilitar sem decisão de privacidade/base legal/retenção | [observabilidade](./observabilidade.md), trace histórico `a31c18449f2ee4c457cdb3638abd40cc` |
 | SLO abaixo do alvo | SLI 51,35% com 18 falhas consumidas de 3 permitidas; não há aprovação operacional | Estabilizar LLM/API, separar falhas de indisponibilidade de falhas de comportamento, corrigir casos sistemáticos e repetir pelo menos 30 execuções válidas na versão corrigida | [measurement.md](../evals/observability/measurement.md), [PR #74](https://github.com/BccMaterial/LLM-Trabalho/pull/74) |
 | Cobertura parcial de custo/tokens | Custo médio/total indisponível por cobertura 89% | Garantir captura de uso em todos os spans válidos ou marcar execução como sem estimativa de custo antes de agregação; manter distinção entre estimativa e fatura | [measurement.json](../evals/observability/measurement.json) |
 | Retenção/acesso institucional indefinidos | Risco de exposição ou perda de evidência; Jaeger local é volátil e sem autenticação | Definir responsável, perfis, prazo, descarte, backup e backend protegido antes de dados reais; restringir Jaeger local a dados sintéticos | [compose](../infra/compose.yaml), [observabilidade](./observabilidade.md) |
@@ -314,10 +321,7 @@ canal de incidente, evidência a preservar e aprovação para reativar.
 
 ## Lacunas e correções propostas
 
-1. **Trace real e reconstrução:** iniciar Jaeger, rodar um caso sintético após
-   configurar o ambiente e guardar o `trace_id`; decidir se `case_id` ligado ao
-   dataset sintético fornece detalhe suficiente, sem exportar conteúdo clínico.
-2. **SLI/SLO observado:** após commit e checkout limpo, executar pelo menos duas
+1. **SLI/SLO observado:** após commit e checkout limpo, executar pelo menos duas
    rodadas completas (40 tentativas), coletar os traces e comitar o relatório
    JSON/Markdown. Publicar valor do SLI e orçamento de erro somente se houver
    pelo menos 30 execuções válidas.

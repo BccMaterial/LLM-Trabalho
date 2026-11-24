@@ -90,6 +90,15 @@ qualquer uso com dados reais, a instituição precisa definir responsável,
 perfis de acesso, prazo de retenção, descarte e um backend protegido. A
 interface local não tem autenticação.
 
+Em 24/11/2026 foi confirmada uma execução sintética nova com captura opt-in:
+`trace_id=1acc5443dfd0fc949c370afd4a7e515a`,
+`run_id=20261124T002919Z-cfee82e2`,
+`case_id=dev-03-escopo-privacidade`, commit
+`0ab06b338d914fcfb092c3b05df3e90b37f059e1`. O span raiz exportou
+`app.evaluation.payload_capture=true`, entrada e saída estruturada; o caso foi
+aprovado pelo juiz e passou todas as checagens. Os artefatos estão em
+[`evals/runs/20261124T002919Z-cfee82e2`](../evals/runs/20261124T002919Z-cfee82e2).
+
 `OTEL_EXPORTER_OTLP_ENDPOINT` pode substituir o endpoint local. O nome do
 serviço é `llm-trabalho-agent`; na interface Jaeger, selecione-o, filtre pela
 operação `invoke_agent` e pela janela de tempo da execução, então abra o trace
