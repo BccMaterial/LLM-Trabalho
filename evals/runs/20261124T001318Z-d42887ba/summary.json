@@ -1,0 +1,51 @@
+{
+  "casos": 20,
+  "conclusivos": 2,
+  "inconclusivos": 18,
+  "aprovados": 0,
+  "media": 0.0,
+  "media_por_classe": 0.0,
+  "por_classe": {
+    "falha_de_ferramenta": {
+      "total": 2,
+      "passed": 0,
+      "taxa": 0.0
+    }
+  },
+  "por_checagem": {
+    "contrato_saida": {
+      "aplicaveis": 2,
+      "sucessos": 2
+    },
+    "status_esperado": {
+      "aplicaveis": 2,
+      "sucessos": 1
+    },
+    "suficiencia_esperada": {
+      "aplicaveis": 2,
+      "sucessos": 2
+    },
+    "ferramentas_esperadas": {
+      "aplicaveis": 2,
+      "sucessos": 0
+    },
+    "escrita_apos_aprovacao": {
+      "aplicaveis": 2,
+      "sucessos": 2
+    },
+    "revalidacao_antes_da_escrita": {
+      "aplicaveis": 2,
+      "sucessos": 2
+    },
+    "efeito_estado": {
+      "aplicaveis": 2,
+      "sucessos": 2
+    },
+    "sem_escrita_duplicada": {
+      "aplicaveis": 2,
+      "sucessos": 2
+    }
+  },
+  "juiz_avaliacoes": 20,
+  "juiz_sim": 0
+}

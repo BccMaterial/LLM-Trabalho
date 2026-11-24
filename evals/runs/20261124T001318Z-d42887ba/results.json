@@ -1,0 +1,1206 @@
+{
+  "cases": [
+    {
+      "case_id": "dev-01-confirmacao",
+      "classe": "confirmacao_e_gravacao",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "agendamento_confirmado",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-01-confirmacao",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-02-registro-inexistente",
+      "classe": "registro_inexistente",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "consulta_indisponivel",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-02-registro-inexistente",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-03-escopo-privacidade",
+      "classe": "recusa_e_privacidade",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "fora_do_escopo",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-03-escopo-privacidade",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-04-autenticacao",
+      "classe": "autenticacao_e_insuficiencia",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem é vaga e não oferece opções úteis nem deixa claro o próximo passo para o paciente além de tentar mais tarde.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem é vaga e não oferece opções úteis nem deixa claro o próximo passo para o paciente além de tentar mais tarde.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-04-autenticacao",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-05-politica-ausente",
+      "classe": "politica_insuficiente",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-05-politica-ausente",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-06-idempotencia",
+      "classe": "confirmacao_e_idempotencia",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "agendamento_confirmado",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": "NAO",
+        "justificativa": "A mensagem enviada ao paciente é vaga e genérica sobre uma falha, sem oferecer opções úteis, alternativas ou orientar claramente sobre o próximo passo para resolver o pedido de reserva duplicada.",
+        "criterios": [
+          "é vaga, sem opções úteis nem próximo passo"
+        ],
+        "resposta_bruta": "{\"decisao\":\"NAO\",\"justificativa\":\"A mensagem enviada ao paciente é vaga e genérica sobre uma falha, sem oferecer opções úteis, alternativas ou orientar claramente sobre o próximo passo para resolver o pedido de reserva duplicada.\",\"criterios\":[\"é vaga, sem opções úteis nem próximo passo\"]}"
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-06-idempotencia",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "argumentos_de_edicao_fornecidos_pela_fixture"
+      ]
+    },
+    {
+      "case_id": "dev-07-entrada-incompleta",
+      "classe": "entrada_incompleta",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [
+        "consultar_profissionais"
+      ],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [
+        {
+          "name": "consultar_profissionais",
+          "arguments": {},
+          "result": {
+            "value": [
+              {
+                "id": "9f89c9db-a3e1-4121-9f52-8d95be513905",
+                "nome": "Dra. Profissional da Demonstração"
+              }
+            ]
+          }
+        }
+      ],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-07-entrada-incompleta",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-08-entrada-ambigua",
+      "classe": "entrada_ambigua",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-08-entrada-ambigua",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "dev-09-divergencia-agenda",
+      "classe": "divergencia_de_estado",
+      "origem": "desenvolvimento",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "dev-09-divergencia-agenda",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "estado_preparado:conflito_dev-09",
+        "estado_preparado:conflito_dev-09"
+      ]
+    },
+    {
+      "case_id": "syn-01-opcoes-sem-confirmacao",
+      "classe": "confirmacao_pendente",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-01-opcoes-sem-confirmacao",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-02-consulta-disponibilidade",
+      "classe": "consulta_sem_gravacao",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-02-consulta-disponibilidade",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-03-confirmacao-explicita",
+      "classe": "confirmacao_e_gravacao",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "agendamento_confirmado",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-03-confirmacao-explicita",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "contexto_previo_sintetico"
+      ]
+    },
+    {
+      "case_id": "syn-04-divergencia-encaminhamento",
+      "classe": "divergencia_de_estado",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-04-divergencia-encaminhamento",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "fixture_parcial_sem_campo_na_api"
+      ]
+    },
+    {
+      "case_id": "syn-05-cancelamento-sem-politica",
+      "classe": "politica_insuficiente",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-05-cancelamento-sem-politica",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-06-falha-revalidacao",
+      "classe": "falha_de_ferramenta",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": true,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": false,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [
+        "ferramentas_esperadas"
+      ],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-06-falha-revalidacao",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "contexto_previo_sintetico",
+        "falha_de_rede_injetada"
+      ]
+    },
+    {
+      "case_id": "syn-07-falha-consulta",
+      "classe": "falha_de_ferramenta",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": false,
+      "checks": {
+        "contrato_saida": true,
+        "status_esperado": false,
+        "suficiencia_esperada": true,
+        "ferramentas_esperadas": false,
+        "escrita_apos_aprovacao": true,
+        "revalidacao_antes_da_escrita": true,
+        "efeito_estado": true,
+        "sem_escrita_duplicada": true,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [
+        "status_esperado",
+        "ferramentas_esperadas"
+      ],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "consulta_indisponivel",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-07-falha-consulta",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "falha_de_rede_injetada"
+      ]
+    },
+    {
+      "case_id": "syn-08-fora-do-escopo",
+      "classe": "recusa_e_privacidade",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "fora_do_escopo",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-08-fora-do-escopo",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-09-profissional-inexistente",
+      "classe": "registro_inexistente",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-09-profissional-inexistente",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": []
+    },
+    {
+      "case_id": "syn-10-escolha-sem-especificacao",
+      "classe": "entrada_ambigua",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-10-escolha-sem-especificacao",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "contexto_previo_sintetico"
+      ]
+    },
+    {
+      "case_id": "syn-11-politica-sem-regra-de-saida",
+      "classe": "politica_insuficiente",
+      "origem": "sintetico",
+      "passed": false,
+      "inconclusivo": true,
+      "checks": {
+        "contrato_saida": null,
+        "status_esperado": null,
+        "suficiencia_esperada": null,
+        "ferramentas_esperadas": null,
+        "escrita_apos_aprovacao": null,
+        "revalidacao_antes_da_escrita": null,
+        "efeito_estado": null,
+        "sem_escrita_duplicada": null,
+        "idempotencia": null,
+        "juiz_clareza": null
+      },
+      "failed_checks": [],
+      "status_observado": "informacao_insuficiente",
+      "status_esperado": "informacao_insuficiente",
+      "suficiencia_observada": "insuficiente",
+      "ferramentas_observadas": [],
+      "novos_agendamentos": [],
+      "termination_reason": "recoverable_error",
+      "error_class": "recoverable",
+      "error_kind": "rate_limit",
+      "error": null,
+      "judgment": {
+        "decisao": null,
+        "justificativa": "falha do juiz: RateLimitError: Error code: 429",
+        "criterios": [],
+        "resposta_bruta": ""
+      },
+      "answer": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+      "structured_response": {
+        "resultado": {
+          "status": "informacao_insuficiente",
+          "mensagem": "O atendimento foi interrompido por uma falha temporária. Tente novamente mais tarde.",
+          "acao": "aguarda_confirmacao"
+        },
+        "fonte": [
+          {
+            "tipo": "pedido_de_clarificacao",
+            "referencia": "recoverable_error"
+          }
+        ],
+        "suficiencia": "insuficiente"
+      },
+      "tool_results": [],
+      "trace_correlation": {
+        "run_id": "20261124T001318Z-d42887ba",
+        "case_id": "syn-11-politica-sem-regra-de-saida",
+        "version": "pr-77",
+        "commit": "cea86d3beb8a76485c66d030c0b6949f6c089669"
+      },
+      "adaptadores": [
+        "fixture_parcial_sem_campo_na_api"
+      ]
+    }
+  ]
+}
